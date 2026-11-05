@@ -1,13 +1,14 @@
 {
   "expo": {
-    "name": "indraya-scaffold",
-    "slug": "indraya-scaffold",
+    "name": "Indraya",
+    "slug": "indraya",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "app.indraya.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -16,10 +17,22 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "app.indraya.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "scheme": "indraya",
+    "plugins": [
+      "expo-router",
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Show your position while using Indraya."
+        }
+      ]
+    ]
   }
 }

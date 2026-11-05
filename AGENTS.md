@@ -1,3 +1,5 @@
+# Indraya engineering
+Use the existing isolated checkout; do not create worktrees unless requested. Keep strict TypeScript. Run npm run typecheck, npm run lint, npm test and Expo export before delivery. Native functionality needs a development build, not Expo Go. Never expose service-role keys. Demo and official provenance must remain explicit. New data sources require documented licensing and endpoint validation. SQL access changes require database integration tests against a disposable Supabase instance; never claim RLS validated by static inspection.
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
 ## Expo has changed — do not trust your training data
