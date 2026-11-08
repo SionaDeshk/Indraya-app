@@ -36,3 +36,6 @@ Validation for this follow-up: TypeScript/lint, 27 unit tests, responsive home/b
 Added eight original local PNG pictograms, a canonical/legacy symbol selector, native MapLibre image registration and symbol layer. Type color, separate staff risk ring, neutral clusters and restricted-marker exclusion are preserved; selection has a white halo. Community marker/card selection now opens a non-modal preview. Full details and flagging require View full report; Back to preview retains selection. Small-screen text scrolls with fixed close and full-report controls. Search selection clears a report preview. No new dependencies, native config or backend changes.
 
 Validation: TypeScript/lint, 28 unit tests, responsive preview and full-detail navigation at 320/390/768px, guided reporting regression and all-platform JS exports. Local native marker rendering, hit testing, ring/halo distinction and image reload after map recovery still need the Mac simulator/device; browser screenshots are explicitly not native-map proof.
+
+## Follow-up: preserve marker colors while zooming out
+Removed native GeoJSON clustering and its gray aggregate layer. Individual report colors, icons, selection halo, staff rings and private-marker exclusion remain at every zoom level. Nearby activity remains available for overlapping reports. No dependencies, native configuration or backend changes.

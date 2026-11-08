@@ -508,9 +508,9 @@ export default function Home() {
               </View>
             ))}
             <Text style={styles.text}>
-              Color indicates report type, never verification or severity. Gray
-              circles group observations; tap to expand. White/purple marks
-              official sources.
+              Color indicates report type, never verification or severity.
+              Individual markers keep their colors at every zoom level.
+              White/purple marks official sources.
             </Text>
             {Object.entries(riskPresentation)
               .filter(([id]) => id !== "none")

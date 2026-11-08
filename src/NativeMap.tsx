@@ -7,7 +7,6 @@ import {
   GeoJSONSource,
   Layer,
   CameraRef,
-  GeoJSONSourceRef,
 } from "@maplibre/maplibre-react-native";
 import { View, Text } from "react-native";
 import { Button, styles } from "./ui";
@@ -89,7 +88,6 @@ export default function NativeMap({
     }
   }
 
-  const source = useRef<GeoJSONSourceRef>(null);
   const shape: GeoJSON.FeatureCollection = {
     type: "FeatureCollection",
     features: observations
@@ -220,32 +218,11 @@ export default function NativeMap({
           />
         </GeoJSONSource>
         <GeoJSONSource
-          ref={source}
           id="observations"
           data={shape}
-          cluster
-          clusterRadius={45}
-          onPress={async (e) => {
+          onPress={(e) => {
             const feature = e.nativeEvent.features[0];
             if (!feature) return;
-            if (
-              feature.properties?.cluster &&
-              feature.geometry.type === "Point"
-            ) {
-              try {
-                const zoom = await source.current?.getClusterExpansionZoom(
-                  Number(feature.properties.cluster_id),
-                );
-                camera.current?.easeTo({
-                  center: feature.geometry.coordinates as [number, number],
-                  zoom: zoom ?? 12,
-                  duration: 500,
-                });
-              } catch {
-                camera.current?.zoomTo(12);
-              }
-              return;
-            }
             const item = observations.find(
               (o) => o.id === feature.properties?.id,
             );
@@ -254,23 +231,8 @@ export default function NativeMap({
         >
           <Layer
             type="circle"
-            id="clusters"
-            filter={["has", "point_count"]}
-            paint={{
-              "circle-color": "#52666c",
-              "circle-radius": 22,
-              "circle-stroke-width": 2,
-              "circle-stroke-color": "#fff",
-            }}
-          />
-          <Layer
-            type="circle"
             id="selected-observation-halo"
-            filter={[
-              "all",
-              ["!", ["has", "point_count"]],
-              ["==", ["get", "selected"], true],
-            ]}
+            filter={["==", ["get", "selected"], true]}
             paint={{
               "circle-color": "#ffffff",
               "circle-radius": 23,
@@ -280,7 +242,6 @@ export default function NativeMap({
           <Layer
             type="circle"
             id="points"
-            filter={["!", ["has", "point_count"]]}
             paint={{
               "circle-color": ["get", "color"],
               "circle-radius": 15,
@@ -291,7 +252,6 @@ export default function NativeMap({
           <Layer
             id="observation-symbols"
             type="symbol"
-            filter={["!", ["has", "point_count"]]}
             layout={{
               "icon-image": ["get", "icon"],
               "icon-size": 0.3,
