@@ -2,29 +2,29 @@ import { useState } from "react";
 import { ScrollView, Text, TextInput } from "react-native";
 import { router } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Category, categories } from "../domain";
+import { Category, categories, ReportLocation } from "../domain";
 import { submit, supabase } from "../api";
 import { Button, styles } from "../ui";
+import LocationPicker from "../LocationPicker";
 export default function Report() {
   const [category, setCategory] = useState<Category>("Safety");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [lat, setLat] = useState("61.22");
-  const [lon, setLon] = useState("-149.90");
+  const [location, setLocation] = useState<ReportLocation | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const client = useQueryClient();
   async function save() {
     setBusy(true);
     try {
-      if (!lat.trim() || !lon.trim())
-        throw new Error("Enter both observation coordinates.");
+      if (!location)
+        throw new Error("Choose where you observed this before submitting.");
       await submit({
         category,
         title,
         description,
-        latitude: Number(lat),
-        longitude: Number(lon),
+        latitude: location.latitude,
+        longitude: location.longitude,
       });
       await client.invalidateQueries({ queryKey: ["observations"] });
       router.back();
@@ -35,7 +35,14 @@ export default function Report() {
     }
   }
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#071719" }}
+      contentContainerStyle={[
+        styles.page,
+        { flex: 0, flexGrow: 1, paddingBottom: 40 },
+      ]}
+      keyboardShouldPersistTaps="handled"
+    >
       <Button label="← Back to map" onPress={() => router.back()} />
       <Text style={styles.heading}>Share what you see.</Text>
       <Text style={styles.text}>
@@ -43,8 +50,8 @@ export default function Report() {
           ? "Community observation"
           : "DEMO · Saved only on this device"}
         . Reports begin unverified. Do not include names, private homes,
-        vulnerable people, or sensitive incident locations. Public coordinates
-        are rounded to approximately 1 km.
+        vulnerable people, or sensitive incident locations. Only an approximate
+        area is shared.
       </Text>
       {categories.map((c) => (
         <Button
@@ -72,23 +79,7 @@ export default function Report() {
         onChangeText={setDescription}
         maxLength={2000}
       />
-      <Text style={styles.text}>
-        Approximate observation location · edit coordinates deliberately
-      </Text>
-      <TextInput
-        accessibilityLabel="Latitude"
-        style={styles.input}
-        value={lat}
-        onChangeText={setLat}
-        keyboardType="numbers-and-punctuation"
-      />
-      <TextInput
-        accessibilityLabel="Longitude"
-        style={styles.input}
-        value={lon}
-        onChangeText={setLon}
-        keyboardType="numbers-and-punctuation"
-      />
+      <LocationPicker value={location} onChange={setLocation} />
       <Text style={styles.text}>
         Photo attachments are deferred. Never upload identifying or sensitive
         images.
@@ -100,7 +91,7 @@ export default function Report() {
       )}
       <Button
         label={busy ? "Saving…" : "Submit unverified observation"}
-        disabled={busy}
+        disabled={busy || location === null}
         onPress={() => {
           void save();
         }}

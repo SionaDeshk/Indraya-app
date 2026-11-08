@@ -1,3 +1,8 @@
+export type ReportLocation = {
+  name: string;
+  latitude: number;
+  longitude: number;
+};
 export type Category = "Safety" | "Outdoors" | "Travel";
 export type Observation = {
   id: string;
@@ -80,7 +85,8 @@ export const demo: Observation[] = [
     demo: true,
   },
 ];
-export const places = [
+export const places: ReportLocation[] = [
+  { name: "Beluga Point", latitude: 60.977, longitude: -149.644 },
   { name: "Anchorage", latitude: 61.2181, longitude: -149.9003 },
   { name: "Denali mountain", latitude: 63.0695, longitude: -151.0074 },
   { name: "Mendenhall Lake", latitude: 58.417, longitude: -134.548 },

@@ -92,7 +92,7 @@ export default function Home() {
                 />
               ))}
             <Text style={styles.text}>
-              Offline starter gazetteer · six Alaska places
+              Offline starter gazetteer · seven Alaska places
             </Text>
           </View>
         )}
