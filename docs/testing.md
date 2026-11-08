@@ -1,22 +1,31 @@
-# Reproduce database tests
-Use a disposable PostGIS 17 database created from template0. Never run the bootstrap on an existing Supabase project: it emulates auth/storage schemas and roles.
+# Verification
 
-1. Start `docker run -d --name indraya-db-test -e POSTGRES_HOST_AUTH_METHOD=trust postgis/postgis:17-3.5` without publishing any port.
-2. `docker exec indraya-db-test createdb -U postgres -T template0 indraya`
-3. Pipe supabase/tests/bootstrap.sql, then supabase/migrations/202611050001_initial.sql, then supabase/tests/rls.sql to `docker exec -i indraya-db-test psql -U postgres -d indraya -v ON_ERROR_STOP=1` in that order.
-4. Tests run in a transaction and roll back. Remove only the test container you created using `docker rm -f indraya-db-test`.
+Run `npm run typecheck`, `npm run lint`, `npm test` and `EXPO_OFFLINE=1 npx expo export --platform all`. Exports validate JavaScript bundles, not native compilation. The latest run passed all three platform exports and Deno checking; final unit count is recorded in overnight-progress.md.
 
-The harness tests SQL policies and grants, not the hosted Auth email flow, REST API schema cache or Storage service. Test those against a project before launch. No private credentials are needed for local SQL tests.
+## Disposable SQL harness
 
-## Report picker browser regression
-With Python Playwright and Chromium available, start `EXPO_OFFLINE=1 npx expo start --web --port 8092`, then run `python3 tests/report_browser.py`. Set INDRAYA_WEB_URL if using another port, and PLAYWRIGHT_CHROMIUM_EXECUTABLE for a custom browser path. These checks use demo mode with no Supabase configuration and isolated browser storage. They cover missing-location submission prevention, search and empty states, invalid report validation, successful persisted report creation with privacy rounding, current-location selection and denied-permission fallback. Native map taps and confirmation/cancel need the device smoke checks in README.md.
+Use PostGIS 17 in an unexposed test container, never an existing Supabase project. The bootstrap emulates auth/storage schemas and roles and must never be applied to production.
 
-Run `python3 tests/sources_browser.py` against the same Expo web server to check editable category suggestions, preservation of custom titles when switching categories, the removal of the blank basemap toggle, source status labels and the absence of requests to unvalidated feeds. It requires the same optional Playwright/Chromium setup as report_browser.py.
+```
+docker run -d --name indraya-db-test -e POSTGRES_HOST_AUTH_METHOD=trust postgis/postgis:17-3.5
+docker exec indraya-db-test createdb -U postgres -T template0 indraya
+docker exec -i indraya-db-test psql -U postgres -d indraya -v ON_ERROR_STOP=1 < supabase/tests/bootstrap.sql
+```
 
-## Rich reports and photo policies
+Pipe all three `supabase/migrations/*.sql` in filename order into the same psql command. Then run `supabase/tests/rls.sql`, `supabase/tests/report_details.sql`, and `supabase/tests/guided_observations.sql` through it. Each suite rolls back its fixtures. The tests cover anonymous/owner/other/staff grants, direct upload restrictions even with a broad Storage policy, approval/hiding, spatial privacy, catalog tampering, irrelevant/hidden answers, sensitive holds, protected publication, private audits, staff risk grades, downgrade/resolution/dispute and expiry. The new guided suite has 37 assertions; the existing suites have 37 combined.
 
-Apply *both* SQL migrations, in filename order, in the disposable PostGIS harness, then run both supabase/tests/rls.sql and supabase/tests/report_details.sql with ON_ERROR_STOP=1. The second suite covers report kind/category consistency, observed time, bounded spatial results, private pending photos, audited approval and hiding, blocked direct uploads, and a restrictive Storage policy that wins even with an intentionally broad test policy. The harness now includes a minimal storage.objects table; it does not simulate actual Storage HTTP signing or Auth email delivery.
+For a populated-v1 upgrade, create another database, bootstrap it (skip `create role` lines if reusing the same test cluster), apply only the initial migration, then `supabase/tests/upgrade_seed.sql`. Apply `supabase/upgrade-from-v1.sql`, then the existing report-details migration. Insert an observation_media row for ID 11111111-1111-1111-1111-111111111111 with storage_path `upgrade-photo.jpg`. Apply the third migration, then `supabase/tests/upgrade_assertions.sql`. This verifies old hidden/review/published records, ownership, original timestamps and photo association survive both backfills. A project already on v2 applies only migration three; no preflight. Remove only your test container with `docker rm -f indraya-db-test`.
 
-`npm test` additionally tests the JPEG metadata scrubber against a synthetic JPEG fixture containing private test metadata (not a user photo). The scrubber is also shared by the real server handler. `DENO_DIR=/tmp/indraya-deno-cache DENO_TLS_CA_STORE=system npx deno check supabase/functions/observation-photo/index.ts` type-checks the server entrypoint. It does not deploy or authenticate requests.
+The harness does not simulate hosted Auth email, REST schema caching, Storage HTTP signing or Edge deployment. Follow shared-backend.md for authenticated multi-user project checks.
 
-With Expo web on 8092 and Python Playwright/Chromium available, `python3 tests/expanded_browser.py` tests local town/feature search, mocked restaurant search, the color legend, animal/count/time selection, photo consent and EXIF removal, persisted rich demo reports and nearby cards. Existing report_browser.py and sources_browser.py also remain useful. Native device checks must cover zoom buttons (including the pin picker), pan/zoom nearby updates, card-to-map centering, the native time picker and photo-library permissions. See shared-backend.md for real cross-user hosted checks.
+## Browser workflow
+
+With Python Playwright and Chromium installed, start `EXPO_OFFLINE=1 npx expo start --web --port 8092`, then `python3 tests/guided_browser.py`. INDRAYA_WEB_URL changes the port and INDRAYA_SCREENSHOTS sets the artifact directory. This replaces the three older scripts whose assumptions depended on offline gazetteer/category buttons.
+
+The script uses **synthetic Photon replies**, not verified real-world locations. It exercises search without creating a report, custom title preservation, shared cross-type answers, hidden-answer pruning, observed time, photo/consent, final review, persisted demo records, private holds/My reports/public exclusion, no fallback on empty/error responses, and disabled official-source controls. Screenshots are browser evidence only. It checks browser console errors. Unit tests separately validate malformed responses, documented extent order, ambiguity, address-label privacy and geometry.
+
+JPEG tests use a synthetic metadata-bearing fixture, not a user photo. `DENO_DIR=/tmp/indraya-deno-cache DENO_TLS_CA_STORE=system npx deno check supabase/functions/observation-photo/index.ts` checks the server function; it does not deploy it.
+
+## Native and live acceptance still required
+
+On the Mac/device test native map bounds/zoom, separate selected-place marker, pin adjustment/cancel, card centering, clustering, category filters, risk rings and idle expiry, transport-error banner/retry preserving viewport, foreground location denial/allow, photo-library permissions, native date/time and restart persistence. Linux cannot compile or operate the user's iOS simulator. Verify the live query matrix in search.md against actual provider responses and an independent map. Official feeds stay disabled until documented validation. Test hosted ordinary/other/staff accounts and signed-photo access separately; no hosted project was configured here.

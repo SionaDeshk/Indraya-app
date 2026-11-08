@@ -1,0 +1,21 @@
+# Guided observations
+
+Eight domains, 37 topics and 101 canonical observation types live in data/observation-catalog.json. Cross-links share an event ID: Whiteout under Travel and Weather is the same event. Species and behavior are answers, not 100 animal-specific event duplicates. Domain/topic choices narrow the list; search, Other and Not sure support unfamiliar situations. Additional related events are explicit, capped at three, and never infer causality.
+
+The five-step flow asks What happened → relevant Details → When & where → optional Photo → Review. Titles start from the explicit selection and remain editable. A custom title, description, time, location and photo survive classification changes. Hidden or unrelated answers are pruned, visibly acknowledged, and rejected by the server if submitted by a modified client. There is no AI incident inference. Report type and verification never assign staff danger.
+
+The SQL catalog is versioned. scripts/catalog-seed.py generates the initial immutable seed; future catalog changes need a new migration/version and compatibility tests, not an edit to an applied migration. Legacy records retain original text, ownership, timestamps and photo associations. Legacy category/kind/details remain compatibility projections. The public app reads observation_feed, which excludes author identity and private evidence.
+
+## Privacy and staff decisions
+
+Approximate observations use two decimal places; coarse wildlife/sensitive-location combinations use one decimal and Generalized area. Restricted events use whole-degree regional information and enter private review. Safety topics, reported attacks, injury combinations, and related sensitive events enforce that policy on the server. Precision is discarded before mobile persistence and again enforced by the database; rounding is an approximation, not a uniform kilometer radius. Exact addresses must never be typed into report text. An address-only search result's precise label is replaced in the report's public place field.
+
+My reports includes the owner's held submissions. Demo reports remain local, including simulated holds; they are not sent to staff. Restricted reports are omitted from public feed until protected publication review and never appear as precise incident pins, including after publication. Staff must check privacy, give a reason/reference, and supply safe public text. Missing/vulnerable-person reports additionally require an official source or documented consent. Free-text answers are removed from the public version and retained in the private audit. Human review remains necessary for identifying details in prose/photos; there is no automated identity detector.
+
+Staff publication, verification, photo approval and risk assessment are separate actions. Server-provisioned moderators use the protected queue. Risk records are immutable with actor, reason, evidence, time, expiry and optional short public note. Hazard/urgent require evidence; active assessments expire within 24 hours, urgent within six. New records downgrade/remove/resolve/dispute an earlier grade. SQL exposes the latest effective grade and removes expired warnings. The UI clock refreshes every 30 seconds and on foregrounding, so expiry works while a screen stays open. No ring means no current staff grade, not safe.
+
+Map fill uses the canonical type family; the outer ring uses staff caution/hazard/urgent. Regional publications stay in cards, outside spatial incident queries. A selected search place is a separate reference marker, never a report. Zoom buttons remain on both native maps. Tile transport failures show a retry UI, retain the viewport, and coalesce only known repeated transport messages; other diagnostics remain visible. This recovery UI does not repair a third-party tile server. Native tile behavior still requires Mac/device testing.
+
+## Delivery limits
+
+No hosted Supabase credentials were available, so migrations and the function were not deployed. Local role tests exercise PostgreSQL/PostGIS policies with emulated Auth/Storage schemas, not hosted Auth email, REST schema cache or actual signed-image delivery. Official feeds remain disabled until endpoints and terms are verified. No mass alerts, background tracking, production provider account, paid service or release was created.

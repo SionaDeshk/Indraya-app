@@ -1,11 +1,24 @@
 # Place search
 
-Both map search and the reporting location picker use PlaceSearch. The previous seven-place-only UI is gone. Saved approximate Alaska anchors now include Girdwood, Wasilla, Knik River, Knik Glacier, Palmer, Eagle River, Homer, Seward, Fairbanks, Juneau and the original landmarks. These are named feature reference points, not exact boundaries or guarantees of safe access.
+Both map search and reporting use one provider-backed Search places flow. Type at least three characters and press Search (or keyboard Search). There are no online/offline modes or fixed town-list substitutions. Successful identical queries may use a 24-hour response cache; failure never substitutes Anchorage or a guessed location. Check the result's town/region before selecting it.
 
-For businesses, addresses and other geographic features, type at least three characters and press Search online (or the keyboard Search key). Photon provides OSM-based results with a context line so a business in the wrong town can be distinguished. Include the town in a restaurant name/search. Coverage is whatever the provider has indexed, not a guaranteed directory of every business.
+Photon API: https://photon.komoot.io/api/ . Documentation: https://github.com/komoot/photon/blob/master/docs/api-v1.md and the upstream README Demo server section. Software is Apache-2.0; OSM data has separate attribution/ODbL obligations. Reasonable development use is permitted with no uptime guarantee and possible throttling/bans. Use a licensed production service or a self-hosted instance before broad deployment. No general web scraping or AI coordinate generation occurs.
 
-Provider: https://photon.komoot.io/api/ with q/lat/lon/limit/lang parameters documented in the official repository https://github.com/komoot/photon/blob/master/docs/api-v1.md. The official README's Demo server section explicitly permits reasonable project usage, warns about throttling/bans and gives no availability guarantee. Apache-2.0 applies to the Photon software, not ownership of OSM data. OSM data requires OpenStreetMap attribution and the applicable ODbL obligations; the UI includes attribution and a copyright link. Use a licensed production provider or your own Photon instance before broad deployment.
+Explicit searches are limited to one request per 1.1 seconds per app process, eight results, 12-second timeout. Provider receives words and coarse map focus (0.1 degree), not continuous GPS. Edits cancel in-flight requests. Cache writes may fail without discarding valid provider results. Empty results, throttling and transport failures are distinct from a success; no offline gazetteer is silently used.
 
-Search is explicit, never a request per keystroke. Requests are limited to one per 1.1 seconds per app process, have a 12-second timeout, return at most eight results and cache identical query/map-area results for 24 hours on device. The provider receives the search words and a coarse map focus (rounded to 0.1 degree), not a background GPS stream. Edits cancel in-flight requests and ignore stale responses. Errors remain visible; saved results still work offline.
+Responses validate finite real coordinates, labels, context and point geometry. Photon extent order W,N,E,S is normalized for the map. Search selection centers/fits the native map and shows a selected reference marker/label without creating a report. Rivers, glaciers, parks and highways may use representative points/bounds, not exact incident positions. Reporting lets the user adjust the native pin before confirming. Pin adjustment uses a generic observation label rather than claiming the entire feature is the incident location. Public report precision follows its privacy class.
 
-Cloud validation: official README/API documentation were retrieved from the upstream GitHub repository. The live geocoder endpoint was blocked (HTTP 403) by this environment's current network policy; photon.komoot.io was added to the settings draft. Browser tests therefore used explicit mocked business results, not live data. Validate real Girdwood/Wasilla/Knik/business queries on the Mac/device or after applying network changes before calling endpoint availability verified. A successful fixture test is not a live-provider check.
+Live Photon responses remain BLOCKED by the applied cloud network policy (HTTP403). The saved configuration draft includes the host but is not the running policy. Provider documentation was read; browser responses are synthetic fixtures. No real place in the following matrix has been live-verified in this task. An HTTP200 alone would not establish location accuracy.
+
+| Group | Live validation still required |
+| --- | --- |
+| Towns | Anchorage, Girdwood, Wasilla, Palmer, Homer, Seward, Fairbanks, Juneau |
+| Features | Knik River, Knik Glacier, Matanuska Glacier, Kenai Lake |
+| Trails/parks | Flattop Mountain, Chugach State Park, Glen Alps Trailhead |
+| Roads | Seward Highway, Glenn Highway, Tudor Road / Lake Otis Parkway |
+| Public places | Providence Alaska Medical Center, Ted Stevens Anchorage International Airport, Girdwood School, Ship Creek boat launch |
+| Businesses | Moose's Tooth Anchorage, Jack Sprat Girdwood, Fred Meyer Wasilla, a named gas station with town |
+| Variations | Mixed case, extra spaces, partial names, reasonable misspellings, ambiguous names with multiple region-labeled candidates |
+| Failures | Nonexistent place, lost connection, timeout, throttling, malformed-only response |
+
+For each live case record timestamp, query, provider ID/label/context/coordinates/bounds, selected zoom and independent map comparison where practical. Record no-result honestly. Verify larger-feature interpretation and adjusted pin separately. Mocked tests validate behavior only.
