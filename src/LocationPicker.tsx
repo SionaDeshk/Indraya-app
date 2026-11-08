@@ -1,15 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Modal,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Modal, Platform, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Location from "expo-location";
-import { places, ReportLocation } from "./domain";
+import { ReportLocation } from "./domain";
+import PlaceSearch from "./PlaceSearch";
 import LocationMap from "./LocationMap";
 import { Button, styles } from "./ui";
 export default function LocationPicker({
@@ -19,7 +13,6 @@ export default function LocationPicker({
   value: ReportLocation | null;
   onChange: (location: ReportLocation) => void;
 }) {
-  const [search, setSearch] = useState("");
   const [message, setMessage] = useState("");
   const [locating, setLocating] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
@@ -35,7 +28,6 @@ export default function LocationPicker({
     request.current += 1;
     setLocating(false);
     onChange(place);
-    setSearch("");
     setMessage("");
   }
   async function locate() {
@@ -84,11 +76,6 @@ export default function LocationPicker({
       if (id === request.current) setLocating(false);
     }
   }
-  const matches = search.trim()
-    ? places.filter((place) =>
-        place.name.toLowerCase().includes(search.trim().toLowerCase()),
-      )
-    : [];
   return (
     <View style={{ gap: 12 }}>
       <Text style={[styles.heading, { fontSize: 22 }]}>
@@ -98,37 +85,11 @@ export default function LocationPicker({
         Choose where the observation happened. Only an approximate area is
         shared.
       </Text>
-      <TextInput
-        accessibilityLabel="Search observation location"
-        placeholder="Search a place, like Beluga Point"
-        placeholderTextColor="#9ab3b7"
-        style={styles.input}
-        value={search}
-        onChangeText={setSearch}
-        autoCorrect={false}
+      <PlaceSearch
+        label="Search observation location"
+        onChoose={choose}
+        focus={value ? [value.longitude, value.latitude] : undefined}
       />
-      {search.trim().length > 0 && (
-        <View style={styles.card}>
-          {matches.map((place) => (
-            <Button
-              key={place.name}
-              label={place.name}
-              onPress={() => choose(place)}
-            />
-          ))}
-          {matches.length === 0 && (
-            <Text style={styles.text}>
-              No match in the offline Alaska place list. Try another name
-              {Platform.OS === "web"
-                ? " or use your current location."
-                : " or drop a pin on the map."}
-            </Text>
-          )}
-          <Text style={styles.text}>
-            Offline Alaska places · not a full address search
-          </Text>
-        </View>
-      )}
       <Button
         label={locating ? "Finding your location…" : "Use my current location"}
         disabled={locating}

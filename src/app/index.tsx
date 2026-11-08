@@ -1,11 +1,25 @@
 import { useState } from "react";
-import { View, Text, TextInput, ScrollView, Modal } from "react-native";
+import { View, Text, ScrollView, Modal } from "react-native";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import * as Location from "expo-location";
-import { categories, Observation, age, places } from "../domain";
+import {
+  categories,
+  Observation,
+  age,
+  MapBounds,
+  normalizeBounds,
+  withinBounds,
+  distanceKm,
+  observedTime,
+  reportKinds,
+  reportAppearance,
+} from "../domain";
 import { observations, flag, supabase } from "../api";
 import { Button, styles } from "../ui";
+import PlaceSearch from "../PlaceSearch";
+import ObservationPhoto from "../ObservationPhoto";
+import ObservationCard from "../ObservationCard";
 import NativeMap from "../NativeMap";
 import * as Linking from "expo-linking";
 import { useOfficialFeeds } from "../official/useOfficialFeeds";
@@ -13,15 +27,65 @@ import { OfficialItem } from "../official/adapters";
 export default function Home() {
   const [filters, setFilters] = useState<string[]>(categories);
   const [selected, setSelected] = useState<Observation | null>(null);
-  const [search, setSearch] = useState("");
   const [center, setCenter] = useState<[number, number]>([-149.9, 61.218]);
   const [message, setMessage] = useState("");
+  const [viewport, setViewport] = useState<{
+    center: [number, number];
+    bounds: MapBounds | null;
+  }>({ center: [-149.9, 61.218], bounds: null });
+  const [nearby, setNearby] = useState(false);
+  const [legend, setLegend] = useState(false);
   const [officialDetail, setOfficialDetail] = useState<OfficialItem | null>(
     null,
   );
   const feeds = useOfficialFeeds();
   const q = useQuery({ queryKey: ["observations"], queryFn: observations });
-  const visible = (q.data ?? []).filter((o) => filters.includes(o.category));
+  const spatial = useQuery<Observation[]>({
+    queryKey: ["nearby-observations", viewport.bounds],
+    enabled: !!supabase && viewport.bounds !== null,
+    queryFn: async ({ signal }) => {
+      if (!supabase || !viewport.bounds) return [];
+      const [west, south, east, north] = viewport.bounds;
+      const { data, error } = await supabase
+        .rpc("observations_in_bounds", { west, south, east, north })
+        .abortSignal(signal);
+      if (error) throw error;
+      return (data ?? []).map((row: Observation) => ({
+        ...row,
+        source: "Community",
+      }));
+    },
+    staleTime: 30000,
+  });
+  const loadedReports = [
+    ...new Map(
+      [...(q.data ?? []), ...(spatial.data ?? [])].map((report) => [
+        report.id,
+        report,
+      ]),
+    ).values(),
+  ];
+  const visible = loadedReports.filter((o) => filters.includes(o.category));
+  const nearbyReports = (
+    supabase && viewport.bounds
+      ? (spatial.data ?? []).filter((report) =>
+          filters.includes(report.category),
+        )
+      : visible
+  )
+    .filter((report) =>
+      viewport.bounds
+        ? withinBounds(report, viewport.bounds)
+        : distanceKm(report, {
+            longitude: viewport.center[0],
+            latitude: viewport.center[1],
+          }) <= 50,
+    )
+    .sort((a, b) => Date.parse(observedTime(b)) - Date.parse(observedTime(a)));
+  function selectReport(report: Observation) {
+    setCenter([report.longitude, report.latitude]);
+    setSelected(report);
+  }
   async function locate() {
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
@@ -42,7 +106,13 @@ export default function Home() {
       <NativeMap
         center={center}
         observations={visible}
-        onSelect={setSelected}
+        onSelect={selectReport}
+        onViewportChange={(view) =>
+          setViewport({
+            center: view.center,
+            bounds: normalizeBounds(view.bounds),
+          })
+        }
         officialItems={feeds.items}
         onOfficialSelect={setOfficialDetail}
       />
@@ -74,35 +144,16 @@ export default function Home() {
           </View>
           <Button label="Account" onPress={() => router.push("/account")} />
         </View>
-        <TextInput
-          accessibilityLabel="Search Alaska places"
-          placeholder="Search Alaska · places & features"
-          placeholderTextColor="#9ab3b7"
-          value={search}
-          onChangeText={setSearch}
-          style={styles.input}
+        <PlaceSearch
+          focus={viewport.center}
+          onChoose={(place) => {
+            setCenter([place.longitude, place.latitude]);
+            setViewport({
+              center: [place.longitude, place.latitude],
+              bounds: null,
+            });
+          }}
         />
-        {search.length > 0 && (
-          <View style={styles.card}>
-            {places
-              .filter((p) =>
-                p.name.toLowerCase().includes(search.toLowerCase()),
-              )
-              .map((p) => (
-                <Button
-                  key={p.name}
-                  label={p.name}
-                  onPress={() => {
-                    setCenter([p.longitude, p.latitude]);
-                    setSearch("");
-                  }}
-                />
-              ))}
-            <Text style={styles.text}>
-              Offline starter gazetteer · seven Alaska places
-            </Text>
-          </View>
-        )}
         <View style={{ flexDirection: "row", gap: 8 }}>
           {categories.map((c) => (
             <Button
@@ -146,6 +197,7 @@ export default function Home() {
         )}
       </View>
       <View
+        pointerEvents="box-none"
         style={{
           position: "absolute",
           bottom: 35,
@@ -155,6 +207,7 @@ export default function Home() {
         }}
       >
         <View
+          pointerEvents="box-none"
           style={{ flexDirection: "row", gap: 10, justifyContent: "flex-end" }}
         >
           <Button
@@ -188,15 +241,65 @@ export default function Home() {
               ))}
             </ScrollView>
           )}
-          <ScrollView horizontal>
-            {visible.map((o) => (
-              <Button
-                key={o.id}
-                label={o.title}
-                onPress={() => setSelected(o)}
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <Button
+              label={nearby ? "Show map cards" : "Nearby activity"}
+              onPress={() => setNearby(!nearby)}
+            />
+            <Button label="Map legend" onPress={() => setLegend(true)} />
+          </View>
+          {nearby && spatial.isFetching && (
+            <Text style={styles.text}>
+              Loading observations in this map area…
+            </Text>
+          )}
+          {nearby && spatial.error && (
+            <Button
+              label="Nearby reports unavailable · Retry"
+              onPress={() => {
+                void spatial.refetch();
+              }}
+            />
+          )}
+          {nearby && (
+            <Text style={styles.text}>
+              {nearbyReports.length} in this map area · newest first · up to 300
+              loaded
+            </Text>
+          )}
+          <ScrollView
+            horizontal={!nearby}
+            style={{
+              height: nearby ? 210 : 120,
+              maxHeight: nearby ? 210 : 120,
+            }}
+            nestedScrollEnabled
+          >
+            {(nearby ? nearbyReports : visible).map((report) => (
+              <ObservationCard
+                key={report.id}
+                report={report}
+                onPress={() => selectReport(report)}
+                distance={
+                  nearby
+                    ? distanceKm(report, {
+                        longitude: viewport.center[0],
+                        latitude: viewport.center[1],
+                      })
+                    : undefined
+                }
               />
             ))}
           </ScrollView>
+          {nearby &&
+            nearbyReports.length === 0 &&
+            !spatial.isFetching &&
+            !spatial.error && (
+              <Text style={styles.text}>
+                No observations in this map area. Zoom out or explore another
+                place.
+              </Text>
+            )}
           {!q.isLoading && !visible.length && (
             <Text style={styles.text}>
               No observations in these layers. Share what you see.
@@ -208,6 +311,46 @@ export default function Home() {
           />
         </View>
       </View>
+      <Modal
+        visible={legend}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setLegend(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "flex-end",
+            backgroundColor: "#0006",
+          }}
+        >
+          <View style={[styles.card, { paddingBottom: 40 }]}>
+            <Text style={styles.heading}>Map legend</Text>
+            {Object.values(reportKinds).map((kind) => (
+              <View
+                key={kind.label}
+                style={{ flexDirection: "row", gap: 10, alignItems: "center" }}
+              >
+                <View
+                  style={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: 7,
+                    backgroundColor: kind.color,
+                  }}
+                />
+                <Text style={styles.text}>{kind.label}</Text>
+              </View>
+            ))}
+            <Text style={styles.text}>
+              White / purple: official source reports. Gray circles: clusters;
+              tap to expand. Color indicates report type, never verification or
+              severity.
+            </Text>
+            <Button label="Close legend" onPress={() => setLegend(false)} />
+          </View>
+        </View>
+      </Modal>
       <Modal
         visible={officialDetail !== null}
         transparent
@@ -294,16 +437,45 @@ export default function Home() {
             backgroundColor: "#0006",
           }}
         >
-          <View style={[styles.card, { paddingBottom: 45 }]}>
+          <ScrollView
+            style={{
+              maxHeight: "80%",
+              backgroundColor: "#10282c",
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+            }}
+            contentContainerStyle={{ padding: 22, paddingBottom: 45, gap: 12 }}
+          >
             {selected && (
               <>
                 <Text style={{ color: "#e9c78f" }}>
-                  {selected.category} · {selected.verification.toUpperCase()}
+                  {reportAppearance(selected).label} ·{" "}
+                  {selected.verification.toUpperCase()}
                 </Text>
                 <Text style={styles.heading}>{selected.title}</Text>
-                <Text style={styles.text}>{selected.description}</Text>
                 <Text style={styles.text}>
-                  {selected.source} · {age(selected.created_at)}
+                  {selected.place_name || "Approximate map location"} · Observed{" "}
+                  {age(observedTime(selected))}
+                </Text>
+                <Text style={styles.text}>{selected.description}</Text>
+                <ObservationPhoto report={selected} />
+                {(!!selected.details?.animal ||
+                  selected.details?.count !== undefined) && (
+                  <Text style={styles.text}>
+                    Animal: {selected.details?.animal || "Unspecified wildlife"}
+                    {selected.details?.count
+                      ? ` · about ${selected.details?.count}`
+                      : ""}
+                  </Text>
+                )}
+                {selected.details?.surface && (
+                  <Text style={styles.text}>
+                    Surface: {selected.details.surface} · Visibility:{" "}
+                    {selected.details.visibility || "Unknown"}
+                  </Text>
+                )}
+                <Text style={styles.text}>
+                  {selected.source} · Submitted {age(selected.created_at)}
                 </Text>
                 <Text style={styles.text}>
                   Never rely on community reports for emergency decisions. In an
@@ -326,7 +498,7 @@ export default function Home() {
                 <Button label="Close" onPress={() => setSelected(null)} />
               </>
             )}
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </View>

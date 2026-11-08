@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TextInput } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { supabase } from "../api";
 import { Button, styles } from "../ui";
 export default function Account() {
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -19,6 +21,27 @@ export default function Account() {
     );
     return () => data.subscription.unsubscribe();
   }, []);
+  useEffect(() => {
+    let active = true;
+    if (!supabase || !user) {
+      setName("");
+      return;
+    }
+    void supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (active) {
+          if (error) setMessage("Unable to load your profile.");
+          else setName(data?.display_name ?? "");
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [user]);
   async function auth(signup: boolean) {
     if (!supabase) return;
     const result = signup
@@ -40,13 +63,20 @@ export default function Account() {
     );
   }
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#071719" }}
+      contentContainerStyle={[
+        styles.page,
+        { flex: 0, flexGrow: 1, paddingBottom: 40 },
+      ]}
+      keyboardShouldPersistTaps="handled"
+    >
       <Button label="← Back" onPress={() => router.back()} />
       <Text style={styles.heading}>Your point of awareness.</Text>
       {!supabase ? (
         <Text style={styles.text}>
-          Demo mode. Connect Supabase using .env.example to enable accounts. No
-          simulated authentication is performed.
+          Accounts are not available in this demo build. Your demo reports stay
+          on this device.
         </Text>
       ) : user ? (
         <>
@@ -68,11 +98,10 @@ export default function Account() {
           <Button
             label="Sign out"
             onPress={() => {
-              void supabase?.auth
-                .signOut()
-                .then(({ error }) =>
-                  setMessage(error?.message ?? "Signed out."),
-                );
+              void supabase?.auth.signOut().then(({ error }) => {
+                setMessage(error?.message ?? "Signed out.");
+                void queryClient.resetQueries({ queryKey: ["report-photo"] });
+              });
             }}
           />
         </>

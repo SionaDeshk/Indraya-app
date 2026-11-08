@@ -1,7 +1,14 @@
 import "react-native-url-polyfill/auto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
-import { demo, Observation, validateReport } from "./domain";
+import {
+  demo,
+  Observation,
+  validateReport,
+  validateDetails,
+  ReportKind,
+  ReportDetails,
+} from "./domain";
 const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 export const supabase =
@@ -15,7 +22,7 @@ export const supabase =
         },
       })
     : null;
-const localKey = "indraya.demo.observations.v1";
+export const localKey = "indraya.demo.observations.v1";
 export async function observations(): Promise<Observation[]> {
   if (!supabase)
     return [
@@ -25,7 +32,7 @@ export async function observations(): Promise<Observation[]> {
   const { data, error } = await supabase
     .from("observations")
     .select(
-      "id,category,title,description,latitude,longitude,created_at,verification",
+      "id,category,kind,title,description,latitude,longitude,place_name,observed_at,details,created_at,verification",
     )
     .eq("status", "published")
     .order("created_at", { ascending: false })
@@ -35,51 +42,102 @@ export async function observations(): Promise<Observation[]> {
     (row) => ({ ...row, source: "Community" }) as Observation,
   );
 }
+export type ReportInput = Pick<
+  Observation,
+  "category" | "title" | "description" | "latitude" | "longitude"
+> & {
+  kind: ReportKind;
+  place_name: string;
+  observed_at: string;
+  details: ReportDetails;
+};
+export async function attachPhoto(observationId: string, base64: string) {
+  if (!supabase) throw Error("Shared photo storage is not connected.");
+  const { data, error } = await supabase.functions.invoke("observation-photo", {
+    body: { action: "upload", observationId, base64 },
+  });
+  if (error || data?.error || !data?.ok)
+    throw Error(
+      data?.error ||
+        "The photo upload could not finish. Check your connection and retry; your report is already saved.",
+    );
+}
 export async function submit(
-  input: Pick<
-    Observation,
-    "category" | "title" | "description" | "latitude" | "longitude"
-  >,
-  photo?: string,
-) {
+  input: ReportInput,
+  photo?: { base64: string; uri: string },
+): Promise<{ id: string; photoError?: string }> {
   validateReport(
     input.title,
     input.description,
     input.latitude,
     input.longitude,
   );
-  // Deliberately reduce public precision to roughly 1km. Never upload a device's live location automatically.
+  validateDetails(input.category, input.kind, input.details, input.observed_at);
   const location = {
     latitude: Math.round(input.latitude * 100) / 100,
     longitude: Math.round(input.longitude * 100) / 100,
   };
+  const payload = {
+    ...input,
+    title: input.title.trim(),
+    description: input.description.trim(),
+    place_name: input.place_name.trim().slice(0, 160),
+    ...location,
+  };
   if (!supabase) {
-    const previous = JSON.parse((await AsyncStorage.getItem(localKey)) || "[]");
+    const previous: Observation[] = JSON.parse(
+      (await AsyncStorage.getItem(localKey)) || "[]",
+    );
+    if (
+      photo &&
+      previous.reduce(
+        (total, report) => total + (report.photo_uri?.length ?? 0),
+        photo.uri.length,
+      ) >
+        4 * 1024 * 1024
+    )
+      throw Error(
+        "Demo photo storage is full. Remove the attachment to submit without a photo.",
+      );
+    const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const report = {
-      ...input,
-      ...location,
-      id: `local-${Date.now()}`,
+      ...payload,
+      id,
       created_at: new Date().toISOString(),
       verification: "unverified",
       source: "DEMO · this device",
       demo: true,
+      ...(photo ? { photo_uri: photo.uri } : {}),
     };
     await AsyncStorage.setItem(localKey, JSON.stringify([...previous, report]));
-    return;
+    return { id };
   }
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user)
-    throw new Error("Sign in before publishing a community observation.");
-  if (photo)
-    throw new Error(
-      "Photo upload is not enabled yet. Remove the attachment to submit.",
-    );
-  const { error } = await supabase
+  if (authError || !user)
+    throw Error("Sign in before publishing a community observation.");
+  const { data, error } = await supabase
     .from("observations")
-    .insert({ ...input, ...location, author_id: user.id });
+    .insert({ ...payload, author_id: user.id })
+    .select("id")
+    .single();
   if (error) throw error;
+  if (photo) {
+    try {
+      await attachPhoto(data.id, photo.base64);
+    } catch (error) {
+      return {
+        id: data.id,
+        photoError:
+          error instanceof Error
+            ? error.message
+            : "Report saved; photo upload failed.",
+      };
+    }
+  }
+  return { id: data.id };
 }
 export async function flag(id: string, reason: string) {
   if (!supabase)

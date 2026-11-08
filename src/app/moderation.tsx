@@ -3,6 +3,7 @@ import { ScrollView, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../api";
+import PhotoReview from "../PhotoReview";
 import { Button, styles } from "../ui";
 type Item = { id: string; title: string; status: string };
 export default function Moderation() {
@@ -43,7 +44,13 @@ export default function Moderation() {
     }
   }
   return (
-    <ScrollView contentContainerStyle={styles.page}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "#071719" }}
+      contentContainerStyle={[
+        styles.page,
+        { flex: 0, flexGrow: 1, paddingBottom: 40 },
+      ]}
+    >
       <Button label="← Back" onPress={() => router.back()} />
       <Text style={styles.heading}>Moderation</Text>
       <Text style={styles.text}>
@@ -72,6 +79,7 @@ export default function Moderation() {
           <Text style={styles.text}>
             {item.title} · {item.status}
           </Text>
+          <PhotoReview reportId={item.id} reason={reason} />
           {["approve", "hide", "review"].map((decision) => (
             <Button
               key={decision}

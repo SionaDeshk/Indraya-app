@@ -37,6 +37,18 @@ export default function Sources() {
           depends on the provider and connection.
         </Text>
       </View>
+      <View style={styles.card}>
+        <Text style={[styles.heading, { fontSize: 22 }]}>Place search</Text>
+        <Text style={styles.text}>
+          Saved Alaska towns and features work offline. Explicit online searches
+          use Photon and OpenStreetMap data for places and businesses; coverage
+          and availability vary.
+        </Text>
+        <Button
+          label="Search data attribution"
+          onPress={() => open("https://www.openstreetmap.org/copyright")}
+        />
+      </View>
       {(Object.keys(officialSources) as FeedId[]).map((id) => {
         const source = officialSources[id],
           query = feeds.queries[id],

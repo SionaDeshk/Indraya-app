@@ -1,0 +1,6 @@
+project_id = "indraya"
+
+# The handler verifies the end-user JWT with Supabase Auth for uploads and private reads.
+# Anonymous access is allowed only for a signed URL to an explicitly approved, published photo.
+[functions.observation-photo]
+verify_jwt = false
