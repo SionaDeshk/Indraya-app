@@ -132,7 +132,7 @@ export default function Home() {
             }}
           />
         )}
-        {message && (
+        {message.length > 0 && (
           <Text accessibilityRole="alert" style={styles.text}>
             {message}
           </Text>
