@@ -17,6 +17,17 @@ export type Observation = {
   demo?: boolean;
 };
 export const categories: Category[] = ["Safety", "Outdoors", "Travel"];
+// Prompts only: selecting one never generates a description or confirms an incident.
+export const reportTitles: Record<Category, readonly string[]> = {
+  Safety: ["Icy conditions", "Smoke observed", "Flooding", "Fallen tree"],
+  Outdoors: [
+    "Whale sighting",
+    "Wildlife sighting",
+    "Trail conditions",
+    "Aurora sighting",
+  ],
+  Travel: ["Icy road", "Poor visibility", "Road obstruction", "Travel delay"],
+};
 export function validateReport(
   title: string,
   description: string,
@@ -36,13 +47,14 @@ export function validateReport(
     throw new Error("Choose a valid location.");
 }
 export function age(date: string) {
-  const hours = Math.max(
+  const minutes = Math.max(
     0,
-    Math.floor((Date.now() - Date.parse(date)) / 3600000),
+    Math.floor((Date.now() - Date.parse(date)) / 60000),
   );
-  return hours < 1
-    ? "Just now"
-    : `${hours}h ago${hours > 24 ? " · STALE" : ""}`;
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours}h ago${hours > 24 ? " · STALE" : ""}`;
 }
 export const demo: Observation[] = [
   {

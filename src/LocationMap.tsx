@@ -4,8 +4,8 @@ import {
   Camera,
   GeoJSONSource,
   Layer,
-  RasterSource,
 } from "@maplibre/maplibre-react-native";
+import { topographicStyle } from "./mapStyle";
 import { ReportLocation } from "./domain";
 export type LocationMapProps = {
   location: ReportLocation | null;
@@ -19,7 +19,7 @@ export default function LocationMap({ location, onPick }: LocationMapProps) {
   return (
     <Map
       style={{ flex: 1 }}
-      mapStyle="https://demotiles.maplibre.org/style.json"
+      mapStyle={topographicStyle}
       attribution
       onPress={(event) => {
         const [longitude, latitude] = event.nativeEvent.lngLat;
@@ -27,15 +27,6 @@ export default function LocationMap({ location, onPick }: LocationMapProps) {
       }}
     >
       <Camera initialViewState={initialView.current} />
-      <RasterSource
-        id="picker-topo"
-        tiles={["https://tile.opentopomap.org/{z}/{x}/{y}.png"]}
-        maxzoom={17}
-        tileSize={256}
-        attribution="© OpenStreetMap contributors · SRTM | © OpenTopoMap (CC-BY-SA)"
-      >
-        <Layer id="picker-topo-layer" type="raster" />
-      </RasterSource>
       {location !== null && (
         <GeoJSONSource
           id="report-pin"

@@ -7,13 +7,19 @@ import { categories, Observation, age, places } from "../domain";
 import { observations, flag, supabase } from "../api";
 import { Button, styles } from "../ui";
 import NativeMap from "../NativeMap";
+import * as Linking from "expo-linking";
+import { useOfficialFeeds } from "../official/useOfficialFeeds";
+import { OfficialItem } from "../official/adapters";
 export default function Home() {
   const [filters, setFilters] = useState<string[]>(categories);
   const [selected, setSelected] = useState<Observation | null>(null);
   const [search, setSearch] = useState("");
   const [center, setCenter] = useState<[number, number]>([-149.9, 61.218]);
   const [message, setMessage] = useState("");
-  const [topo, setTopo] = useState(false);
+  const [officialDetail, setOfficialDetail] = useState<OfficialItem | null>(
+    null,
+  );
+  const feeds = useOfficialFeeds();
   const q = useQuery({ queryKey: ["observations"], queryFn: observations });
   const visible = (q.data ?? []).filter((o) => filters.includes(o.category));
   async function locate() {
@@ -37,7 +43,8 @@ export default function Home() {
         center={center}
         observations={visible}
         onSelect={setSelected}
-        topo={topo}
+        officialItems={feeds.items}
+        onOfficialSelect={setOfficialDetail}
       />
       <View
         pointerEvents="box-none"
@@ -157,14 +164,30 @@ export default function Home() {
             }}
           />
           <Button
-            label={topo ? "Standard map" : "Topographic"}
-            onPress={() => setTopo(!topo)}
+            label="Layers & sources"
+            onPress={() => router.push("/sources")}
           />
         </View>
         <View style={styles.card}>
           <Text style={styles.text}>
-            {visible.length} points of awareness · Alaska
+            {visible.length} community observations · Alaska
           </Text>
+          {feeds.selected.some((id) => feeds.queries[id].isError) && (
+            <Text style={{ color: "#edc88e" }}>
+              Official source refresh failed · open Layers & sources
+            </Text>
+          )}
+          {feeds.items.length > 0 && (
+            <ScrollView horizontal>
+              {feeds.items.map((item) => (
+                <Button
+                  key={item.id}
+                  label={`OFFICIAL · ${item.title}`}
+                  onPress={() => setOfficialDetail(item)}
+                />
+              ))}
+            </ScrollView>
+          )}
           <ScrollView horizontal>
             {visible.map((o) => (
               <Button
@@ -185,6 +208,79 @@ export default function Home() {
           />
         </View>
       </View>
+      <Modal
+        visible={officialDetail !== null}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setOfficialDetail(null)}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "flex-end",
+            backgroundColor: "#0006",
+          }}
+        >
+          <ScrollView
+            style={{
+              maxHeight: "80%",
+              backgroundColor: "#10282c",
+              borderTopLeftRadius: 24,
+              borderTopRightRadius: 24,
+            }}
+            contentContainerStyle={{ padding: 24, paddingBottom: 45, gap: 12 }}
+          >
+            {officialDetail !== null && (
+              <>
+                <Text style={{ color: "#b6b8ff" }}>
+                  OFFICIAL SOURCE · {officialDetail.sourceName}
+                </Text>
+                <Text style={styles.heading}>{officialDetail.title}</Text>
+                <Text style={styles.text}>
+                  {age(officialDetail.observedAt)} ·{" "}
+                  {officialDetail.expiresAt
+                    ? `Valid until ${new Date(officialDetail.expiresAt).toLocaleString()}`
+                    : "Check the source for updates"}
+                </Text>
+                {(() => {
+                  const checked =
+                    feeds.queries[officialDetail.feed].data?.fetchedAt;
+                  return checked ? (
+                    <Text style={styles.text}>
+                      Source checked {age(checked)}
+                      {Date.now() - Date.parse(checked) > 900000
+                        ? " · STALE CHECK — refresh the source"
+                        : ""}
+                    </Text>
+                  ) : null;
+                })()}
+                <Text style={styles.text}>{officialDetail.description}</Text>
+                {officialDetail.geometry === null && (
+                  <Text style={styles.text}>
+                    Regional alert · the source supplied no map boundary.
+                  </Text>
+                )}
+                <Text style={styles.text}>
+                  Source reports may change. Use official instructions for
+                  decisions; this app does not dispatch emergency services.
+                </Text>
+                <Button
+                  label="Read official source"
+                  onPress={() => {
+                    void Linking.openURL(officialDetail.sourceUrl).catch(() =>
+                      setMessage("Unable to open the official source."),
+                    );
+                  }}
+                />
+                <Button
+                  label="Close official report"
+                  onPress={() => setOfficialDetail(null)}
+                />
+              </>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
       <Modal
         visible={!!selected}
         transparent

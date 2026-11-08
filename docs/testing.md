@@ -10,3 +10,5 @@ The harness tests SQL policies and grants, not the hosted Auth email flow, REST 
 
 ## Report picker browser regression
 With Python Playwright and Chromium available, start `EXPO_OFFLINE=1 npx expo start --web --port 8092`, then run `python3 tests/report_browser.py`. Set INDRAYA_WEB_URL if using another port, and PLAYWRIGHT_CHROMIUM_EXECUTABLE for a custom browser path. These checks use demo mode with no Supabase configuration and isolated browser storage. They cover missing-location submission prevention, search and empty states, invalid report validation, successful persisted report creation with privacy rounding, current-location selection and denied-permission fallback. Native map taps and confirmation/cancel need the device smoke checks in README.md.
+
+Run `python3 tests/sources_browser.py` against the same Expo web server to check editable category suggestions, preservation of custom titles when switching categories, the removal of the blank basemap toggle, source status labels and the absence of requests to unvalidated feeds. It requires the same optional Playwright/Chromium setup as report_browser.py.

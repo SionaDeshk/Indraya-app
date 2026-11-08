@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { ScrollView, Text, TextInput } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Category, categories, ReportLocation } from "../domain";
+import { Category, categories, ReportLocation, reportTitles } from "../domain";
 import { submit, supabase } from "../api";
 import { Button, styles } from "../ui";
 import LocationPicker from "../LocationPicker";
@@ -53,13 +53,28 @@ export default function Report() {
         vulnerable people, or sensitive incident locations. Only an approximate
         area is shared.
       </Text>
-      {categories.map((c) => (
-        <Button
-          key={c}
-          label={`${c === category ? "● " : ""}${c}`}
-          onPress={() => setCategory(c)}
-        />
-      ))}
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        {categories.map((c) => (
+          <View key={c} style={{ flex: 1 }}>
+            <Button
+              label={`${c === category ? "● " : ""}${c}`}
+              onPress={() => setCategory(c)}
+            />
+          </View>
+        ))}
+      </View>
+      <Text style={styles.text}>
+        What did you notice? Pick a starting title or write your own.
+      </Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {reportTitles[category].map((suggestion) => (
+          <Button
+            key={suggestion}
+            label={suggestion}
+            onPress={() => setTitle(suggestion)}
+          />
+        ))}
+      </View>
       <TextInput
         accessibilityLabel="Title"
         placeholder="Observation title"

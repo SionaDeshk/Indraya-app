@@ -4,21 +4,24 @@ import {
   Camera,
   GeoJSONSource,
   Layer,
-  RasterSource,
   CameraRef,
   GeoJSONSourceRef,
 } from "@maplibre/maplibre-react-native";
+import { topographicStyle } from "./mapStyle";
+import { OfficialItem } from "./official/adapters";
 import { Observation } from "./domain";
 export default function NativeMap({
   center,
   observations,
   onSelect,
-  topo,
+  officialItems = [],
+  onOfficialSelect,
 }: {
   center: [number, number];
   observations: Observation[];
   onSelect: (o: Observation) => void;
-  topo: boolean;
+  officialItems?: OfficialItem[];
+  onOfficialSelect?: (item: OfficialItem) => void;
 }) {
   const camera = useRef<CameraRef>(null);
   const source = useRef<GeoJSONSourceRef>(null);
@@ -34,23 +37,60 @@ export default function NativeMap({
   return (
     <Map
       style={{ flex: 1 }}
-      mapStyle="https://demotiles.maplibre.org/style.json"
+      mapStyle={topographicStyle}
       attribution
       attributionPosition={{ bottom: 310, right: 10 }}
       logo
     >
       <Camera ref={camera} center={center} zoom={9} duration={800} />
-      {topo && (
-        <RasterSource
-          id="topo"
-          tiles={["https://tile.opentopomap.org/{z}/{x}/{y}.png"]}
-          maxzoom={17}
-          tileSize={256}
-          attribution="© OpenStreetMap contributors · SRTM | © OpenTopoMap (CC-BY-SA)"
-        >
-          <Layer type="raster" id="topo-layer" />
-        </RasterSource>
-      )}
+      <GeoJSONSource
+        id="official-reports"
+        data={{
+          type: "FeatureCollection",
+          features: officialItems.flatMap((item) =>
+            item.geometry
+              ? [
+                  {
+                    type: "Feature" as const,
+                    id: item.id,
+                    properties: { id: item.id },
+                    geometry: item.geometry,
+                  },
+                ]
+              : [],
+          ),
+        }}
+        onPress={(event) => {
+          const item = officialItems.find(
+            (item) => item.id === event.nativeEvent.features[0]?.properties?.id,
+          );
+          if (item) onOfficialSelect?.(item);
+        }}
+      >
+        <Layer
+          type="fill"
+          id="official-alert-areas"
+          filter={["==", ["geometry-type"], "Polygon"]}
+          paint={{ "fill-color": "#9599ec", "fill-opacity": 0.2 }}
+        />
+        <Layer
+          type="line"
+          id="official-alert-boundaries"
+          filter={["==", ["geometry-type"], "Polygon"]}
+          paint={{ "line-color": "#c6c8ff", "line-width": 2 }}
+        />
+        <Layer
+          type="circle"
+          id="official-earthquakes"
+          filter={["==", ["geometry-type"], "Point"]}
+          paint={{
+            "circle-color": "#f3f2ff",
+            "circle-stroke-color": "#7f79c4",
+            "circle-stroke-width": 4,
+            "circle-radius": 9,
+          }}
+        />
+      </GeoJSONSource>
       <GeoJSONSource
         ref={source}
         id="observations"
@@ -94,16 +134,6 @@ export default function NativeMap({
             "circle-stroke-width": 2,
             "circle-stroke-color": "#fff",
           }}
-        />
-        <Layer
-          type="symbol"
-          id="cluster-count"
-          filter={["has", "point_count"]}
-          layout={{
-            "text-field": ["get", "point_count_abbreviated"],
-            "text-size": 12,
-          }}
-          paint={{ "text-color": "#10282c" }}
         />
         <Layer
           type="circle"
