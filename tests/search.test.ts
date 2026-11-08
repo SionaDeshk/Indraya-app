@@ -1,14 +1,26 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { savedPlaces, parsePhoton } from "../src/searchDomain";
-test("offline search covers requested towns and Knik features, case and whitespace", () => {
-  for (const query of ["Girdwood", "Wasilla", "Knik River", "Knik Glacier"])
-    assert.ok(
-      savedPlaces(`  ${query.toUpperCase()}  `).some((p) => p.name === query),
-    );
-  assert.equal(savedPlaces("").length, 0);
+import { parsePhoton, normalize } from "../src/searchDomain";
+test("accepts the documented Photon features-only format and normalizes extent W,N,E,S", () => {
+  const results = parsePhoton({
+    features: [
+      {
+        geometry: { type: "Point", coordinates: [13.2395, 52.5146] },
+        properties: {
+          name: "Berlin Olympic Stadium",
+          osm_value: "stadium",
+          extent: [13.237, 52.516, 13.242, 52.513],
+          city: "Berlin",
+        },
+      },
+    ],
+  });
+  assert.equal(results.length, 1);
+  assert.deepEqual(results[0].bounds, [13.237, 52.513, 13.242, 52.516]);
+  assert.equal(results[0].focusZoom, 15);
+  assert.equal(normalize("  GÍRDWOOD  "), "girdwood");
 });
-test("online search normalizes geographic features and restaurants without invented coordinates", () => {
+test("parses real coordinates, context and type without fake fallback; rejects malformed-only results", () => {
   const body = {
     type: "FeatureCollection",
     features: [
@@ -17,23 +29,44 @@ test("online search normalizes geographic features and restaurants without inven
         properties: {
           name: "TEST RESTAURANT",
           city: "Girdwood",
-          state: "Alaska",
-          country: "United States",
+          osm_value: "restaurant",
         },
       },
       {
         geometry: { type: "Point", coordinates: [999, 100] },
         properties: { name: "Invalid" },
       },
-      {
-        geometry: { type: "Point", coordinates: ["wrong", 60] },
-        properties: { name: "Invalid" },
-      },
     ],
   };
-  const results = parsePhoton(body);
-  assert.equal(results.length, 1);
-  assert.equal(results[0].provider, "photon");
-  assert.match(results[0].context ?? "", /Girdwood/);
+  const result = parsePhoton(body);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].featureType, "restaurant");
+  assert.match(result[0].context ?? "", /Girdwood/);
+  assert.throws(() => parsePhoton({ features: [body.features[1]] }));
   assert.throws(() => parsePhoton({ error: "Unavailable" }));
+  assert.deepEqual(parsePhoton({ features: [] }), []);
+});
+test("identifies address-only results for private-label protection and preserves ambiguity", () => {
+  const results = parsePhoton({
+    features: [
+      {
+        geometry: { type: "Point", coordinates: [-149, 61] },
+        properties: {
+          street: "TEST STREET",
+          housenumber: "123",
+          osm_value: "house",
+        },
+      },
+      {
+        geometry: { type: "Point", coordinates: [-148, 62] },
+        properties: { name: "Springfield", state: "Alaska" },
+      },
+      {
+        geometry: { type: "Point", coordinates: [-147, 63] },
+        properties: { name: "Springfield", state: "Another region" },
+      },
+    ],
+  });
+  assert.equal(results[0].privateAddress, true);
+  assert.equal(results.filter((p) => p.name === "Springfield").length, 2);
 });

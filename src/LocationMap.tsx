@@ -7,7 +7,9 @@ import {
   GeoJSONSource,
   Layer,
 } from "@maplibre/maplibre-react-native";
-import { View } from "react-native";
+import { View, Text } from "react-native";
+import { Button, styles } from "./ui";
+import useTileHealth from "./useTileHealth";
 import ZoomControls from "./ZoomControls";
 import { topographicStyle } from "./mapStyle";
 import { ReportLocation } from "./domain";
@@ -19,9 +21,15 @@ export default function LocationMap({ location, onPick }: LocationMapProps) {
   const center: [number, number] = location
     ? [location.longitude, location.latitude]
     : [-149.9, 61.218];
-  const initialView = useRef({ center, zoom: location ? 12 : 9 });
+  const initialView = useRef({
+    center,
+    zoom: location?.focusZoom ?? (location ? 12 : 9),
+  });
   const camera = useRef<CameraRef>(null),
     map = useRef<MapRef>(null);
+  const [failed, setFailed] = useTileHealth(),
+    [retry, setRetry] = useState(0);
+  const lastRetry = useRef(0);
   const [zoom, setZoom] = useState(initialView.current.zoom);
   async function zoomBy(delta: number) {
     try {
@@ -36,14 +44,28 @@ export default function LocationMap({ location, onPick }: LocationMapProps) {
   return (
     <View style={{ flex: 1 }}>
       <Map
+        key={retry}
         ref={map}
-        onRegionDidChange={(e) => setZoom(e.nativeEvent.zoom)}
+        onDidFailLoadingMap={() => setFailed(true)}
+        onDidFinishRenderingMapFully={() => setFailed(false)}
+        onRegionDidChange={(e) => {
+          initialView.current = {
+            center: e.nativeEvent.center,
+            zoom: e.nativeEvent.zoom,
+          };
+          setZoom(e.nativeEvent.zoom);
+        }}
         style={{ flex: 1 }}
         mapStyle={topographicStyle}
         attribution
         onPress={(event) => {
           const [longitude, latitude] = event.nativeEvent.lngLat;
-          onPick({ name: "Dropped pin", latitude, longitude });
+          onPick({
+            name: "Adjusted observation pin",
+            reference_name: location?.reference_name ?? location?.name,
+            latitude,
+            longitude,
+          });
         }}
       >
         <Camera
@@ -83,6 +105,27 @@ export default function LocationMap({ location, onPick }: LocationMapProps) {
           </GeoJSONSource>
         )}
       </Map>
+      {failed && (
+        <View
+          style={[
+            styles.card,
+            { position: "absolute", top: 12, left: 12, right: 12 },
+          ]}
+        >
+          <Text style={styles.text}>
+            Map unavailable. Cancel and search for a place, or retry.
+          </Text>
+          <Button
+            label="Retry location map"
+            onPress={() => {
+              if (Date.now() - lastRetry.current < 5000) return;
+              lastRetry.current = Date.now();
+              setFailed(false);
+              setRetry((n) => n + 1);
+            }}
+          />
+        </View>
+      )}
       <ZoomControls
         zoom={zoom}
         onZoom={(delta) => {

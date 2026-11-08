@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Text, TextInput, View, ScrollView } from "react-native";
 import { ReportLocation } from "./domain";
-import { PlaceResult, savedPlaces, searchPlaces } from "./placeSearch";
+import { PlaceResult, searchPlaces } from "./placeSearch";
 import { Button, styles } from "./ui";
 export default function PlaceSearch({
   onChoose,
   focus = [-149.9, 61.218],
-  label = "Search Alaska places",
+  label = "Search places",
 }: {
   onChoose: (place: ReportLocation) => void;
   focus?: [number, number];
   label?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [remote, setRemote] = useState<PlaceResult[]>([]);
+  const [results, setResults] = useState<PlaceResult[]>([]);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -30,75 +30,73 @@ export default function PlaceSearch({
     request.current++;
     abort.current?.abort();
     setQuery(value);
-    setRemote([]);
+    setResults([]);
     setMessage("");
     setBusy(false);
     setSearched(false);
   }
-  async function online() {
+  async function search() {
     const id = ++request.current;
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
     setBusy(true);
+    setResults([]);
+    setSearched(false);
     setMessage("");
     try {
       const rows = await searchPlaces(query, focus, controller.signal);
       if (id === request.current) {
-        setRemote(rows);
+        setResults(rows);
         setSearched(true);
       }
-    } catch (e) {
+    } catch (error) {
       if (id === request.current)
         setMessage(
-          e instanceof Error && e.name !== "AbortError"
-            ? e.message
-            : "Online search timed out. Try again or choose a saved place.",
+          error instanceof Error
+            ? error.message
+            : "Unable to search right now. Check your connection and try again.",
         );
     } finally {
       if (id === request.current) setBusy(false);
     }
   }
-  const local = savedPlaces(query);
-  const rows = [
-    ...local,
-    ...remote.filter(
-      (p) =>
-        !local.some(
-          (l) => l.name === p.name && Math.abs(l.latitude - p.latitude) < 0.01,
-        ),
-    ),
-  ];
   return (
     <View style={{ gap: 8 }}>
       <TextInput
         accessibilityLabel={label}
-        placeholder="Search towns, rivers, glaciers, restaurants…"
+        placeholder="Search places"
         placeholderTextColor="#9ab3b7"
         value={query}
         onChangeText={change}
         style={styles.input}
         returnKeyType="search"
         onSubmitEditing={() => {
-          if (query.trim().length >= 3) void online();
+          if (query.trim().length >= 3 && !busy) void search();
         }}
         autoCorrect={false}
+        maxLength={160}
       />
       {query.trim().length > 0 && (
         <View style={[styles.card, { padding: 12 }]}>
           <Button
-            label={busy ? "Searching online…" : "Search online"}
+            label={busy ? "Searching…" : "Search"}
             disabled={busy || query.trim().length < 3}
             onPress={() => {
-              void online();
+              void search();
             }}
           />
+          {busy && (
+            <Text accessibilityLiveRegion="polite" style={styles.text}>
+              Searching…
+            </Text>
+          )}
           <ScrollView
-            style={{ maxHeight: 200 }}
+            style={{ maxHeight: 220 }}
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled
           >
-            {rows.map((place, i) => (
+            {results.map((place, i) => (
               <View
                 key={`${place.name}:${place.latitude}:${i}`}
                 style={{ gap: 4, marginBottom: 8 }}
@@ -111,17 +109,16 @@ export default function PlaceSearch({
                     Keyboard.dismiss();
                   }}
                 />
-                {place.context && (
-                  <Text style={styles.text}>{place.context}</Text>
-                )}
+                <Text style={[styles.text, { fontSize: 12 }]}>
+                  {place.featureType?.replace(/_/g, " ") || "Place"}
+                  {place.context ? ` · ${place.context}` : ""}
+                </Text>
               </View>
             ))}
           </ScrollView>
-          {rows.length === 0 && (
+          {searched && results.length === 0 && (
             <Text style={styles.text}>
-              {searched
-                ? "No places found. Try the place or business name with a town."
-                : "No match in the offline Alaska place list. Search online for more places and businesses."}
+              No places found. Try a nearby town or a more specific name.
             </Text>
           )}
           {message.length > 0 && (
@@ -130,9 +127,8 @@ export default function PlaceSearch({
             </Text>
           )}
           <Text style={[styles.text, { fontSize: 12 }]}>
-            Saved Alaska places work offline. Online search: Photon · ©
-            OpenStreetMap contributors. Searching sends your words and
-            approximate map area to the provider.
+            © OpenStreetMap contributors. Search uses your words and approximate
+            map area. Check the town or region before choosing.
           </Text>
         </View>
       )}

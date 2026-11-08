@@ -1,95 +1,141 @@
-import { useState, useRef } from "react";
-import { Image, ScrollView, Text, TextInput, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  Image,
+  Keyboard,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { router } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Category,
-  categories,
   ReportLocation,
-  reportPresets,
-  ReportKind,
-  reportKinds,
-  defaultKind,
-  ReportDetails,
+  validateReport,
+  validateReportText,
+  validateDetails,
 } from "../domain";
-import { submit, supabase, attachPhoto } from "../api";
-import { Button, styles } from "../ui";
+import {
+  Answers,
+  Selection,
+  catalog,
+  emptySelection,
+  validPath,
+  reconcileAnswers,
+  normalizeAnswers,
+  defaultTitle,
+  privacyFor,
+  priorityFor,
+  publicLocation,
+  typeById,
+  domainById,
+  topicById,
+  allowedQuestions,
+  answerLabel,
+} from "../taxonomy";
+import { submitGuided, supabase, attachPhoto } from "../api";
+import TaxonomyPicker from "../TaxonomyPicker";
+import DependentQuestions from "../DependentQuestions";
+import ChoiceSheet from "../ChoiceSheet";
 import LocationPicker from "../LocationPicker";
 import ObservationTime from "../ObservationTime";
 import { pickPhoto, PreparedPhoto } from "../photos";
+import { Button, styles } from "../ui";
+const steps = ["What happened", "Details", "When & where", "Photo", "Review"];
 export default function Report() {
-  const [category, setCategory] = useState<Category>("Safety"),
-    [kind, setKind] = useState<ReportKind>("hazard");
+  const [step, setStep] = useState(0),
+    [selection, setSelection] = useState<Selection>(emptySelection),
+    [answers, setAnswers] = useState<Answers>({});
   const [title, setTitle] = useState(""),
+    [titleEdited, setTitleEdited] = useState(false),
     [description, setDescription] = useState("");
-  const [location, setLocation] = useState<ReportLocation | null>(null);
-  const [observedAt, setObservedAt] = useState<string | null>(null);
-  const [animal, setAnimal] = useState(""),
-    [count, setCount] = useState("");
-  const [surface, setSurface] = useState("Unknown"),
-    [visibility, setVisibility] = useState("Unknown");
+  const [location, setLocation] = useState<ReportLocation | null>(null),
+    [observedAt, setObservedAt] = useState<string | null>(null);
   const [photo, setPhoto] = useState<PreparedPhoto | null>(null),
     [preparing, setPreparing] = useState(false),
     [consent, setConsent] = useState(false);
   const [message, setMessage] = useState(""),
-    [busy, setBusy] = useState(false),
-    [savedId, setSavedId] = useState<string | null>(null);
+    [notice, setNotice] = useState(""),
+    [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState<{
+    id: string;
+    held: boolean;
+    photoError?: string;
+  } | null>(null);
+  const lock = useRef(false),
+    scroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const client = useQueryClient();
-  const saving = useRef(false);
-  async function save() {
-    if (saving.current) return;
-    saving.current = true;
-    setBusy(true);
-    setMessage("");
-    try {
-      if (!location)
-        throw Error("Choose where you observed this before submitting.");
-      if (photo && !consent)
-        throw Error("Confirm your photo is safe to share or remove it.");
-      const details: ReportDetails =
-        kind === "wildlife"
-          ? {
-              ...(animal.trim() ? { animal: animal.trim() } : {}),
-              ...(count.trim() ? { count: Number(count) } : {}),
-            }
-          : kind === "road"
-            ? { surface, visibility }
-            : {};
-      const result = await submit(
-        {
-          category,
-          kind,
-          title,
-          description,
-          latitude: location.latitude,
-          longitude: location.longitude,
-          place_name: location.name,
-          observed_at: observedAt ?? new Date().toISOString(),
-          details,
-        },
-        photo ?? undefined,
+  useEffect(() => {
+    scroll.current?.scrollTo({ y: 0, animated: false });
+  }, [step, saved]);
+  const privacy = privacyFor(selection, answers),
+    type = typeById(selection.typeId);
+  function choose(next: Selection) {
+    const kept = reconcileAnswers(next, answers);
+    if (Object.keys(kept).length < Object.keys(answers).length)
+      setNotice(
+        "Type-specific answers were updated. Your description, time, location and photo are preserved.",
       );
-      await client.invalidateQueries({ queryKey: ["observations"] });
-      if (result.photoError) {
-        setSavedId(result.id);
-        setMessage(
-          `Your report is saved. The photo was not attached: ${result.photoError}`,
+    setSelection(next);
+    setAnswers(kept);
+    if (!titleEdited) setTitle(defaultTitle(next, kept));
+    setMessage("");
+  }
+  function answer(key: string, value: string) {
+    const next = reconcileAnswers(selection, { ...answers, [key]: value });
+    setAnswers(next);
+    if (!titleEdited) setTitle(defaultTitle(selection, next));
+    setMessage("");
+  }
+  function validate() {
+    const prepared = normalizeAnswers(selection, answers);
+    validateReportText(title, description);
+    if (!location)
+      throw Error("Choose where you observed this before reviewing.");
+    validateReport(title, description, location.latitude, location.longitude);
+    validateDetails(
+      type!.legacyCategory,
+      type!.legacyKind,
+      {},
+      observedAt ?? new Date().toISOString(),
+    );
+    if (photo && !consent)
+      throw Error("Check the photo for sensitive details or remove it.");
+    return prepared;
+  }
+  function advance() {
+    try {
+      setMessage("");
+      if (step === 0 && !validPath(selection))
+        throw Error("Choose a category, topic and observation.");
+      if (step === 1) {
+        const prepared = normalizeAnswers(selection, answers);
+        validateReportText(title, description);
+        setAnswers(prepared);
+      }
+      if (step === 2) {
+        if (!location) throw Error("Choose where you observed this.");
+        validateDetails(
+          type!.legacyCategory,
+          type!.legacyKind,
+          {},
+          observedAt ?? new Date().toISOString(),
         );
-      } else router.back();
+      }
+      if (step === 3) validate();
+      Keyboard.dismiss();
+      setStep(Math.min(4, step + 1));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : String(error));
-    } finally {
-      saving.current = false;
-      setBusy(false);
     }
   }
   async function selectPhoto() {
     setPreparing(true);
     setMessage("");
     try {
-      const selected = await pickPhoto();
-      if (selected) {
-        setPhoto(selected);
+      const next = await pickPhoto();
+      if (next) {
+        setPhoto(next);
         setConsent(false);
       }
     } catch (error) {
@@ -102,243 +148,423 @@ export default function Report() {
       setPreparing(false);
     }
   }
-  async function retryPhoto() {
-    if (!savedId || !photo) return;
+  async function save() {
+    if (lock.current) return;
+    lock.current = true;
     setBusy(true);
+    setMessage("");
     try {
-      await attachPhoto(savedId, photo.base64);
+      const prepared = validate();
+      const result = await submitGuided(
+        {
+          selection,
+          answers: prepared,
+          title,
+          description,
+          location: location!,
+          observed_at: observedAt ?? new Date().toISOString(),
+        },
+        photo ?? undefined,
+      );
       await client.invalidateQueries({ queryKey: ["observations"] });
-      router.back();
+      await client.invalidateQueries({ queryKey: ["nearby-observations"] });
+      await client.invalidateQueries({ queryKey: ["private", "my-reports"] });
+      setSaved(result);
     } catch (error) {
-      setMessage(`The report remains saved. ${String(error)}`);
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to save your report. Please try again.",
+      );
     } finally {
+      lock.current = false;
       setBusy(false);
     }
   }
+  async function retryPhoto() {
+    if (!saved || !photo || lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    try {
+      await attachPhoto(saved.id, photo.base64);
+      setSaved({ ...saved, photoError: undefined });
+      setMessage("");
+    } catch (error) {
+      setMessage(
+        `Your report remains saved. ${error instanceof Error ? error.message : "The photo is still unavailable."}`,
+      );
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+  const sharedLocation = location
+    ? publicLocation(selection, answers, location)
+    : null;
+  const publicName =
+    location?.privateAddress && privacy === "approximate"
+      ? "Approximate map area"
+      : sharedLocation?.name;
   return (
     <ScrollView
+      ref={scroll}
       style={{ flex: 1, backgroundColor: "#071719" }}
       contentContainerStyle={[
         styles.page,
-        { flex: 0, flexGrow: 1, paddingBottom: 40 },
+        { flex: 0, flexGrow: 1, paddingBottom: 50 },
       ]}
       keyboardShouldPersistTaps="handled"
     >
       <Button label="← Back to map" onPress={() => router.back()} />
-      <Text style={styles.heading}>Share what you see.</Text>
-      <Text style={styles.text}>
-        {supabase
-          ? "Community observation"
-          : "DEMO · Saved only on this device"}
-        . Reports begin unverified. Avoid names, private homes, vulnerable
-        people and sensitive locations. Only an approximate area is shared.
+      <Text accessibilityRole="header" style={styles.heading}>
+        {saved ? "Observation saved" : "Share what you see."}
       </Text>
-      {savedId ? (
+      <Text style={styles.text}>
+        {supabase ? "Community report" : "DEMO · Saved only on this device"} ·
+        Unverified
+      </Text>
+      {saved ? (
         <View style={styles.card}>
           <Text accessibilityRole="alert" style={styles.text}>
-            {message}
+            {saved.held
+              ? "This report is held for private review. It is not on the public map and no alert was sent."
+              : supabase
+                ? "Your community observation was saved. It has not been confirmed by emergency services."
+                : "Your demo observation is saved on this device. Nothing was published publicly."}
           </Text>
+          {saved.photoError && (
+            <>
+              <Text style={styles.text}>
+                The report is saved, but its photo could not be attached.
+              </Text>
+              <Button
+                label={busy ? "Retrying…" : "Retry photo attachment"}
+                disabled={busy}
+                onPress={() => {
+                  void retryPhoto();
+                }}
+              />
+            </>
+          )}
           <Button
-            label={busy ? "Retrying…" : "Retry photo attachment"}
-            disabled={busy}
-            onPress={() => {
-              void retryPhoto();
-            }}
+            label="View my reports"
+            onPress={() => router.replace("/my-reports")}
           />
-          <Button
-            label="Continue to map without photo"
-            onPress={() => router.back()}
-          />
+          <Button label="Return to map" onPress={() => router.back()} />
         </View>
       ) : (
         <>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {categories.map((c) => (
-              <View key={c} style={{ flex: 1 }}>
-                <Button
-                  label={`${c === category ? "● " : ""}${c}`}
-                  onPress={() => {
-                    setCategory(c);
-                    setKind(defaultKind[c]);
-                  }}
-                />
-              </View>
-            ))}
-          </View>
-          <Text style={styles.text}>
-            What did you notice? Pick a starting title or write your own.
+          <Text style={{ color: "#9ce5d9", fontWeight: "700" }}>
+            Step {step + 1} of {steps.length} · {steps[step]}
           </Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {reportPresets[category].map((preset) => (
+          {notice.length > 0 && (
+            <Text accessibilityLiveRegion="polite" style={styles.text}>
+              {notice}
+            </Text>
+          )}
+          {step === 0 && <TaxonomyPicker value={selection} onChange={choose} />}
+          {step > 0 && (
+            <View style={styles.card}>
+              <Text style={styles.text}>
+                {domainById(selection.domainId ?? "")?.label} ›{" "}
+                {topicById(selection.topicId)?.label} › {type?.label}
+              </Text>
               <Button
-                key={preset.title}
-                label={preset.title}
+                label="Change category or observation"
                 onPress={() => {
-                  setTitle(preset.title);
-                  setKind(preset.kind);
-                  if (preset.title === "Whale sighting" && !animal)
-                    setAnimal("Whale");
+                  setStep(0);
+                  setMessage("");
                 }}
               />
-            ))}
-          </View>
-          <Text style={styles.text}>
-            Report type · matching color on the map
-          </Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {(Object.keys(reportKinds) as ReportKind[])
-              .filter((key) => reportKinds[key].category === category)
-              .map((key) => (
-                <Button
-                  key={key}
-                  label={`${key === kind ? "● " : ""}${reportKinds[key].label}`}
-                  onPress={() => setKind(key)}
-                />
+            </View>
+          )}
+          {step === 1 && (
+            <>
+              <Text
+                accessibilityRole="header"
+                style={[styles.heading, { fontSize: 24 }]}
+              >
+                Tell us what you observed
+              </Text>
+              <Text style={styles.text}>
+                Follow-up details are optional. Choose Not sure when you cannot
+                tell. Do not identify victims, private homes or vulnerable
+                people.
+              </Text>
+              <DependentQuestions
+                selection={selection}
+                answers={answers}
+                onChange={answer}
+              />
+              <Text style={styles.text}>
+                Anything related? Add up to three observations without assuming
+                what caused them.
+              </Text>
+              {selection.relatedIds.map((id) => (
+                <View key={id} style={styles.card}>
+                  <Text style={styles.text}>{typeById(id)?.label}</Text>
+                  <Button
+                    label={`Remove ${typeById(id)?.label}`}
+                    onPress={() =>
+                      choose({
+                        ...selection,
+                        relatedIds: selection.relatedIds.filter(
+                          (item) => item !== id,
+                        ),
+                      })
+                    }
+                  />
+                </View>
               ))}
-          </View>
-          <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-            <View
-              style={{
-                width: 12,
-                height: 12,
-                borderRadius: 6,
-                backgroundColor: reportKinds[kind].color,
-              }}
-            />
-            <Text style={styles.text}>{reportKinds[kind].label}</Text>
-          </View>
-          <TextInput
-            accessibilityLabel="Title"
-            placeholder="Observation title"
-            placeholderTextColor="#9ab3b7"
-            style={styles.input}
-            value={title}
-            onChangeText={setTitle}
-            maxLength={100}
-          />
-          <TextInput
-            accessibilityLabel="Description"
-            placeholder="What did you observe?"
-            placeholderTextColor="#9ab3b7"
-            style={[styles.input, { minHeight: 120 }]}
-            multiline
-            value={description}
-            onChangeText={setDescription}
-            maxLength={2000}
-          />
-          {kind === "wildlife" && (
+              {selection.relatedIds.length < 3 && (
+                <ChoiceSheet
+                  label="Related observation"
+                  options={Object.values(catalog.types)
+                    .filter(
+                      (event) =>
+                        event.id !== selection.typeId &&
+                        !selection.relatedIds.includes(event.id),
+                    )
+                    .map((event) => ({
+                      value: event.id,
+                      label: event.label,
+                      description: domainById(event.family)?.label,
+                    }))}
+                  placeholder="Add related observation (optional)"
+                  onChange={(id) =>
+                    choose({
+                      ...selection,
+                      relatedIds: [...selection.relatedIds, id],
+                    })
+                  }
+                />
+              )}
+              <Text style={styles.text}>Title · editable</Text>
+              <TextInput
+                accessibilityLabel="Title"
+                value={title}
+                onChangeText={(value) => {
+                  setTitle(value);
+                  setTitleEdited(true);
+                }}
+                style={styles.input}
+                maxLength={100}
+              />
+              <Text style={styles.text}>Description · required</Text>
+              <TextInput
+                accessibilityLabel="Description"
+                placeholder="What did you directly observe?"
+                placeholderTextColor="#9ab3b7"
+                value={description}
+                onChangeText={setDescription}
+                style={[styles.input, { minHeight: 120 }]}
+                multiline
+                maxLength={2000}
+              />
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <ObservationTime value={observedAt} onChange={setObservedAt} />
+              <LocationPicker value={location} onChange={setLocation} />
+              <Text style={styles.text}>
+                {privacy === "restricted"
+                  ? "This report goes to private review. No incident pin is published automatically; any permitted public version uses regional information only."
+                  : privacy === "coarse"
+                    ? "This observation uses a more generalized public area to protect sensitive locations."
+                    : "Only an approximate observation area is stored and shared."}
+              </Text>
+            </>
+          )}
+          {step === 3 && (
             <View style={styles.card}>
-              <Text style={styles.text}>Wildlife details · optional</Text>
-              <TextInput
-                accessibilityLabel="Animal"
-                placeholder="What animal?"
-                placeholderTextColor="#9ab3b7"
-                style={styles.input}
-                value={animal}
-                onChangeText={setAnimal}
-                maxLength={80}
+              <Text
+                accessibilityRole="header"
+                style={[styles.heading, { fontSize: 24 }]}
+              >
+                Add a photo · optional
+              </Text>
+              <Text style={styles.text}>
+                Avoid identifying faces, plates and sensitive locations.
+                Location metadata is removed.{" "}
+                {supabase
+                  ? "New photos stay private until separately reviewed."
+                  : "Demo photos stay on this device."}
+              </Text>
+              {photo && (
+                <Image
+                  accessibilityLabel="Selected photo preview"
+                  source={{ uri: photo.uri }}
+                  style={{ height: 210, width: "100%", borderRadius: 16 }}
+                  resizeMode="contain"
+                />
+              )}
+              <Button
+                label={
+                  preparing
+                    ? "Preparing photo…"
+                    : photo
+                      ? "Choose another photo"
+                      : "Choose photo"
+                }
+                disabled={preparing || busy}
+                onPress={() => {
+                  void selectPhoto();
+                }}
               />
-              <TextInput
-                accessibilityLabel="Approximate animal count"
-                placeholder="Roughly how many?"
-                placeholderTextColor="#9ab3b7"
-                style={styles.input}
-                value={count}
-                onChangeText={setCount}
-                keyboardType="number-pad"
-                maxLength={5}
-              />
+              {photo && (
+                <>
+                  <Button
+                    label="Remove attachment"
+                    onPress={() => {
+                      setPhoto(null);
+                      setConsent(false);
+                    }}
+                  />
+                  <Button
+                    label={`${consent ? "☑" : "☐"} I checked this photo for sensitive details`}
+                    onPress={() => setConsent(!consent)}
+                  />
+                </>
+              )}
             </View>
           )}
-          {kind === "road" && (
-            <View style={styles.card}>
-              <Text style={styles.text}>Road surface</Text>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                {["Unknown", "Dry", "Wet", "Snow", "Ice"].map((choice) => (
-                  <Button
-                    key={choice}
-                    label={`${surface === choice ? "● " : ""}${choice}`}
-                    onPress={() => setSurface(choice)}
-                  />
-                ))}
+          {step === 4 && (
+            <>
+              <Text
+                accessibilityRole="header"
+                style={[styles.heading, { fontSize: 24 }]}
+              >
+                Review your observation
+              </Text>
+              <View style={styles.card}>
+                <Text style={styles.heading}>{title}</Text>
+                <Text style={styles.text}>{description}</Text>
+                <Text style={styles.text}>
+                  Related:{" "}
+                  {selection.relatedIds.length
+                    ? selection.relatedIds
+                        .map((id) => typeById(id)?.label)
+                        .join(", ")
+                    : "None"}
+                </Text>
+                {allowedQuestions(selection).map((q) =>
+                  answers[q.id] !== undefined ? (
+                    <Text key={q.id} style={styles.text}>
+                      {q.label}: {answerLabel(q, answers[q.id])}
+                    </Text>
+                  ) : null,
+                )}
+                <Button label="Edit details" onPress={() => setStep(1)} />
               </View>
-              <Text style={styles.text}>Visibility</Text>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-                {["Unknown", "Good", "Reduced", "Very poor"].map((choice) => (
-                  <Button
-                    key={choice}
-                    label={`${visibility === choice ? "● " : ""}${choice}`}
-                    onPress={() => setVisibility(choice)}
-                  />
-                ))}
+              <View style={styles.card}>
+                <Text style={styles.text}>
+                  Observed:{" "}
+                  {observedAt
+                    ? new Date(observedAt).toLocaleString()
+                    : "Now, when submitted"}
+                </Text>
+                <Text style={styles.text}>
+                  Chosen place: {location?.reference_name || location?.name}
+                </Text>
+                <Text style={styles.text}>
+                  Public display: {publicName}.{" "}
+                  {privacy === "restricted"
+                    ? "Regional information only after authorized review; no incident pin."
+                    : "An approximate area, not the exact selected point."}
+                </Text>
+                <Button label="Edit time or place" onPress={() => setStep(2)} />
               </View>
-            </View>
+              <View style={styles.card}>
+                <Text style={styles.text}>
+                  {photo
+                    ? "Photo attached; sensitive details checked. Shared uploads remain private until reviewed."
+                    : "No photo attached."}
+                </Text>
+                {photo && (
+                  <Image
+                    accessibilityLabel="Review photo"
+                    source={{ uri: photo.uri }}
+                    style={{ width: "100%", height: 160 }}
+                    resizeMode="contain"
+                  />
+                )}
+                <Button label="Edit photo" onPress={() => setStep(3)} />
+              </View>
+              <Text style={styles.text}>
+                Community report · Unverified · Staff risk not assessed. Your
+                selections do not create a staff danger flag or an official
+                alert.
+              </Text>
+              {privacy === "restricted" && (
+                <Text style={styles.text}>
+                  This report will be held for review. In demo mode, no staff
+                  member receives it.
+                </Text>
+              )}
+            </>
           )}
-          <ObservationTime value={observedAt} onChange={setObservedAt} />
-          <LocationPicker value={location} onChange={setLocation} />
-          <View style={styles.card}>
-            <Text style={[styles.heading, { fontSize: 22 }]}>
-              Add a photo · optional
+          {priorityFor(selection, answers) && (
+            <Text style={{ color: "#e6c68b", fontSize: 14, lineHeight: 21 }}>
+              If someone is in immediate danger, contact emergency services.
+              Indraya does not dispatch responders.
             </Text>
-            <Text style={styles.text}>
-              Avoid faces, license plates and private or sensitive locations.
-              Location metadata is removed.{" "}
-              {supabase
-                ? "Uploaded photos stay private until a moderator reviews them."
-                : "Demo photos stay on this device."}
-            </Text>
-            {photo && (
-              <Image
-                accessibilityLabel="Selected photo preview"
-                source={{ uri: photo.uri }}
-                style={{ width: "100%", height: 180, borderRadius: 12 }}
-                resizeMode="contain"
-              />
-            )}
-            <Button
-              label={
-                preparing
-                  ? "Preparing photo…"
-                  : photo
-                    ? "Choose another photo"
-                    : "Choose photo"
-              }
-              disabled={preparing || busy}
-              onPress={() => {
-                void selectPhoto();
-              }}
-            />
-            {photo && (
-              <>
-                <Button
-                  label="Remove attachment"
-                  onPress={() => {
-                    setPhoto(null);
-                    setConsent(false);
-                  }}
-                />
-                <Button
-                  label={`${consent ? "☑" : "☐"} I checked this photo for sensitive details`}
-                  onPress={() => setConsent(!consent)}
-                />
-              </>
-            )}
-          </View>
+          )}
           {message.length > 0 && (
             <Text accessibilityRole="alert" style={styles.text}>
               {message}
             </Text>
           )}
-          <Button
-            label={busy ? "Saving…" : "Submit unverified observation"}
-            disabled={
-              busy || preparing || location === null || (!!photo && !consent)
-            }
-            onPress={() => {
-              void save();
-            }}
-          />
+          {step > 0 && (
+            <Button
+              label="Previous step"
+              onPress={() => {
+                setStep(step - 1);
+                setMessage("");
+              }}
+            />
+          )}
+          {step < 4 ? (
+            <Button
+              label={
+                step === 3
+                  ? photo
+                    ? "Review observation"
+                    : "Skip photo and review"
+                  : "Continue"
+              }
+              disabled={
+                preparing ||
+                busy ||
+                (step === 0 && !validPath(selection)) ||
+                (step === 3 && !!photo && !consent)
+              }
+              onPress={advance}
+            />
+          ) : (
+            <Button
+              label={
+                busy
+                  ? "Saving…"
+                  : privacy === "restricted"
+                    ? "Submit for private review"
+                    : "Submit unverified observation"
+              }
+              disabled={busy}
+              onPress={() => {
+                void save();
+              }}
+            />
+          )}
+          {message.startsWith("Sign in") && supabase && (
+            <Button label="Sign in" onPress={() => router.push("/account")} />
+          )}
         </>
+      )}
+      {saved && message.length > 0 && (
+        <Text accessibilityRole="alert" style={styles.text}>
+          {message}
+        </Text>
       )}
     </ScrollView>
   );

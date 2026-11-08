@@ -150,3 +150,23 @@ test("risk expires independently, disputed/resolved never retain an active dange
     "not_assessed",
   );
 });
+
+test("tile transport classification leaves unrelated style, authorization and application errors visible", async () => {
+  const { isTileTransportFailure } = await import("../src/mapHealth");
+  assert.equal(
+    isTileTransportFailure("Failed to load tile: NSURLErrorDomain error -1005"),
+    true,
+  );
+  assert.equal(
+    isTileTransportFailure("tile.opentopomap.org connection timed out"),
+    true,
+  );
+  assert.equal(
+    isTileTransportFailure("Map style HTTP 401 unauthorized"),
+    false,
+  );
+  assert.equal(
+    isTileTransportFailure("Unexpected text node inside View"),
+    false,
+  );
+});

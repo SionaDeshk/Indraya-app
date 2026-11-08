@@ -61,7 +61,7 @@ Deno.serve(async (request) => {
       if (
         !report ||
         report.author_id !== user.id ||
-        report.status !== "published"
+        !["published", "review"].includes(report.status)
       )
         return reply(
           { error: "You cannot attach a photo to this report" },

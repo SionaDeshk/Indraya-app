@@ -8,13 +8,23 @@ import {
   CameraRef,
   GeoJSONSourceRef,
 } from "@maplibre/maplibre-react-native";
-import { View } from "react-native";
+import { View, Text } from "react-native";
+import { Button, styles } from "./ui";
+import { useNow } from "./Clock";
+import { effectiveAssessment, riskPresentation } from "./assessment";
+import useTileHealth from "./useTileHealth";
 import ZoomControls from "./ZoomControls";
 import { topographicStyle } from "./mapStyle";
 import { OfficialItem } from "./official/adapters";
-import { Observation, MapBounds, reportAppearance } from "./domain";
+import {
+  Observation,
+  MapBounds,
+  ReportLocation,
+  reportAppearance,
+} from "./domain";
 export default function NativeMap({
   center,
+  selectedPlace,
   observations,
   onSelect,
   officialItems = [],
@@ -22,6 +32,7 @@ export default function NativeMap({
   onViewportChange,
 }: {
   center: [number, number];
+  selectedPlace?: ReportLocation | null;
   observations: Observation[];
   onSelect: (o: Observation) => void;
   officialItems?: OfficialItem[];
@@ -36,14 +47,28 @@ export default function NativeMap({
   const map = useRef<MapRef>(null);
   const initial = useRef({ center, zoom: 9 });
   const first = useRef(true);
+  const now = useNow();
+  const [failed, setFailed] = useTileHealth(),
+    [retry, setRetry] = useState(0);
+  const lastRetry = useRef(0);
   const [zoom, setZoom] = useState(9);
   useEffect(() => {
     if (first.current) {
       first.current = false;
       return;
     }
-    camera.current?.flyTo({ center, zoom: 12, duration: 600 });
-  }, [center]);
+    if (selectedPlace?.bounds)
+      camera.current?.fitBounds(selectedPlace.bounds, {
+        duration: 600,
+        padding: { top: 240, bottom: 300, left: 40, right: 40 },
+      });
+    else
+      camera.current?.flyTo({
+        center,
+        zoom: selectedPlace?.focusZoom ?? 12,
+        duration: 600,
+      });
+  }, [center, selectedPlace]);
   async function zoomBy(delta: number) {
     try {
       const current = (await map.current?.getZoom()) ?? zoom;
@@ -58,23 +83,36 @@ export default function NativeMap({
   const source = useRef<GeoJSONSourceRef>(null);
   const shape: GeoJSON.FeatureCollection = {
     type: "FeatureCollection",
-    features: observations.map((o) => ({
-      type: "Feature",
-      id: o.id,
-      properties: {
+    features: observations
+      .filter((o) => o.privacy_class !== "restricted")
+      .map((o) => ({
+        type: "Feature",
         id: o.id,
-        category: o.category,
-        color: reportAppearance(o).color,
-      },
-      geometry: { type: "Point", coordinates: [o.longitude, o.latitude] },
-    })),
+        properties: {
+          id: o.id,
+          category: o.category,
+          color: reportAppearance(o).color,
+          risk:
+            effectiveAssessment(o, now).level === "none"
+              ? "#10282c"
+              : riskPresentation[effectiveAssessment(o, now).level].color,
+        },
+        geometry: { type: "Point", coordinates: [o.longitude, o.latitude] },
+      })),
   };
   return (
     <View style={{ flex: 1 }}>
       <Map
+        key={retry}
         ref={map}
+        onDidFailLoadingMap={() => setFailed(true)}
+        onDidFinishRenderingMapFully={() => setFailed(false)}
         style={{ flex: 1 }}
         onRegionDidChange={(event) => {
+          initial.current = {
+            center: event.nativeEvent.center,
+            zoom: event.nativeEvent.zoom,
+          };
           setZoom(event.nativeEvent.zoom);
           onViewportChange?.(event.nativeEvent);
         }}
@@ -89,6 +127,30 @@ export default function NativeMap({
           minZoom={1}
           maxZoom={17}
         />
+        {selectedPlace && (
+          <GeoJSONSource
+            id="selected-place"
+            data={{
+              type: "Feature",
+              properties: { name: selectedPlace.name },
+              geometry: {
+                type: "Point",
+                coordinates: [selectedPlace.longitude, selectedPlace.latitude],
+              },
+            }}
+          >
+            <Layer
+              id="selected-place-marker"
+              type="circle"
+              paint={{
+                "circle-color": "#ffffff",
+                "circle-radius": 11,
+                "circle-stroke-color": "#43a9ee",
+                "circle-stroke-width": 4,
+              }}
+            />
+          </GeoJSONSource>
+        )}
         <GeoJSONSource
           id="official-reports"
           data={{
@@ -190,11 +252,33 @@ export default function NativeMap({
               "circle-color": ["get", "color"],
               "circle-radius": 9,
               "circle-stroke-width": 3,
-              "circle-stroke-color": "#10282c",
+              "circle-stroke-color": ["get", "risk"],
             }}
           />
         </GeoJSONSource>
       </Map>
+      {failed && (
+        <View
+          style={[
+            styles.card,
+            { position: "absolute", left: 12, right: 12, top: "45%" },
+          ]}
+        >
+          <Text style={styles.text}>
+            Map tiles could not load. Observations remain available in the
+            cards.
+          </Text>
+          <Button
+            label="Retry map"
+            onPress={() => {
+              if (Date.now() - lastRetry.current < 5000) return;
+              lastRetry.current = Date.now();
+              setFailed(false);
+              setRetry((n) => n + 1);
+            }}
+          />
+        </View>
+      )}
       <ZoomControls
         zoom={zoom}
         onZoom={(delta) => {

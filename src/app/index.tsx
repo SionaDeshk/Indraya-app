@@ -4,7 +4,8 @@ import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import * as Location from "expo-location";
 import {
-  categories,
+  observationDomain,
+  ReportLocation,
   Observation,
   age,
   MapBounds,
@@ -12,20 +13,22 @@ import {
   withinBounds,
   distanceKm,
   observedTime,
-  reportKinds,
-  reportAppearance,
 } from "../domain";
 import { observations, flag, supabase } from "../api";
 import { Button, styles } from "../ui";
 import PlaceSearch from "../PlaceSearch";
-import ObservationPhoto from "../ObservationPhoto";
+import ObservationDetails from "../ObservationDetails";
+import ChoiceSheet from "../ChoiceSheet";
+import { catalog } from "../taxonomy";
+import { riskPresentation } from "../assessment";
 import ObservationCard from "../ObservationCard";
 import NativeMap from "../NativeMap";
 import * as Linking from "expo-linking";
 import { useOfficialFeeds } from "../official/useOfficialFeeds";
 import { OfficialItem } from "../official/adapters";
 export default function Home() {
-  const [filters, setFilters] = useState<string[]>(categories);
+  const [filters, setFilters] = useState("all");
+  const [searchPlace, setSearchPlace] = useState<ReportLocation | null>(null);
   const [selected, setSelected] = useState<Observation | null>(null);
   const [center, setCenter] = useState<[number, number]>([-149.9, 61.218]);
   const [message, setMessage] = useState("");
@@ -65,11 +68,14 @@ export default function Home() {
       ]),
     ).values(),
   ];
-  const visible = loadedReports.filter((o) => filters.includes(o.category));
+  const visible = loadedReports.filter(
+    (o) => filters === "all" || filters === observationDomain(o),
+  );
   const nearbyReports = (
     supabase && viewport.bounds
-      ? (spatial.data ?? []).filter((report) =>
-          filters.includes(report.category),
+      ? (spatial.data ?? []).filter(
+          (report) =>
+            filters === "all" || filters === observationDomain(report),
         )
       : visible
   )
@@ -83,7 +89,9 @@ export default function Home() {
     )
     .sort((a, b) => Date.parse(observedTime(b)) - Date.parse(observedTime(a)));
   function selectReport(report: Observation) {
-    setCenter([report.longitude, report.latitude]);
+    setSearchPlace(null);
+    if (report.privacy_class !== "restricted")
+      setCenter([report.longitude, report.latitude]);
     setSelected(report);
   }
   async function locate() {
@@ -105,6 +113,7 @@ export default function Home() {
     <View style={{ flex: 1, backgroundColor: "#071719" }}>
       <NativeMap
         center={center}
+        selectedPlace={searchPlace}
         observations={visible}
         onSelect={selectReport}
         onViewportChange={(view) =>
@@ -147,6 +156,7 @@ export default function Home() {
         <PlaceSearch
           focus={viewport.center}
           onChoose={(place) => {
+            setSearchPlace(place);
             setCenter([place.longitude, place.latitude]);
             setViewport({
               center: [place.longitude, place.latitude],
@@ -154,21 +164,29 @@ export default function Home() {
             });
           }}
         />
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          {categories.map((c) => (
+        <ChoiceSheet
+          label="Observation category"
+          value={filters}
+          options={[
+            { value: "all", label: "All categories" },
+            ...catalog.domains.map((d) => ({ value: d.id, label: d.label })),
+          ]}
+          onChange={setFilters}
+        />
+        {searchPlace && (
+          <View style={styles.card}>
+            <Text style={styles.text}>
+              Selected place: {searchPlace.name} · {searchPlace.context}
+            </Text>
+            <Text style={styles.text}>
+              Place reference only · no observation created
+            </Text>
             <Button
-              key={c}
-              label={`${filters.includes(c) ? "●" : "○"} ${c}`}
-              onPress={() =>
-                setFilters(
-                  filters.includes(c)
-                    ? filters.filter((x) => x !== c)
-                    : [...filters, c],
-                )
-              }
+              label="Clear selected place"
+              onPress={() => setSearchPlace(null)}
             />
-          ))}
-        </View>
+          </View>
+        )}
         <Text
           style={{
             color: "#edc88e",
@@ -326,7 +344,7 @@ export default function Home() {
         >
           <View style={[styles.card, { paddingBottom: 40 }]}>
             <Text style={styles.heading}>Map legend</Text>
-            {Object.values(reportKinds).map((kind) => (
+            {catalog.domains.map((kind) => (
               <View
                 key={kind.label}
                 style={{ flexDirection: "row", gap: 10, alignItems: "center" }}
@@ -347,6 +365,18 @@ export default function Home() {
               tap to expand. Color indicates report type, never verification or
               severity.
             </Text>
+            <Text style={styles.text}>
+              Outer rings show staff assessment separately: yellow caution,
+              orange hazard, red urgent danger. Expired assessments lose their
+              ring. No ring does not mean safe.
+            </Text>
+            {Object.entries(riskPresentation)
+              .filter(([id]) => id !== "none")
+              .map(([id, r]) => (
+                <Text key={id} style={{ color: r.color }}>
+                  {r.label}
+                </Text>
+              ))}
             <Button label="Close legend" onPress={() => setLegend(false)} />
           </View>
         </View>
@@ -448,39 +478,7 @@ export default function Home() {
           >
             {selected && (
               <>
-                <Text style={{ color: "#e9c78f" }}>
-                  {reportAppearance(selected).label} ·{" "}
-                  {selected.verification.toUpperCase()}
-                </Text>
-                <Text style={styles.heading}>{selected.title}</Text>
-                <Text style={styles.text}>
-                  {selected.place_name || "Approximate map location"} · Observed{" "}
-                  {age(observedTime(selected))}
-                </Text>
-                <Text style={styles.text}>{selected.description}</Text>
-                <ObservationPhoto report={selected} />
-                {(!!selected.details?.animal ||
-                  selected.details?.count !== undefined) && (
-                  <Text style={styles.text}>
-                    Animal: {selected.details?.animal || "Unspecified wildlife"}
-                    {selected.details?.count
-                      ? ` · about ${selected.details?.count}`
-                      : ""}
-                  </Text>
-                )}
-                {selected.details?.surface && (
-                  <Text style={styles.text}>
-                    Surface: {selected.details.surface} · Visibility:{" "}
-                    {selected.details.visibility || "Unknown"}
-                  </Text>
-                )}
-                <Text style={styles.text}>
-                  {selected.source} · Submitted {age(selected.created_at)}
-                </Text>
-                <Text style={styles.text}>
-                  Never rely on community reports for emergency decisions. In an
-                  emergency, call 911.
-                </Text>
+                <ObservationDetails report={selected} />
                 {(["misleading", "dangerous", "abusive"] as const).map(
                   (reason) => (
                     <Button

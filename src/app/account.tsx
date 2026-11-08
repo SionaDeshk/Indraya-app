@@ -140,6 +140,7 @@ export default function Account() {
           />
         </>
       )}
+      <Button label="My reports" onPress={() => router.push("/my-reports")} />
       <Button
         label="Moderator review"
         onPress={() => router.push("/moderation")}

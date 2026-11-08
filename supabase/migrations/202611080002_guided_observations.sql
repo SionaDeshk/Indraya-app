@@ -430,6 +430,17 @@ end $$;
 create function public.prepare_catalog_observation() returns trigger language plpgsql security definer set search_path=public as $$
 declare path jsonb;policy jsonb;animal text;
 begin
+ if new.event_type_id is null or (tg_op='UPDATE' and new.details is distinct from old.details) then
+  if new.kind is null then new.kind:=case new.category when 'Outdoors' then 'wildlife' when 'Travel' then 'road' else 'hazard' end;end if;
+  if not ((new.category='Safety' and new.kind in ('hazard','smoke','flooding')) or (new.category='Outdoors' and new.kind in ('wildlife','trail','aurora')) or (new.category='Travel' and new.kind='road')) then raise exception 'Report type does not match category';end if;
+  if jsonb_typeof(new.details)<>'object' or octet_length(new.details::text)>2000 or exists(select 1 from jsonb_object_keys(new.details) k where k not in ('animal','count','surface','visibility')) then raise exception 'Unsupported legacy details';end if;
+  if (new.details ? 'animal' or new.details ? 'count') and new.kind<>'wildlife' then raise exception 'Animal details require wildlife';end if;
+  if (new.details ? 'surface' or new.details ? 'visibility') and new.kind<>'road' then raise exception 'Road details require road type';end if;
+  if new.details ? 'animal' and (jsonb_typeof(new.details->'animal')<>'string' or length(new.details->>'animal')>80) then raise exception 'Invalid animal';end if;
+  if new.details ? 'surface' and new.details->>'surface' not in ('Unknown','Dry','Wet','Snow','Ice') then raise exception 'Invalid surface';end if;
+  if new.details ? 'visibility' and new.details->>'visibility' not in ('Unknown','Good','Reduced','Very poor') then raise exception 'Invalid visibility';end if;
+  new.answers:=legacy_observation_answers(new.kind,new.details);
+ end if;
  if new.event_type_id is null then
   path:=legacy_observation_path(new.category,new.kind);
   new.domain_id:=path->>'domain';new.topic_id:=path->>'topic';new.event_type_id:=path->>'type';new.taxonomy_version:=1;

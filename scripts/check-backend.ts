@@ -23,12 +23,12 @@ async function main() {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { error } = await client
-    .from("observations")
-    .select("id,kind,place_name,observed_at,details")
+    .from("observation_feed")
+    .select("id,event_type_id,domain_id,topic_id,answers,privacy_class,assessment_level,assessment_state,assessment_expires_at")
     .limit(1);
   if (error)
     throw Error(
-      "Public report schema check failed. Apply both SQL migrations and check API/RLS configuration.",
+      "Public report schema check failed. Apply all three SQL migrations and check API/RLS configuration.",
     );
   const spatial = await client.rpc("observations_in_bounds", {
     west: -151,
