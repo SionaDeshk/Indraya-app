@@ -1,6 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 export type { PlaceResult } from "./searchDomain";
-import { normalize, parsePhoton, PlaceResult } from "./searchDomain";
+import {
+  normalize,
+  parsePhoton,
+  PlaceResult,
+  alaskaPlaces,
+  inAlaskaSearchRegion,
+} from "./searchDomain";
 let lastRequest = 0;
 export async function searchPlaces(
   query: string,
@@ -10,9 +16,12 @@ export async function searchPlaces(
   const q = query.trim();
   if (q.length < 3 || q.length > 160)
     throw Error("Enter 3–160 characters to search.");
-  const lon = Math.round(focus[0] * 10) / 10,
-    lat = Math.round(focus[1] * 10) / 10;
-  const key = `indraya.search.v2:${normalize(q)}:${lon}:${lat}`;
+  const bias = inAlaskaSearchRegion(focus[0], focus[1])
+    ? focus
+    : [-149.9, 61.2];
+  const lon = Math.round(bias[0] * 10) / 10,
+    lat = Math.round(bias[1] * 10) / 10;
+  const key = `indraya.search.v3.alaska:${normalize(q)}:${lon}:${lat}`;
   if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
   try {
     const cached = await AsyncStorage.getItem(key);
@@ -30,7 +39,7 @@ export async function searchPlaces(
             Number.isFinite(p.longitude),
         )
       )
-        return data.results;
+        return alaskaPlaces(data.results);
     }
   } catch {
     /* Cache is optional and never substitutes an invented result. */
@@ -50,6 +59,9 @@ export async function searchPlaces(
       lat: String(lat),
       lon: String(lon),
       lang: "en",
+      countrycode: "US",
+      // US places north of 51° are Alaska; full longitude covers the Aleutians across 180°.
+      bbox: "-180,51,180,72",
     });
     const response = await fetch(`https://photon.komoot.io/api/?${params}`, {
       signal: controller.signal,
@@ -60,10 +72,12 @@ export async function searchPlaces(
       throw Error(
         "Unable to search right now. Check your connection and try again.",
       );
-    const results = parsePhoton(await response.json()).map((p) => ({
-      ...p,
-      retrievedAt: new Date().toISOString(),
-    }));
+    const results = alaskaPlaces(parsePhoton(await response.json())).map(
+      (p) => ({
+        ...p,
+        retrievedAt: new Date().toISOString(),
+      }),
+    );
     if (controller.signal.aborted)
       throw new DOMException("Cancelled", "AbortError");
     try {

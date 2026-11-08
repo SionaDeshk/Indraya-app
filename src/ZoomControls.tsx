@@ -7,7 +7,7 @@ export default function ZoomControls({
   zoom: number;
 }) {
   return (
-    <View style={{ position: "absolute", left: 16, top: "43%", gap: 8 }}>
+    <View style={{ position: "absolute", right: 16, top: "43%", gap: 8 }}>
       {[
         { label: "Zoom in", symbol: "+", delta: 1 },
         { label: "Zoom out", symbol: "−", delta: -1 },

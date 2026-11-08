@@ -26,6 +26,10 @@ The script uses **synthetic Photon replies**, not verified real-world locations.
 
 JPEG tests use a synthetic metadata-bearing fixture, not a user photo. `DENO_DIR=/tmp/indraya-deno-cache DENO_TLS_CA_STORE=system npx deno check supabase/functions/observation-photo/index.ts` checks the server function; it does not deploy it.
 
+## Home layout and Alaska search regression
+
+`python3 tests/home_browser.py` checks 320×568, 390×844 and 768×1024 layouts: collapsed activity by default, compact Report, no category shortcut/large branding, demo explanation, Layers filters/legend, retained filter selection and report navigation. A declared Oregon provider fixture must be rejected and display no Alaska matches; query parameters must include the geographic/country restrictions. Screenshots under /workspace/outputs/indraya-home show the browser fallback, not a rendered native basemap. Unit cases include Southeast and Aleutians, lower-48 names, foreign-border matches, unknown/conflicting administration and unsafe feature bounds.
+
 ## Native and live acceptance still required
 
 On the Mac/device test native map bounds/zoom, separate selected-place marker, pin adjustment/cancel, card centering, clustering, category filters, risk rings and idle expiry, transport-error banner/retry preserving viewport, foreground location denial/allow, photo-library permissions, native date/time and restart persistence. Linux cannot compile or operate the user's iOS simulator. Verify the live query matrix in search.md against actual provider responses and an independent map. Official feeds stay disabled until documented validation. Test hosted ordinary/other/staff accounts and signed-photo access separately; no hosted project was configured here.

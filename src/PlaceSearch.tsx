@@ -65,7 +65,7 @@ export default function PlaceSearch({
     <View style={{ gap: 8 }}>
       <TextInput
         accessibilityLabel={label}
-        placeholder="Search places"
+        placeholder="Search Alaska"
         placeholderTextColor="#9ab3b7"
         value={query}
         onChangeText={change}
@@ -118,7 +118,8 @@ export default function PlaceSearch({
           </ScrollView>
           {searched && results.length === 0 && (
             <Text style={styles.text}>
-              No places found. Try a nearby town or a more specific name.
+              No places found in Alaska. Try a nearby town or a more specific
+              name.
             </Text>
           )}
           {message.length > 0 && (

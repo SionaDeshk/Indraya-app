@@ -40,9 +40,8 @@ export default function Sources() {
       <View style={styles.card}>
         <Text style={[styles.heading, { fontSize: 22 }]}>Place search</Text>
         <Text style={styles.text}>
-          Saved Alaska towns and features work offline. Explicit online searches
-          use Photon and OpenStreetMap data for places and businesses; coverage
-          and availability vary.
+          Place search uses Photon and OpenStreetMap data for places and
+          businesses. Coverage and availability vary.
         </Text>
         <Button
           label="Search data attribution"

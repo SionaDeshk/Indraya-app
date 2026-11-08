@@ -29,7 +29,9 @@ with sync_playwright() as p:
  def place():
   page.get_by_label('Search observation location',exact=True).fill('Palmer fixture');click('Search');click('TEST Palmer place')
  def start(domain,query,leaf):
-  click('＋ Share an observation');click(domain)
+
+  if page.get_by_role('button',name='Collapse nearby activity',exact=True).count():click('Collapse nearby activity')
+  click('Report an observation');click(domain)
   page.get_by_label('Find an observation type',exact=True).fill(query)
   click(leaf+' · '+domain);next()
  page.goto(BASE,wait_until='networkidle',timeout=90000)
@@ -61,7 +63,7 @@ with sync_playwright() as p:
  assert len(reports)==1 and reports[0]['event_type_id']=='whiteout' and reports[0]['answers']['visibility']=='reduced'
  assert reports[0]['verification']=='unverified' and reports[0]['demo'] and reports[0]['photo_uri'].startswith('data:image/jpeg')
  assert reports[0]['latitude']==61.58 and reports[0]['longitude']==-149.11
- click('Return to map');button('TEST custom black ice title').wait_for()
+ click('Return to map');click('Expand nearby activity');button('TEST custom black ice title').wait_for()
  start('Wildlife & Animals','encounter','Wildlife encounter')
  choose('What animal?','Other animal');page.get_by_role('textbox',name='Other animal',exact=True).fill('Synthetic animal name')
  choose('What animal?','Moose');expect(page.get_by_role('textbox',name='Other animal',exact=True)).to_have_count(0)
@@ -82,8 +84,8 @@ with sync_playwright() as p:
  page.get_by_role('textbox',name='Search places',exact=True).fill('failure fixture');click('Search')
  expect(page.get_by_role('alert')).to_be_visible()
  expect(button('TEST Palmer place')).to_have_count(0)
- click('Layers & sources');expect(page.get_by_text('Not connected yet',exact=False)).to_have_count(2)
- assert requests and not errors,errors
+ click('Layers');click('Official sources & map information');expect(page.get_by_text('Not connected yet',exact=False)).to_have_count(2)
+ assert requests and all('countrycode=US' in url and 'bbox=-180%2C51%2C180%2C72' in url for url in requests) and not errors,errors
  # Permission denial leaves manual selection available and blocks review without a chosen location.
  denied=b.new_context(viewport={'width':390,'height':844})
  page=denied.new_page()

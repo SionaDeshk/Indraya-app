@@ -22,3 +22,11 @@ External blockers, not silently completed:
 - Mac/device acceptance remains for native map bounds/pin/zoom/transport recovery, photo permissions, native time and hosted staff flows.
 
 No native dependency or app.json changes were added in this branch. An existing development build from the prior photo/time update can receive these JavaScript changes through Metro. Preserve app.json/package.json local changes before pulling; do not discard settings or use prebuild --clean. See README.md and testing.md.
+
+## Follow-up: map-first home and Alaska-only search
+
+Home now removes the category shortcut, large wordmark/tagline and always-open report cards. A compact search/account row, small demo disclosure, right-side zoom/location controls, Layers and + Report surround a collapsed nearby sheet. Tap/swipe its handle to expand/collapse; the list scrolls independently. Category filters/legend are inside Layers, with official sources one level deeper. Attribution sits above collapsed controls. Loading/error summaries avoid presenting failed loads as zero activity.
+
+Search now sends US/capped-latitude provider filters, validates Alaska coordinates/admin metadata, supports the Aleutians across 180°, discards unsafe extents and bypasses prior worldwide cache entries. An out-of-state-only response yields no Alaska matches. No live-provider access or native test claim was added. No dependencies, app.json or backend schema changed.
+
+Validation for this follow-up: TypeScript/lint, 27 unit tests, responsive home/browser controls and complete guided-report regression. All-platform JS exports also run. Phone/tablet screenshots are browser evidence only; native sheet swipe/map placement still needs the user's simulator.

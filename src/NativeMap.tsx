@@ -23,6 +23,8 @@ import {
   reportAppearance,
 } from "./domain";
 export default function NativeMap({
+  controlsHidden = false,
+  attributionBottom = 162,
   center,
   selectedPlace,
   observations,
@@ -31,6 +33,8 @@ export default function NativeMap({
   onOfficialSelect,
   onViewportChange,
 }: {
+  controlsHidden?: boolean;
+  attributionBottom?: number;
   center: [number, number];
   selectedPlace?: ReportLocation | null;
   observations: Observation[];
@@ -60,7 +64,7 @@ export default function NativeMap({
     if (selectedPlace?.bounds)
       camera.current?.fitBounds(selectedPlace.bounds, {
         duration: 600,
-        padding: { top: 240, bottom: 300, left: 40, right: 40 },
+        padding: { top: 160, bottom: 180, left: 40, right: 40 },
       });
     else
       camera.current?.flyTo({
@@ -118,7 +122,7 @@ export default function NativeMap({
         }}
         mapStyle={topographicStyle}
         attribution
-        attributionPosition={{ bottom: 12, right: 10 }}
+        attributionPosition={{ bottom: attributionBottom, right: 10 }}
         logo
       >
         <Camera
@@ -279,12 +283,14 @@ export default function NativeMap({
           />
         </View>
       )}
-      <ZoomControls
-        zoom={zoom}
-        onZoom={(delta) => {
-          void zoomBy(delta);
-        }}
-      />
+      {!controlsHidden && (
+        <ZoomControls
+          zoom={zoom}
+          onZoom={(delta) => {
+            void zoomBy(delta);
+          }}
+        />
+      )}
     </View>
   );
 }

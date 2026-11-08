@@ -2,6 +2,8 @@ import type { ReportLocation, MapBounds } from "./domain";
 export type PlaceResult = ReportLocation & {
   provider: "photon";
   retrievedAt?: string;
+  state?: string;
+  countryCode?: string;
 };
 export const normalize = (s: string) =>
   s
@@ -103,6 +105,8 @@ export function parsePhoton(body: unknown): PlaceResult[] {
       bounds,
       focusZoom,
       provider: "photon",
+      state: clean(p.state),
+      countryCode: clean(p.countrycode).toUpperCase(),
       privateAddress:
         (!clean(p.name) && !!street) ||
         ["house", "residential", "apartments"].includes(featureType),
@@ -122,4 +126,40 @@ export function parsePhoton(body: unknown): PlaceResult[] {
       "These place results have no valid locations. Please try another search.",
     );
   return result.slice(0, 8);
+}
+
+/** Geographic envelope is a guard, not a political boundary. Provider admin metadata is checked separately. */
+export function inAlaskaSearchRegion(longitude: number, latitude: number) {
+  return (
+    Number.isFinite(longitude) &&
+    Number.isFinite(latitude) &&
+    latitude >= 51 &&
+    latitude <= 72 &&
+    ((longitude >= -180 && longitude <= -129.9) ||
+      (longitude >= 170 && longitude <= 180))
+  );
+}
+export function alaskaPlaces(results: PlaceResult[]) {
+  return results
+    .filter((place) => {
+      const state = normalize(place.state ?? ""),
+        country = (place.countryCode ?? "").toUpperCase();
+      if (!inAlaskaSearchRegion(place.longitude, place.latitude)) return false;
+      if (state && !["alaska", "ak", "us-ak"].includes(state)) return false;
+      if (country && country !== "US") return false;
+      return !!state || country === "US";
+    })
+    .map((place) => {
+      // Do not fit a remote/overbroad provider extent simply because its point was in Alaska.
+      const b = place.bounds;
+      const width = b ? (b[2] - b[0] + 360) % 360 : 0;
+      const bounds =
+        b &&
+        width <= 65 &&
+        inAlaskaSearchRegion(b[0], b[1]) &&
+        inAlaskaSearchRegion(b[2], b[3])
+          ? b
+          : undefined;
+      return { ...place, bounds };
+    });
 }
