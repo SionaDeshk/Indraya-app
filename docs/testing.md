@@ -33,3 +33,9 @@ JPEG tests use a synthetic metadata-bearing fixture, not a user photo. `DENO_DIR
 ## Native and live acceptance still required
 
 On the Mac/device test native map bounds/zoom, separate selected-place marker, pin adjustment/cancel, card centering, clustering, category filters, risk rings and idle expiry, transport-error banner/retry preserving viewport, foreground location denial/allow, photo-library permissions, native date/time and restart persistence. Linux cannot compile or operate the user's iOS simulator. Verify the live query matrix in search.md against actual provider responses and an independent map. Official feeds stay disabled until documented validation. Test hosted ordinary/other/staff accounts and signed-photo access separately; no hosted project was configured here.
+
+## Marker symbols and compact preview
+
+The responsive home script also selects an observation from nearby activity, verifies the initial preview excludes flagging/full details, opens the full report, returns to preview and closes it. At 320/390/768px it checks the preview leaves most map space visible and the full-report action stays within the viewport. Browser screenshots browser-preview-*.png are layout evidence only. Unit checks cover legacy/canonical marker family selection, cross-linked whiteout and independence from staff risk. PNG symbols are original, regenerated with `python3 scripts/create-map-symbols.py` (Pillow needed only for regeneration).
+
+On the simulator/device, verify local icon loading on fresh start and after Retry map, tap the circle and symbol to open the same preview, select another marker, zoom clusters, check selected halo versus danger ring, and ensure restricted reports remain absent from incident markers. No glyph server was added.

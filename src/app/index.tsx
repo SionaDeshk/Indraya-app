@@ -5,12 +5,15 @@ import {
   ScrollView,
   Modal,
   Pressable,
+  Image,
   useWindowDimensions,
 } from "react-native";
 import {
   useSafeAreaInsets,
   SafeAreaView,
 } from "react-native-safe-area-context";
+import ObservationPreview from "../ObservationPreview";
+import { mapSymbols } from "../mapSymbols";
 import ActivitySheet from "../ActivitySheet";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -41,6 +44,7 @@ import { OfficialItem } from "../official/adapters";
 export default function Home() {
   const [filters, setFilters] = useState("all");
   const [searchPlace, setSearchPlace] = useState<ReportLocation | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [selected, setSelected] = useState<Observation | null>(null);
   const [center, setCenter] = useState<[number, number]>([-149.9, 61.218]);
   const [message, setMessage] = useState("");
@@ -107,6 +111,8 @@ export default function Home() {
     setSearchPlace(null);
     if (report.privacy_class !== "restricted")
       setCenter([report.longitude, report.latitude]);
+    setActivityOpen(false);
+    setDetailsOpen(false);
     setSelected(report);
   }
   async function locate() {
@@ -128,10 +134,13 @@ export default function Home() {
   return (
     <View style={{ flex: 1, backgroundColor: "#071719" }}>
       <NativeMap
-        attributionBottom={Math.max(insets.bottom, 12) + 150}
-        controlsHidden={activityOpen}
+        attributionBottom={
+          Math.max(insets.bottom, 12) + (selected ? height * 0.38 + 12 : 150)
+        }
+        controlsHidden={activityOpen || !!selected}
         center={center}
         selectedPlace={searchPlace}
+        selectedId={selected?.id}
         observations={visible}
         onSelect={selectReport}
         onViewportChange={(view) =>
@@ -161,6 +170,8 @@ export default function Home() {
             <PlaceSearch
               focus={viewport.center}
               onChoose={(place) => {
+                setSelected(null);
+                setDetailsOpen(false);
                 setSearchPlace(place);
                 setCenter([place.longitude, place.latitude]);
                 setViewport({
@@ -272,7 +283,7 @@ export default function Home() {
           </Pressable>
         )}
       </View>
-      {!activityOpen && (
+      {!activityOpen && !selected && (
         <View
           style={{ position: "absolute", right: 16, top: height * 0.43 + 108 }}
         >
@@ -295,7 +306,7 @@ export default function Home() {
           </Pressable>
         </View>
       )}
-      {!activityOpen && (
+      {!activityOpen && !selected && (
         <View
           pointerEvents="box-none"
           style={{
@@ -344,86 +355,100 @@ export default function Home() {
           </Pressable>
         </View>
       )}
-      <ActivitySheet
-        expanded={activityOpen}
-        onChange={setActivityOpen}
-        bottom={Math.max(insets.bottom, 12)}
-        maxHeight={height * 0.48}
-        title={
-          q.isLoading
-            ? "Loading nearby observations…"
-            : q.error || spatial.error
-              ? "Nearby observations · update unavailable"
-              : `Nearby observations · ${nearbyReports.length}${filters !== "all" ? " · filtered" : ""}`
-        }
-      >
-        <ScrollView
-          style={{ flexShrink: 1 }}
-          contentContainerStyle={{
-            padding: 16,
-            paddingTop: 0,
-            paddingBottom: 24,
-            gap: 12,
-          }}
-          nestedScrollEnabled
+      {!selected && (
+        <ActivitySheet
+          expanded={activityOpen}
+          onChange={setActivityOpen}
+          bottom={Math.max(insets.bottom, 12)}
+          maxHeight={height * 0.48}
+          title={
+            q.isLoading
+              ? "Loading nearby observations…"
+              : q.error || spatial.error
+                ? "Nearby observations · update unavailable"
+                : `Nearby observations · ${nearbyReports.length}${filters !== "all" ? " · filtered" : ""}`
+          }
         >
-          <Text style={[styles.text, { fontSize: 12 }]}>
-            In this map area · newest first
-            {!supabase ? " · fictional demo reports" : " · up to 300 loaded"}
-          </Text>
-          {q.isLoading && (
-            <Text style={styles.text}>Loading observations…</Text>
-          )}
-          {q.error && (
-            <Button
-              label="Unable to load · Retry"
-              onPress={() => void q.refetch()}
-            />
-          )}
-          {spatial.isFetching && (
-            <Text style={styles.text}>Updating this map area…</Text>
-          )}
-          {spatial.error && (
-            <Button
-              label="Nearby reports unavailable · Retry"
-              onPress={() => void spatial.refetch()}
-            />
-          )}
-          {feeds.selected.some((id) => feeds.queries[id].isError) && (
-            <Text style={{ color: "#edc88e" }}>
-              Official source refresh failed · check Layers.
+          <ScrollView
+            style={{ flexShrink: 1 }}
+            contentContainerStyle={{
+              padding: 16,
+              paddingTop: 0,
+              paddingBottom: 24,
+              gap: 12,
+            }}
+            nestedScrollEnabled
+          >
+            <Text style={[styles.text, { fontSize: 12 }]}>
+              In this map area · newest first
+              {!supabase ? " · fictional demo reports" : " · up to 300 loaded"}
             </Text>
-          )}
-          {feeds.items.map((item) => (
-            <Button
-              key={item.id}
-              label={`OFFICIAL · ${item.title}`}
-              onPress={() => setOfficialDetail(item)}
-            />
-          ))}
-          {nearbyReports.map((report) => (
-            <ObservationCard
-              key={report.id}
-              report={report}
-              onPress={() => selectReport(report)}
-              distance={distanceKm(report, {
-                longitude: viewport.center[0],
-                latitude: viewport.center[1],
-              })}
-            />
-          ))}
-          {!q.isLoading &&
-            !spatial.isFetching &&
-            !q.error &&
-            !spatial.error &&
-            nearbyReports.length === 0 && (
-              <Text style={styles.text}>
-                No observations in this map area. Zoom out, change the filter in
-                Layers, or explore another place.
+            {q.isLoading && (
+              <Text style={styles.text}>Loading observations…</Text>
+            )}
+            {q.error && (
+              <Button
+                label="Unable to load · Retry"
+                onPress={() => void q.refetch()}
+              />
+            )}
+            {spatial.isFetching && (
+              <Text style={styles.text}>Updating this map area…</Text>
+            )}
+            {spatial.error && (
+              <Button
+                label="Nearby reports unavailable · Retry"
+                onPress={() => void spatial.refetch()}
+              />
+            )}
+            {feeds.selected.some((id) => feeds.queries[id].isError) && (
+              <Text style={{ color: "#edc88e" }}>
+                Official source refresh failed · check Layers.
               </Text>
             )}
-        </ScrollView>
-      </ActivitySheet>
+            {feeds.items.map((item) => (
+              <Button
+                key={item.id}
+                label={`OFFICIAL · ${item.title}`}
+                onPress={() => setOfficialDetail(item)}
+              />
+            ))}
+            {nearbyReports.map((report) => (
+              <ObservationCard
+                key={report.id}
+                report={report}
+                onPress={() => selectReport(report)}
+                distance={distanceKm(report, {
+                  longitude: viewport.center[0],
+                  latitude: viewport.center[1],
+                })}
+              />
+            ))}
+            {!q.isLoading &&
+              !spatial.isFetching &&
+              !q.error &&
+              !spatial.error &&
+              nearbyReports.length === 0 && (
+                <Text style={styles.text}>
+                  No observations in this map area. Zoom out, change the filter
+                  in Layers, or explore another place.
+                </Text>
+              )}
+          </ScrollView>
+        </ActivitySheet>
+      )}
+      {selected && (
+        <ObservationPreview
+          report={selected}
+          onClose={() => {
+            setSelected(null);
+            setDetailsOpen(false);
+          }}
+          onExpand={() => setDetailsOpen(true)}
+          bottom={Math.max(insets.bottom, 12)}
+          maxHeight={height * 0.38}
+        />
+      )}
       <Modal
         visible={layersOpen}
         animationType="slide"
@@ -465,12 +490,20 @@ export default function Home() {
               >
                 <View
                   style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
                     backgroundColor: kind.color,
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                />
+                >
+                  <Image
+                    source={mapSymbols[kind.id].image}
+                    style={{ width: 21, height: 21 }}
+                    accessible={false}
+                  />
+                </View>
                 <Text style={styles.text}>{kind.label}</Text>
               </View>
             ))}
@@ -590,10 +623,10 @@ export default function Home() {
         </View>
       </Modal>
       <Modal
-        visible={!!selected}
+        visible={!!selected && detailsOpen}
         transparent
         animationType="slide"
-        onRequestClose={() => setSelected(null)}
+        onRequestClose={() => setDetailsOpen(false)}
       >
         <View
           style={{
@@ -628,7 +661,10 @@ export default function Home() {
                     />
                   ),
                 )}
-                <Button label="Close" onPress={() => setSelected(null)} />
+                <Button
+                  label="Back to preview"
+                  onPress={() => setDetailsOpen(false)}
+                />
               </>
             )}
           </ScrollView>

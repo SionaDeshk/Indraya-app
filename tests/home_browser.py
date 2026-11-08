@@ -31,7 +31,18 @@ with sync_playwright() as p:
   assert button('Collapse nearby activity').bounding_box()['y']>=height*.45
   page.wait_for_timeout(350)  # Finish the native-style modal/handle transition before artifact capture.
   page.screenshot(path=f'{OUT}/browser-activity-{width}.png')
-  click('Collapse nearby activity');expect(button('Report an observation')).to_be_visible()
+  click('Ice along the shoreline')
+  expect(button('View full observation')).to_be_visible()
+  expect(button('Expand nearby activity')).to_have_count(0)
+  expect(button('Flag misleading')).to_have_count(0)
+  preview=button('View full observation').evaluate('''e=>{while(e&&getComputedStyle(e).position!=='absolute')e=e.parentElement;return e.getBoundingClientRect().toJSON()}''')
+  assert preview['height']<=height*.39 and preview['y']>=height*.59
+  action=button('View full observation').bounding_box()
+  assert action['y']+action['height']<=height-10 and action['y']>=preview['y']
+  page.screenshot(path=f'{OUT}/browser-preview-{width}.png')
+  click('View full observation');expect(button('Flag misleading')).to_be_visible()
+  click('Back to preview');expect(button('View full observation')).to_be_visible()
+  click('Close observation preview');expect(button('Report an observation')).to_be_visible()
   click('Layers');click('Observation category: All categories');click('Wildlife & Animals')
   expect(button('Observation category: Wildlife & Animals')).to_be_visible()
   expect(page.get_by_text('Map legend',exact=True)).to_be_visible()

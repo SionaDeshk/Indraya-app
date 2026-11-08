@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import {
   Map,
+  Images,
   MapRef,
   Camera,
   GeoJSONSource,
@@ -13,6 +14,8 @@ import { Button, styles } from "./ui";
 import { useNow } from "./Clock";
 import { effectiveAssessment, riskPresentation } from "./assessment";
 import useTileHealth from "./useTileHealth";
+import { mapSymbols } from "./mapSymbols";
+import { markerFamily } from "./markerFamily";
 import ZoomControls from "./ZoomControls";
 import { topographicStyle } from "./mapStyle";
 import { OfficialItem } from "./official/adapters";
@@ -27,6 +30,7 @@ export default function NativeMap({
   attributionBottom = 162,
   center,
   selectedPlace,
+  selectedId,
   observations,
   onSelect,
   officialItems = [],
@@ -37,6 +41,7 @@ export default function NativeMap({
   attributionBottom?: number;
   center: [number, number];
   selectedPlace?: ReportLocation | null;
+  selectedId?: string;
   observations: Observation[];
   onSelect: (o: Observation) => void;
   officialItems?: OfficialItem[];
@@ -95,6 +100,8 @@ export default function NativeMap({
         properties: {
           id: o.id,
           category: o.category,
+          icon: markerFamily(o),
+          selected: o.id === selectedId,
           color: reportAppearance(o).color,
           risk:
             effectiveAssessment(o, now).level === "none"
@@ -125,6 +132,14 @@ export default function NativeMap({
         attributionPosition={{ bottom: attributionBottom, right: 10 }}
         logo
       >
+        <Images
+          images={Object.fromEntries(
+            Object.entries(mapSymbols).map(([key, value]) => [
+              key,
+              value.image,
+            ]),
+          )}
+        />
         <Camera
           ref={camera}
           initialViewState={initial.current}
@@ -250,13 +265,38 @@ export default function NativeMap({
           />
           <Layer
             type="circle"
+            id="selected-observation-halo"
+            filter={[
+              "all",
+              ["!", ["has", "point_count"]],
+              ["==", ["get", "selected"], true],
+            ]}
+            paint={{
+              "circle-color": "#ffffff",
+              "circle-radius": 23,
+              "circle-opacity": 0.3,
+            }}
+          />
+          <Layer
+            type="circle"
             id="points"
             filter={["!", ["has", "point_count"]]}
             paint={{
               "circle-color": ["get", "color"],
-              "circle-radius": 9,
+              "circle-radius": 15,
               "circle-stroke-width": 3,
               "circle-stroke-color": ["get", "risk"],
+            }}
+          />
+          <Layer
+            id="observation-symbols"
+            type="symbol"
+            filter={["!", ["has", "point_count"]]}
+            layout={{
+              "icon-image": ["get", "icon"],
+              "icon-size": 0.3,
+              "icon-allow-overlap": true,
+              "icon-ignore-placement": true,
             }}
           />
         </GeoJSONSource>
