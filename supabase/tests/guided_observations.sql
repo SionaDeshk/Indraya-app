@@ -4,7 +4,7 @@ insert into auth.users values('00000000-0000-0000-0000-000000000001'),('00000000
 insert into moderators values('00000000-0000-0000-0000-000000000003');
 create function pg_temp.assert_true(ok boolean,label text) returns void language plpgsql as $$ begin if ok is distinct from true then raise exception 'FAIL: %',label;end if;raise notice 'PASS: %',label;end $$;
 create function pg_temp.denied(command text,label text) returns void language plpgsql as $$ begin begin execute command;exception when others then raise notice 'PASS denied: %',label;return;end;raise exception 'FAIL allowed: %',label;end $$;
-select pg_temp.assert_true((select count(*)=101 from observation_catalog_types),'101 canonical events seeded');
+select pg_temp.assert_true((select count(*)=101 from observation_catalog_types where version=1),'101 canonical events seeded');
 select pg_temp.denied($q$select catalog_policy(1,'travel','wildlife.sighting','animal_sighting','{}','{}')$q$,'cross-domain tampering');
 select pg_temp.denied($q$select catalog_policy(1,'travel','travel.surface','black_ice','{}','{"animal":"bear"}')$q$,'irrelevant answers');
 select pg_temp.denied($q$select catalog_policy(1,'wildlife','wildlife.sighting','animal_sighting','{}','{"animal":"moose","other_animal":"Hidden"}')$q$,'hidden dependent answers');

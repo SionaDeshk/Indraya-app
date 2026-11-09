@@ -35,6 +35,15 @@ export type Observation = PublicAssessment & {
   photo_uri?: string;
   media_kind?: "photo" | "video";
   media_bytes?: number;
+  expires_at?: string;
+  offline_snapshot_at?: string;
+  extent?: import("./observationExtent").ObservationExtent | null;
+  response_summary?: {
+    observed: number;
+    changed: number;
+    not_observed: number;
+    latest: string | null;
+  };
   demo?: boolean;
   taxonomy_version?: number;
   domain_id?: DomainId;
@@ -179,8 +188,8 @@ export function distanceKm(
 export function validateReportText(title: string, description: string) {
   if (title.trim().length < 5 || title.length > 100)
     throw new Error("Use a title between 5 and 100 characters.");
-  if (description.trim().length < 10 || description.length > 2000)
-    throw new Error("Describe what you observed in 10–2000 characters.");
+  if (description.length > 2000)
+    throw new Error("Keep the optional note under 2000 characters.");
 }
 export function validateReport(
   title: string,

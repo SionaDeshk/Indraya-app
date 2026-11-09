@@ -11,6 +11,7 @@ import {
   catalog,
   publicLocation,
 } from "./taxonomy";
+import { normalizeExtent } from "./observationExtent";
 import { createClient } from "@supabase/supabase-js";
 import {
   demo,
@@ -30,6 +31,7 @@ export const supabase =
           autoRefreshToken: true,
           persistSession: true,
           detectSessionInUrl: false,
+          flowType: "pkce",
         },
       })
     : null;
@@ -48,10 +50,41 @@ export async function observations(): Promise<Observation[]> {
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(300);
-  if (error) throw error;
-  return (data ?? []).map(
-    (row) => ({ ...row, source: "Community" }) as Observation,
-  );
+  if (error) {
+    if (
+      /Failed to fetch|Network request failed|fetch failed|NetworkError/i.test(
+        error.message,
+      )
+    ) {
+      try {
+        const cache = JSON.parse(
+          (await AsyncStorage.getItem(`indraya.public-snapshot.v1.${url}`)) ||
+            "null",
+        );
+        if (cache?.rows?.length && Date.now() - cache.savedAt < 7 * 86400000)
+          return cache.rows.map((r: Observation) => ({
+            ...r,
+            offline_snapshot_at: new Date(cache.savedAt).toISOString(),
+          }));
+      } catch {
+        /* No usable snapshot. */
+      }
+    }
+    throw error;
+  }
+  const reports = (data ?? []).map((row: Observation) => ({
+    ...row,
+    source: "Community",
+  }));
+  try {
+    await AsyncStorage.setItem(
+      `indraya.public-snapshot.v1.${url}`,
+      JSON.stringify({ savedAt: Date.now(), rows: reports.slice(0, 100) }),
+    );
+  } catch {
+    /* Live data remains usable without a saved snapshot. */
+  }
+  return reports;
 }
 export type ReportInput = Pick<
   Observation,
@@ -173,11 +206,14 @@ export type GuidedReportInput = {
   description: string;
   location: import("./domain").ReportLocation;
   observed_at: string;
+  extent?: import("./observationExtent").ObservationExtent | null;
 };
 export async function submitGuided(
   input: GuidedReportInput,
   photo?: PreparedPhoto,
+  onStage?: (stage: "observation" | "attachment") => void,
 ): Promise<{ id: string; held: boolean; photoError?: string }> {
+  onStage?.("observation");
   const answers = normalizeAnswers(input.selection, input.answers),
     type = typeById(input.selection.typeId)!;
   validateReport(
@@ -201,6 +237,13 @@ export async function submitGuided(
         : location.name,
     observed_at: input.observed_at,
     details: {},
+    extent: normalizeExtent(
+      input.extent,
+      input.selection.typeId!,
+      location.privacy,
+      location.latitude,
+      location.longitude,
+    ),
     taxonomy_version: catalog.version,
     domain_id: input.selection.domainId,
     topic_id: input.selection.topicId,
@@ -250,6 +293,15 @@ export async function submitGuided(
     error: authError,
   } = await supabase.auth.getUser();
   if (authError || !user) throw Error("Sign in before sharing an observation.");
+  const version = await supabase
+    .from("observation_catalog_versions")
+    .select("version")
+    .eq("version", catalog.version)
+    .maybeSingle();
+  if (version.error || !version.data)
+    throw Error(
+      "Sharing is unavailable for this app version until its update is released. Your draft is still here.",
+    );
   const { data, error } = await supabase
     .from("observations")
     .insert({ ...payload, author_id: user.id })
@@ -262,6 +314,7 @@ export async function submitGuided(
   const result = { id: data.id as string, held: data.status !== "published" };
   if (photo) {
     try {
+      onStage?.("attachment");
       await attachPhoto(result.id, photo);
     } catch (error) {
       return {

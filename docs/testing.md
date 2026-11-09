@@ -1,3 +1,11 @@
+# Current Phases 1–4 verification
+
+See [the handoff](phases-1-4-handoff.md) for current results and release gates. The older instructions below cover earlier baselines. For this branch, apply all **six** migrations, each in a transaction, to a new disposable PostGIS database, then run all five suites: rls.sql, report_details.sql, guided_observations.sql, private_video.sql, lifecycle.sql. Never use production or load fixtures into an existing project. The bootstrap roles are cluster-wide; skip its two `create role` lines when creating another database in the same test container.
+
+`python tests/phases_upgrade.py --container YOUR_DISPOSABLE_CONTAINER` tests a populated three-to-six migration upgrade. It creates its own database and fails if that database exists. It never reads credentials or contacts Supabase.
+
+Start demo web with configured Supabase values unset **only for the child process**, for example `env -u EXPO_PUBLIC_SUPABASE_URL -u EXPO_PUBLIC_SUPABASE_ANON_KEY EXPO_NO_DOTENV=1 EXPO_OFFLINE=1 npx expo start --web --localhost --port 8095`. Run tests/phases_browser.py, tests/guided_browser.py and tests/home_browser.py with `INDRAYA_WEB_URL=http://127.0.0.1:8095`. The fixed-date fictional map fixtures now appear only in Recent history. Never reuse a server connected to production for acceptance writes.
+
 # Verification
 
 Run `npm run typecheck`, `npm run lint`, `npm test` and `EXPO_OFFLINE=1 npx expo export --platform all`. Exports validate JavaScript bundles, not native compilation. The latest run passed all three platform exports and Deno checking; final unit count is recorded in overnight-progress.md.

@@ -27,10 +27,13 @@ with sync_playwright() as p:
   page.screenshot(path=f'{OUT}/browser-home-{width}.png')
   click('About demo mode');expect(page.get_by_text('Map observations are fictional examples.',exact=False)).to_be_visible();click('Back to map');expect(page.get_by_text('Demo mode',exact=True)).not_to_be_visible()
   click('Expand nearby activity');expect(button('Collapse nearby activity')).to_be_visible()
-  expect(page.get_by_text('In this map area',exact=False)).to_be_visible()
+  expect(page.get_by_text('In this map area · newest',exact=False)).to_be_visible()
   assert button('Collapse nearby activity').bounding_box()['y']>=height*.45
   page.wait_for_timeout(350)  # Finish the native-style modal/handle transition before artifact capture.
   page.screenshot(path=f'{OUT}/browser-activity-{width}.png')
+  # The fixed-date fictional fixtures belong in history, never the active map.
+  expect(button('Ice along the shoreline')).to_have_count(0)
+  click('Collapse nearby activity');click('Layers');click('Show recent history');click('Back to map');click('Expand nearby activity')
   click('Ice along the shoreline')
   expect(button('View full observation')).to_be_visible()
   expect(button('Expand nearby activity')).to_have_count(0)

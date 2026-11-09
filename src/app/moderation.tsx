@@ -8,7 +8,11 @@ import ObservationDetails from "../ObservationDetails";
 import ChoiceSheet from "../ChoiceSheet";
 import PhotoReview from "../PhotoReview";
 import { Button, styles } from "../ui";
-type QueueItem = { report: Observation; review_priority: string };
+type QueueItem = {
+  report: Observation;
+  review_priority: string;
+  flag_counts?: Record<string, number>;
+};
 const options = (values: string[]) =>
   values.map((value) => ({ value, label: value.replaceAll("_", " ") }));
 function StaffItem({
@@ -48,7 +52,7 @@ function StaffItem({
         .eq("observation_id", report.id)
         .order("id", { ascending: false })
         .limit(20);
-      if (error) throw error;
+      if (error) throw Error(error.message);
       return data;
     },
   });
@@ -58,7 +62,7 @@ function StaffItem({
     setMessage("");
     try {
       const { error } = await supabase.rpc(rpc, args);
-      if (error) throw error;
+      if (error) throw Error(error.message);
       setMessage("Staff action recorded.");
       await refresh();
       await history.refetch();
@@ -99,6 +103,30 @@ function StaffItem({
       {open && (
         <>
           <ObservationDetails report={report} />
+          {item.flag_counts && (
+            <View style={{ gap: 8 }}>
+              <Text style={styles.text}>
+                Open flags:{" "}
+                {Object.entries(item.flag_counts)
+                  .map(([reason, count]) => `${reason}: ${count}`)
+                  .join(" · ")}
+              </Text>
+              <Text style={styles.text}>
+                Resolving flags records the decision; it does not publish, hide
+                or verify the observation.
+              </Text>
+              <Button
+                label="Resolve flags with reason below"
+                disabled={busy || reason.trim().length < 5}
+                onPress={() => {
+                  void perform("resolve_report_flags", {
+                    report: report.id,
+                    explanation: reason,
+                  });
+                }}
+              />
+            </View>
+          )}
           <Text style={styles.heading}>Publication & verification</Text>
           <Text style={styles.text}>
             Review text, answers, location and photo separately. Do not publish
@@ -258,7 +286,17 @@ export default function Moderation() {
           "Connect Supabase and sign in with a server-provisioned moderator account.",
         );
       const { data, error } = await supabase.rpc("staff_review_queue");
-      if (error) throw error;
+      if (error) throw Error(error.message);
+      return data ?? [];
+    },
+  });
+  const flags = useQuery<QueueItem[]>({
+    queryKey: ["staff", "flags"],
+    enabled: !!supabase,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase!.rpc("staff_flag_queue");
+      if (error) throw Error(error.message);
       return data ?? [];
     },
   });
@@ -291,6 +329,21 @@ export default function Moderation() {
           {q.error.message}
         </Text>
       )}
+      {!!flags.data?.length && (
+        <Text style={styles.heading}>Flagged observations</Text>
+      )}
+      {flags.error && (
+        <Text accessibilityRole="alert" style={styles.text}>
+          Flag queue unavailable. Check staff access and backend version.
+        </Text>
+      )}
+      {flags.data?.map((item) => (
+        <StaffItem
+          key={`flag-${item.report.id}`}
+          item={item}
+          refresh={refresh}
+        />
+      ))}
       {q.data?.map((item) => (
         <StaffItem key={item.report.id} item={item} refresh={refresh} />
       ))}

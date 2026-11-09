@@ -43,6 +43,8 @@ export type TypeDefinition = {
   priority: boolean;
   positive: boolean;
   aliases: string[];
+  ttlHours?: number;
+  extentModes?: ("point" | "line" | "area")[];
 };
 export type QuestionDefinition = {
   id: string;
@@ -182,6 +184,29 @@ export function normalizeAnswers(
         throw Error(`Keep ${q.label} under ${q.maxLength} characters.`);
       result[key] = value.trim();
     }
+  }
+  if (
+    selectedTypes(selection).some((t) => t.id === "ice_climbing") &&
+    result.grade
+  ) {
+    const grade = String(result.grade),
+      system = String(result.grade_system);
+    if (
+      !["wi", "ai", "m"].includes(system) ||
+      !["published", "estimate"].includes(String(result.grade_basis)) ||
+      !/^(WI|AI|M)?[0-9]{1,2}[+-]?$/.test(grade) ||
+      (/^(WI|AI|M)/.test(grade) && !grade.startsWith(system.toUpperCase()))
+    )
+      throw Error(
+        "Choose the difficulty scale and source, then enter a grade such as 4 or WI4. This does not rate stability.",
+      );
+    if (
+      result.grade_basis === "published" &&
+      String(result.route_reference ?? "").trim().length < 8
+    )
+      throw Error(
+        "Add the published grade's source, or label it as your estimate.",
+      );
   }
   return result;
 }

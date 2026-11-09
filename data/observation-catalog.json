@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "domains": [
     {
       "id": "travel",
@@ -139,28 +139,19 @@
       "id": "wildlife.sighting",
       "domainId": "wildlife",
       "label": "Animal sighting",
-      "typeIds": [
-        "animal_sighting",
-        "other"
-      ]
+      "typeIds": ["animal_sighting", "other"]
     },
     {
       "id": "wildlife.encounter",
       "domainId": "wildlife",
       "label": "Wildlife encounter",
-      "typeIds": [
-        "animal_encounter",
-        "other"
-      ]
+      "typeIds": ["animal_encounter", "other"]
     },
     {
       "id": "wildlife.welfare",
       "domainId": "wildlife",
       "label": "Animal welfare",
-      "typeIds": [
-        "animal_welfare",
-        "other"
-      ],
+      "typeIds": ["animal_welfare", "other"],
       "privacyFloor": "coarse"
     },
     {
@@ -287,12 +278,7 @@
       "id": "weather.sky",
       "domainId": "weather",
       "label": "Sky & seasonal observations",
-      "typeIds": [
-        "aurora",
-        "sky_observation",
-        "seasonal_observation",
-        "other"
-      ]
+      "typeIds": ["aurora", "sky_observation", "seasonal_observation", "other"]
     },
     {
       "id": "environment.fire",
@@ -310,12 +296,7 @@
       "id": "environment.air",
       "domainId": "environment",
       "label": "Air observations",
-      "typeIds": [
-        "poor_air",
-        "odor",
-        "smoke",
-        "other"
-      ]
+      "typeIds": ["poor_air", "odor", "smoke", "other"]
     },
     {
       "id": "environment.water",
@@ -396,21 +377,13 @@
       "id": "safety.assistance",
       "domainId": "safety",
       "label": "Assistance concerns",
-      "typeIds": [
-        "injury_assistance",
-        "stranded_traveler",
-        "other"
-      ]
+      "typeIds": ["injury_assistance", "stranded_traveler", "other"]
     },
     {
       "id": "safety.restricted",
       "domainId": "safety",
       "label": "Missing or vulnerable person",
-      "typeIds": [
-        "missing_person",
-        "vulnerable_person",
-        "other"
-      ]
+      "typeIds": ["missing_person", "vulnerable_person", "other"]
     },
     {
       "id": "discoveries.local",
@@ -428,65 +401,103 @@
       "id": "travel.other",
       "domainId": "travel",
       "label": "Other observation",
-      "typeIds": [
-        "other"
-      ]
+      "typeIds": ["other"]
     },
     {
       "id": "wildlife.other",
       "domainId": "wildlife",
       "label": "Other observation",
-      "typeIds": [
-        "other"
-      ]
+      "typeIds": ["other"]
     },
     {
       "id": "outdoors.other",
       "domainId": "outdoors",
       "label": "Other observation",
-      "typeIds": [
-        "other"
-      ]
+      "typeIds": ["other"]
     },
     {
       "id": "weather.other",
       "domainId": "weather",
       "label": "Other observation",
-      "typeIds": [
-        "other"
-      ]
+      "typeIds": ["other"]
     },
     {
       "id": "environment.other",
       "domainId": "environment",
       "label": "Other observation",
-      "typeIds": [
-        "other"
-      ]
+      "typeIds": ["other"]
     },
     {
       "id": "community.other",
       "domainId": "community",
       "label": "Other observation",
-      "typeIds": [
-        "other"
-      ]
+      "typeIds": ["other"]
     },
     {
       "id": "safety.other",
       "domainId": "safety",
       "label": "Other observation",
-      "typeIds": [
-        "other"
-      ]
+      "typeIds": ["other"]
     },
     {
       "id": "discoveries.other",
       "domainId": "discoveries",
       "label": "Other observation",
+      "typeIds": ["other"]
+    },
+    {
+      "id": "weather.winter",
+      "domainId": "weather",
+      "label": "Snow and winter conditions",
       "typeIds": [
-        "other"
+        "snow_surface",
+        "snow_instability_sign",
+        "avalanche",
+        "slide_debris",
+        "whiteout"
       ]
+    },
+    {
+      "id": "outdoors.winter",
+      "domainId": "outdoors",
+      "label": "Winter trails and skiing",
+      "typeIds": ["winter_trail", "grooming", "snow_surface"]
+    },
+    {
+      "id": "outdoors.ice",
+      "domainId": "outdoors",
+      "label": "Ice travel and climbing",
+      "typeIds": ["ice_skating", "river_crossing", "ice_climbing"]
+    },
+    {
+      "id": "outdoors.rock",
+      "domainId": "outdoors",
+      "label": "Rock and approaches",
+      "typeIds": ["rock_approach"]
+    },
+    {
+      "id": "travel.motorized",
+      "domainId": "travel",
+      "label": "Motorized access",
+      "typeIds": ["motorized_access", "river_crossing"]
+    },
+    {
+      "id": "wildlife.signs",
+      "domainId": "wildlife",
+      "label": "Tracks and feeding sites",
+      "typeIds": ["animal_signs", "carcass"]
+    },
+    {
+      "id": "wildlife.fish",
+      "domainId": "wildlife",
+      "label": "Fish and water",
+      "typeIds": ["fish_activity"]
+    },
+    {
+      "id": "outdoors.glacier",
+      "domainId": "outdoors",
+      "label": "Glaciers",
+      "typeIds": ["glacier_condition", "avalanche", "slide_debris"]
     }
   ],
   "types": {
@@ -498,16 +509,13 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "surface",
-        "visibility",
-        "direction",
-        "access_impact"
-      ],
+      "questions": ["surface", "visibility", "direction", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 24,
+      "extentModes": ["point", "line"]
     },
     "black_ice": {
       "id": "black_ice",
@@ -517,15 +525,13 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "visibility",
-        "direction",
-        "access_impact"
-      ],
+      "questions": ["visibility", "direction", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 24,
+      "extentModes": ["point", "line"]
     },
     "snow_slush": {
       "id": "snow_slush",
@@ -535,15 +541,13 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "visibility",
-        "direction",
-        "access_impact"
-      ],
+      "questions": ["visibility", "direction", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 24,
+      "extentModes": ["point", "line"]
     },
     "pothole": {
       "id": "pothole",
@@ -553,11 +557,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "visibility",
-        "direction",
-        "access_impact"
-      ],
+      "questions": ["visibility", "direction", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -571,15 +571,13 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "visibility",
-        "direction",
-        "access_impact"
-      ],
+      "questions": ["visibility", "direction", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 168,
+      "extentModes": ["point", "line"]
     },
     "flooding": {
       "id": "flooding",
@@ -589,11 +587,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "flooding",
-      "questions": [
-        "access_impact",
-        "location_context",
-        "direction"
-      ],
+      "questions": ["access_impact", "location_context", "direction"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -607,11 +601,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "location_context",
-        "direction"
-      ],
+      "questions": ["access_impact", "location_context", "direction"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -625,11 +615,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "access_impact",
-        "location_context",
-        "direction"
-      ],
+      "questions": ["access_impact", "location_context", "direction"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -643,11 +629,7 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "access_impact",
-        "location_context",
-        "direction"
-      ],
+      "questions": ["access_impact", "location_context", "direction"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -661,19 +643,13 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "visibility",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["visibility", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": [
-        "visibility",
-        "weather",
-        "travel"
-      ]
+      "aliases": ["visibility", "weather", "travel"],
+      "ttlHours": 6,
+      "extentModes": ["point", "area"]
     },
     "fog": {
       "id": "fog",
@@ -683,19 +659,13 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "visibility",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["visibility", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": [
-        "visibility",
-        "weather",
-        "travel"
-      ]
+      "aliases": ["visibility", "weather", "travel"],
+      "ttlHours": 6,
+      "extentModes": ["point", "area"]
     },
     "blowing_snow": {
       "id": "blowing_snow",
@@ -705,19 +675,13 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "visibility",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["visibility", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": [
-        "visibility",
-        "weather",
-        "travel"
-      ]
+      "aliases": ["visibility", "weather", "travel"],
+      "ttlHours": 6,
+      "extentModes": ["point", "area"]
     },
     "poor_visibility": {
       "id": "poor_visibility",
@@ -727,19 +691,11 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "visibility",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["visibility", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": [
-        "visibility",
-        "weather",
-        "travel"
-      ]
+      "aliases": ["visibility", "weather", "travel"]
     },
     "smoke": {
       "id": "smoke",
@@ -749,17 +705,11 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "visibility",
-        "location_context"
-      ],
+      "questions": ["visibility", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": [
-        "fire",
-        "smoke affecting travel"
-      ]
+      "aliases": ["fire", "smoke affecting travel"]
     },
     "collision": {
       "id": "collision",
@@ -769,18 +719,13 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "injury"
-      ],
+      "questions": ["access_impact", "direction", "injury"],
       "privacy": "approximate",
       "priority": true,
       "positive": false,
-      "aliases": [
-        "wreck",
-        "crash"
-      ]
+      "aliases": ["wreck", "crash"],
+      "ttlHours": 6,
+      "extentModes": ["point", "line"]
     },
     "vehicle_off_road": {
       "id": "vehicle_off_road",
@@ -790,11 +735,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "injury"
-      ],
+      "questions": ["access_impact", "direction", "injury"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -808,11 +749,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "injury"
-      ],
+      "questions": ["access_impact", "direction", "injury"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -826,11 +763,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "injury"
-      ],
+      "questions": ["access_impact", "direction", "injury"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -844,11 +777,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "observation_basis"
-      ],
+      "questions": ["access_impact", "direction", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -862,11 +791,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "observation_basis"
-      ],
+      "questions": ["access_impact", "direction", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -880,15 +805,13 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "observation_basis"
-      ],
+      "questions": ["access_impact", "direction", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 168,
+      "extentModes": ["point", "line"]
     },
     "damaged_bridge": {
       "id": "damaged_bridge",
@@ -898,15 +821,12 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "observation_basis"
-      ],
+      "questions": ["access_impact", "direction", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 168
     },
     "construction": {
       "id": "construction",
@@ -916,11 +836,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "observation_basis"
-      ],
+      "questions": ["access_impact", "direction", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -934,11 +850,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "observation_basis"
-      ],
+      "questions": ["access_impact", "direction", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -952,11 +864,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "observation_basis"
-      ],
+      "questions": ["access_impact", "direction", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -970,11 +878,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "observation_basis"
-      ],
+      "questions": ["access_impact", "direction", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -988,11 +892,7 @@
       "color": "#7fb0fc",
       "legacyCategory": "Travel",
       "legacyKind": "road",
-      "questions": [
-        "access_impact",
-        "direction",
-        "observation_basis"
-      ],
+      "questions": ["access_impact", "direction", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1010,7 +910,8 @@
         "animal",
         "other_animal",
         "count",
-        "sighting_behavior"
+        "sighting_behavior",
+        "moose_sex"
       ],
       "privacy": "approximate",
       "priority": false,
@@ -1024,8 +925,14 @@
         "bird",
         "caribou",
         "fox",
-        "wolf"
-      ]
+        "wolf",
+        "Dall sheep",
+        "doll sheep",
+        "caribou herd",
+        "mountain goat"
+      ],
+      "ttlHours": 6,
+      "extentModes": ["point"]
     },
     "animal_encounter": {
       "id": "animal_encounter",
@@ -1041,7 +948,8 @@
         "count",
         "encounter_behavior",
         "injury",
-        "location_context"
+        "location_context",
+        "moose_sex"
       ],
       "privacy": "coarse",
       "priority": false,
@@ -1049,7 +957,10 @@
       "aliases": [
         "bear encounter",
         "attack",
-        "aggressive animal"
+        "aggressive animal",
+        "bull moose charge",
+        "moose charging",
+        "charging moose"
       ]
     },
     "animal_welfare": {
@@ -1070,11 +981,7 @@
       "privacy": "coarse",
       "priority": false,
       "positive": false,
-      "aliases": [
-        "stranded whale",
-        "injured animal",
-        "entanglement"
-      ]
+      "aliases": ["stranded whale", "injured animal", "entanglement"]
     },
     "loose_animal": {
       "id": "loose_animal",
@@ -1084,12 +991,7 @@
       "color": "#79d5a5",
       "legacyCategory": "Outdoors",
       "legacyKind": "wildlife",
-      "questions": [
-        "animal",
-        "other_animal",
-        "count",
-        "location_context"
-      ],
+      "questions": ["animal", "other_animal", "count", "location_context"],
       "privacy": "coarse",
       "priority": false,
       "positive": false,
@@ -1103,12 +1005,7 @@
       "color": "#79d5a5",
       "legacyCategory": "Outdoors",
       "legacyKind": "wildlife",
-      "questions": [
-        "animal",
-        "other_animal",
-        "count",
-        "location_context"
-      ],
+      "questions": ["animal", "other_animal", "count", "location_context"],
       "privacy": "coarse",
       "priority": false,
       "positive": false,
@@ -1122,12 +1019,7 @@
       "color": "#79d5a5",
       "legacyCategory": "Outdoors",
       "legacyKind": "wildlife",
-      "questions": [
-        "animal",
-        "other_animal",
-        "count",
-        "location_context"
-      ],
+      "questions": ["animal", "other_animal", "count", "location_context"],
       "privacy": "coarse",
       "priority": false,
       "positive": false,
@@ -1141,12 +1033,7 @@
       "color": "#79d5a5",
       "legacyCategory": "Outdoors",
       "legacyKind": "wildlife",
-      "questions": [
-        "animal",
-        "other_animal",
-        "count",
-        "location_context"
-      ],
+      "questions": ["animal", "other_animal", "count", "location_context"],
       "privacy": "coarse",
       "priority": false,
       "positive": false,
@@ -1160,15 +1047,13 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "outdoor_condition",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["outdoor_condition", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 24,
+      "extentModes": ["point", "line"]
     },
     "trail_erosion": {
       "id": "trail_erosion",
@@ -1178,11 +1063,7 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "outdoor_condition",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["outdoor_condition", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1196,15 +1077,13 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "outdoor_condition",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["outdoor_condition", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 168,
+      "extentModes": ["point", "line"]
     },
     "difficult_crossing": {
       "id": "difficult_crossing",
@@ -1214,11 +1093,7 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "outdoor_condition",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["outdoor_condition", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1232,11 +1107,7 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "outdoor_condition",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["outdoor_condition", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1250,11 +1121,7 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "outdoor_condition",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["outdoor_condition", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1268,11 +1135,7 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "outdoor_condition",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["outdoor_condition", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1286,11 +1149,7 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "outdoor_condition",
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["outdoor_condition", "access_impact", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1304,10 +1163,7 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "accessibility",
-        "location_context"
-      ],
+      "questions": ["accessibility", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": true,
@@ -1321,9 +1177,7 @@
       "color": "#55c9bd",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "access_impact"
-      ],
+      "questions": ["access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": true,
@@ -1337,10 +1191,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "accessibility"
-      ],
+      "questions": ["service_state", "accessibility"],
       "privacy": "approximate",
       "priority": false,
       "positive": true,
@@ -1354,14 +1205,13 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 6,
+      "extentModes": ["point", "area"]
     },
     "heavy_rain": {
       "id": "heavy_rain",
@@ -1371,10 +1221,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1388,10 +1235,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1405,10 +1249,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1422,10 +1263,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1439,10 +1277,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1456,10 +1291,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1473,10 +1305,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1490,10 +1319,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1507,10 +1333,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1524,10 +1347,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1541,10 +1361,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1558,16 +1375,13 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": true,
       "positive": false,
-      "aliases": [
-        "snow slide"
-      ]
+      "aliases": ["snow slide", "avy", "avy sighting"],
+      "ttlHours": 72,
+      "extentModes": ["point"]
     },
     "slide_debris": {
       "id": "slide_debris",
@@ -1577,14 +1391,13 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
-      "aliases": []
+      "aliases": [],
+      "ttlHours": 72,
+      "extentModes": ["point"]
     },
     "landslide": {
       "id": "landslide",
@@ -1594,10 +1407,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1611,10 +1421,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1628,10 +1435,7 @@
       "color": "#8ccce8",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "location_context",
-        "access_impact"
-      ],
+      "questions": ["location_context", "access_impact"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1659,9 +1463,7 @@
       "color": "#d5ca8d",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "context_note"
-      ],
+      "questions": ["context_note"],
       "privacy": "approximate",
       "priority": false,
       "positive": true,
@@ -1675,10 +1477,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "access_impact",
-        "location_context"
-      ],
+      "questions": ["access_impact", "location_context"],
       "privacy": "approximate",
       "priority": true,
       "positive": false,
@@ -1692,11 +1491,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "fire_signs",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["fire_signs", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1710,11 +1505,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "fire_signs",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["fire_signs", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1728,11 +1519,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "location_context",
-        "observation_basis",
-        "context_note"
-      ],
+      "questions": ["location_context", "observation_basis", "context_note"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1746,11 +1533,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "location_context",
-        "observation_basis",
-        "context_note"
-      ],
+      "questions": ["location_context", "observation_basis", "context_note"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1764,11 +1547,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "location_context",
-        "observation_basis",
-        "context_note"
-      ],
+      "questions": ["location_context", "observation_basis", "context_note"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1782,11 +1561,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "location_context",
-        "observation_basis",
-        "context_note"
-      ],
+      "questions": ["location_context", "observation_basis", "context_note"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1800,11 +1575,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "location_context",
-        "observation_basis",
-        "context_note"
-      ],
+      "questions": ["location_context", "observation_basis", "context_note"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1818,11 +1589,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "location_context",
-        "observation_basis",
-        "context_note"
-      ],
+      "questions": ["location_context", "observation_basis", "context_note"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1836,11 +1603,7 @@
       "color": "#e7af79",
       "legacyCategory": "Safety",
       "legacyKind": "smoke",
-      "questions": [
-        "location_context",
-        "observation_basis",
-        "context_note"
-      ],
+      "questions": ["location_context", "observation_basis", "context_note"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1854,11 +1617,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1872,11 +1631,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": true,
       "positive": false,
@@ -1890,11 +1645,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1908,11 +1659,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1926,11 +1673,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1944,11 +1687,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1962,11 +1701,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1980,11 +1715,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -1998,11 +1729,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -2016,11 +1743,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -2034,11 +1757,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -2052,11 +1771,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "service_state",
-        "location_context",
-        "observation_basis"
-      ],
+      "questions": ["service_state", "location_context", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": true,
@@ -2070,10 +1785,7 @@
       "color": "#bbc3d1",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "accessibility",
-        "location_context"
-      ],
+      "questions": ["accessibility", "location_context"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
@@ -2087,11 +1799,7 @@
       "color": "#bda9dc",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "observation_basis",
-        "injury",
-        "location_context"
-      ],
+      "questions": ["observation_basis", "injury", "location_context"],
       "privacy": "restricted",
       "priority": false,
       "positive": false,
@@ -2105,18 +1813,11 @@
       "color": "#bda9dc",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "observation_basis",
-        "injury",
-        "location_context"
-      ],
+      "questions": ["observation_basis", "injury", "location_context"],
       "privacy": "restricted",
       "priority": true,
       "positive": false,
-      "aliases": [
-        "shooting",
-        "injuries"
-      ]
+      "aliases": ["shooting", "injuries"]
     },
     "police_presence": {
       "id": "police_presence",
@@ -2126,11 +1827,7 @@
       "color": "#bda9dc",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "observation_basis",
-        "injury",
-        "location_context"
-      ],
+      "questions": ["observation_basis", "injury", "location_context"],
       "privacy": "restricted",
       "priority": false,
       "positive": false,
@@ -2144,11 +1841,7 @@
       "color": "#bda9dc",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "observation_basis",
-        "injury",
-        "location_context"
-      ],
+      "questions": ["observation_basis", "injury", "location_context"],
       "privacy": "restricted",
       "priority": false,
       "positive": false,
@@ -2162,11 +1855,7 @@
       "color": "#bda9dc",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "observation_basis",
-        "injury",
-        "location_context"
-      ],
+      "questions": ["observation_basis", "injury", "location_context"],
       "privacy": "restricted",
       "priority": false,
       "positive": false,
@@ -2180,11 +1869,7 @@
       "color": "#bda9dc",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "observation_basis",
-        "injury",
-        "location_context"
-      ],
+      "questions": ["observation_basis", "injury", "location_context"],
       "privacy": "restricted",
       "priority": true,
       "positive": false,
@@ -2198,11 +1883,7 @@
       "color": "#bda9dc",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "observation_basis",
-        "injury",
-        "location_context"
-      ],
+      "questions": ["observation_basis", "injury", "location_context"],
       "privacy": "restricted",
       "priority": false,
       "positive": false,
@@ -2216,11 +1897,7 @@
       "color": "#bda9dc",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "observation_basis",
-        "injury",
-        "location_context"
-      ],
+      "questions": ["observation_basis", "injury", "location_context"],
       "privacy": "restricted",
       "priority": true,
       "positive": false,
@@ -2234,11 +1911,7 @@
       "color": "#bda9dc",
       "legacyCategory": "Safety",
       "legacyKind": "hazard",
-      "questions": [
-        "observation_basis",
-        "injury",
-        "location_context"
-      ],
+      "questions": ["observation_basis", "injury", "location_context"],
       "privacy": "restricted",
       "priority": true,
       "positive": false,
@@ -2252,10 +1925,7 @@
       "color": "#d5ca8d",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "context_note",
-        "observation_basis"
-      ],
+      "questions": ["context_note", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": true,
@@ -2269,10 +1939,7 @@
       "color": "#d5ca8d",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "context_note",
-        "observation_basis"
-      ],
+      "questions": ["context_note", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": true,
@@ -2286,10 +1953,7 @@
       "color": "#d5ca8d",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "context_note",
-        "observation_basis"
-      ],
+      "questions": ["context_note", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": true,
@@ -2303,10 +1967,7 @@
       "color": "#d5ca8d",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "context_note",
-        "observation_basis"
-      ],
+      "questions": ["context_note", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": true,
@@ -2320,14 +1981,302 @@
       "color": "#d5ca8d",
       "legacyCategory": "Outdoors",
       "legacyKind": "trail",
-      "questions": [
-        "context_note",
-        "observation_basis"
-      ],
+      "questions": ["context_note", "observation_basis"],
       "privacy": "approximate",
       "priority": false,
       "positive": false,
       "aliases": []
+    },
+    "snow_surface": {
+      "id": "snow_surface",
+      "label": "Snow surface",
+      "title": "Snow surface observed",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": ["winter_activity", "snow_surface", "ski_light"],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "pow",
+        "powder",
+        "corn",
+        "slush",
+        "crust",
+        "skiing",
+        "snowpack",
+        "flat light",
+        "wind pack",
+        "breakable crust"
+      ],
+      "ttlHours": 24,
+      "extentModes": ["point", "line", "area"]
+    },
+    "winter_trail": {
+      "id": "winter_trail",
+      "label": "Winter trail condition",
+      "title": "Winter trail condition observed",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": ["winter_activity", "trail_quality", "access_impact"],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "skate skiing",
+        "cross country",
+        "nordic",
+        "snowshoe",
+        "fat bike",
+        "corduroy",
+        "coudoury"
+      ],
+      "ttlHours": 24,
+      "extentModes": ["point", "line"]
+    },
+    "grooming": {
+      "id": "grooming",
+      "label": "Grooming / tracks",
+      "title": "Grooming / tracks observed",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "grooming_style",
+        "grooming_basis",
+        "trail_quality",
+        "grooming_reference"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": ["groomed", "groomer", "classic tracks", "grooming update"],
+      "ttlHours": 24,
+      "extentModes": ["point", "line"]
+    },
+    "snow_instability_sign": {
+      "id": "snow_instability_sign",
+      "label": "Snow warning signs",
+      "title": "Snow warning signs observed",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": ["snow_warning", "location_context"],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": ["whumpf", "shooting cracks", "cornice", "collapsing"],
+      "ttlHours": 12,
+      "extentModes": ["point", "area"]
+    },
+    "ice_skating": {
+      "id": "ice_skating",
+      "label": "Skating / ice surface",
+      "title": "Skating / ice surface observed",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "water_context",
+        "ice_texture",
+        "ice_measurement",
+        "ice_thickness"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": ["glass", "skating", "frozen lake"],
+      "ttlHours": 24,
+      "extentModes": ["point", "area"]
+    },
+    "river_crossing": {
+      "id": "river_crossing",
+      "label": "Frozen-water access / crossing",
+      "title": "Frozen-water access / crossing observed",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "water_context",
+        "ice_texture",
+        "ice_measurement",
+        "ice_thickness",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": ["frozen river", "river crossing", "overflow"],
+      "ttlHours": 24,
+      "extentModes": ["point"]
+    },
+    "ice_climbing": {
+      "id": "ice_climbing",
+      "label": "Ice / mixed climb",
+      "title": "Ice / mixed climb observed",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "climb_ice",
+        "grade_system",
+        "grade_basis",
+        "grade",
+        "route_reference"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "ice climbing",
+        "picked out",
+        "chandelier",
+        "chandeller",
+        "mixed climbing",
+        "picked-out",
+        "pickedout"
+      ],
+      "ttlHours": 24,
+      "extentModes": ["point"]
+    },
+    "rock_approach": {
+      "id": "rock_approach",
+      "label": "Rock / approach condition",
+      "title": "Rock / approach condition observed",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": ["rock_type", "rock_condition", "access_impact"],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "granite",
+        "shale",
+        "scree",
+        "talus",
+        "rock climbing",
+        "loose rock",
+        "choss",
+        "chossy"
+      ],
+      "ttlHours": 24,
+      "extentModes": ["point", "line"]
+    },
+    "motorized_access": {
+      "id": "motorized_access",
+      "label": "Motorized route access",
+      "title": "Motorized route access observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "vehicle_type",
+        "access_condition",
+        "surface",
+        "visibility"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "4x4",
+        "4×4",
+        "atv",
+        "utv",
+        "snowmachine",
+        "snowmobile",
+        "offroad"
+      ],
+      "ttlHours": 24,
+      "extentModes": ["point", "line"]
+    },
+    "animal_signs": {
+      "id": "animal_signs",
+      "label": "Tracks / animal signs",
+      "title": "Tracks / animal signs observed",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": ["animal", "other_animal", "animal_sign"],
+      "privacy": "coarse",
+      "priority": false,
+      "positive": false,
+      "aliases": ["bear scat", "scat", "animal tracks"],
+      "ttlHours": 72,
+      "extentModes": ["point"]
+    },
+    "carcass": {
+      "id": "carcass",
+      "label": "Carcass / feeding site",
+      "title": "Carcass / feeding site observed",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": ["animal", "other_animal", "carcass_basis"],
+      "privacy": "coarse",
+      "priority": false,
+      "positive": false,
+      "aliases": ["kill site", "bear kill", "carcass"],
+      "ttlHours": 72,
+      "extentModes": ["point"]
+    },
+    "fish_activity": {
+      "id": "fish_activity",
+      "label": "Fish / run activity",
+      "title": "Fish / run activity observed",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": ["fish_species", "fish_behavior", "water_condition"],
+      "privacy": "coarse",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "salmon",
+        "salomon",
+        "fishing",
+        "fish run",
+        "king",
+        "coho",
+        "sockeye",
+        "silver",
+        "humpy",
+        "grayling",
+        "dolly varden"
+      ],
+      "ttlHours": 6,
+      "extentModes": ["point"]
+    },
+    "glacier_condition": {
+      "id": "glacier_condition",
+      "label": "Glacier / crevasse observation",
+      "title": "Glacier condition observed",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": ["glacier_feature", "access_impact", "route_reference"],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": ["crevasse", "glacier", "snow bridge"],
+      "ttlHours": 24,
+      "extentModes": ["point"]
     }
   },
   "questions": {
@@ -2379,6 +2328,38 @@
         {
           "value": "unknown",
           "label": "Not sure"
+        },
+        {
+          "value": "dall_sheep",
+          "label": "Dall sheep"
+        },
+        {
+          "value": "mountain_goat",
+          "label": "Mountain goat"
+        },
+        {
+          "value": "wolf",
+          "label": "Wolf"
+        },
+        {
+          "value": "coyote",
+          "label": "Coyote"
+        },
+        {
+          "value": "lynx",
+          "label": "Lynx"
+        },
+        {
+          "value": "beaver",
+          "label": "Beaver"
+        },
+        {
+          "value": "otter",
+          "label": "Otter"
+        },
+        {
+          "value": "seal",
+          "label": "Seal"
         }
       ]
     },
@@ -2390,9 +2371,7 @@
       "maxLength": 80,
       "showWhen": {
         "field": "animal",
-        "values": [
-          "other"
-        ]
+        "values": ["other"]
       }
     },
     "count": {
@@ -2437,10 +2416,7 @@
           "label": "Unknown"
         }
       ],
-      "coarseValues": [
-        "nesting",
-        "denning"
-      ]
+      "coarseValues": ["nesting", "denning"]
     },
     "encounter_behavior": {
       "id": "encounter_behavior",
@@ -2466,14 +2442,14 @@
         {
           "value": "unknown",
           "label": "Not sure"
+        },
+        {
+          "value": "charging",
+          "label": "Charging"
         }
       ],
-      "reviewValues": [
-        "attack"
-      ],
-      "priorityValues": [
-        "attack"
-      ]
+      "reviewValues": ["attack"],
+      "priorityValues": ["attack"]
     },
     "animal_condition": {
       "id": "animal_condition",
@@ -2501,11 +2477,7 @@
           "label": "Unknown"
         }
       ],
-      "coarseValues": [
-        "injured",
-        "stranded",
-        "entangled"
-      ]
+      "coarseValues": ["injured", "stranded", "entangled"]
     },
     "surface": {
       "id": "surface",
@@ -2613,12 +2585,8 @@
           "label": "Not sure"
         }
       ],
-      "reviewValues": [
-        "observed"
-      ],
-      "priorityValues": [
-        "observed"
-      ]
+      "reviewValues": ["observed"],
+      "priorityValues": ["observed"]
     },
     "fire_signs": {
       "id": "fire_signs",
@@ -2784,6 +2752,847 @@
       "type": "text",
       "options": [],
       "maxLength": 240
+    },
+    "snow_surface": {
+      "id": "snow_surface",
+      "label": "Snow surface",
+      "type": "choice",
+      "options": [
+        {
+          "value": "powder",
+          "label": "Powder / pow"
+        },
+        {
+          "value": "windpacked",
+          "label": "Wind-packed"
+        },
+        {
+          "value": "scoured",
+          "label": "Wind-scoured"
+        },
+        {
+          "value": "crust",
+          "label": "Crust"
+        },
+        {
+          "value": "breakable_crust",
+          "label": "Breakable crust"
+        },
+        {
+          "value": "hardpack",
+          "label": "Hardpack"
+        },
+        {
+          "value": "corn",
+          "label": "Corn · melt–freeze snow"
+        },
+        {
+          "value": "wet",
+          "label": "Wet snow"
+        },
+        {
+          "value": "slush",
+          "label": "Slush"
+        },
+        {
+          "value": "tracked",
+          "label": "Tracked-out"
+        },
+        {
+          "value": "variable",
+          "label": "Variable"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "ski_light": {
+      "id": "ski_light",
+      "label": "Visibility / light",
+      "type": "choice",
+      "options": [
+        {
+          "value": "clear",
+          "label": "Clear contrast"
+        },
+        {
+          "value": "flat",
+          "label": "Flat light"
+        },
+        {
+          "value": "fog",
+          "label": "Fog"
+        },
+        {
+          "value": "blowing",
+          "label": "Blowing snow"
+        },
+        {
+          "value": "whiteout",
+          "label": "Whiteout"
+        },
+        {
+          "value": "glare",
+          "label": "Sun glare"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "winter_activity": {
+      "id": "winter_activity",
+      "label": "Activity",
+      "type": "choice",
+      "options": [
+        {
+          "value": "touring",
+          "label": "Ski touring / splitboarding"
+        },
+        {
+          "value": "snowmachine",
+          "label": "Snowmachining"
+        },
+        {
+          "value": "classic",
+          "label": "Classic skiing"
+        },
+        {
+          "value": "skate",
+          "label": "Skate skiing"
+        },
+        {
+          "value": "snowshoe",
+          "label": "Snowshoeing"
+        },
+        {
+          "value": "fatbike",
+          "label": "Fat biking"
+        },
+        {
+          "value": "hiking",
+          "label": "Winter hiking"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "trail_quality": {
+      "id": "trail_quality",
+      "label": "Trail surface",
+      "type": "choice",
+      "options": [
+        {
+          "value": "corduroy",
+          "label": "Fresh corduroy"
+        },
+        {
+          "value": "packed",
+          "label": "Packed"
+        },
+        {
+          "value": "soft",
+          "label": "Soft"
+        },
+        {
+          "value": "icy",
+          "label": "Icy / glazed"
+        },
+        {
+          "value": "rutted",
+          "label": "Rutted"
+        },
+        {
+          "value": "postholed",
+          "label": "Postholed"
+        },
+        {
+          "value": "thin",
+          "label": "Thin coverage"
+        },
+        {
+          "value": "debris",
+          "label": "Debris / exposed ground"
+        },
+        {
+          "value": "overflow",
+          "label": "Overflow"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "grooming_style": {
+      "id": "grooming_style",
+      "label": "What was groomed?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "classic",
+          "label": "Classic tracks"
+        },
+        {
+          "value": "skate",
+          "label": "Skate lane"
+        },
+        {
+          "value": "both",
+          "label": "Classic tracks and skate lane"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "grooming_basis": {
+      "id": "grooming_basis",
+      "label": "How do you know?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "surface",
+          "label": "I observed the surface"
+        },
+        {
+          "value": "groomer",
+          "label": "I saw a groomer · not whole-trail confirmation"
+        },
+        {
+          "value": "operator",
+          "label": "An operator published an update"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "grooming_reference": {
+      "id": "grooming_reference",
+      "label": "Operator link or grooming time · if known",
+      "type": "text",
+      "options": [],
+      "maxLength": 160
+    },
+    "snow_warning": {
+      "id": "snow_warning",
+      "label": "What did you observe?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "cracking",
+          "label": "Shooting cracks"
+        },
+        {
+          "value": "collapse",
+          "label": "Collapsing / whumpfing"
+        },
+        {
+          "value": "drifted",
+          "label": "Wind-drifted snow"
+        },
+        {
+          "value": "cornice",
+          "label": "Cornice failure"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "ice_texture": {
+      "id": "ice_texture",
+      "label": "Ice surface",
+      "type": "choice",
+      "options": [
+        {
+          "value": "glass",
+          "label": "Glass-smooth · not a thickness assessment"
+        },
+        {
+          "value": "rough",
+          "label": "Rough"
+        },
+        {
+          "value": "snow",
+          "label": "Snow-covered"
+        },
+        {
+          "value": "wind",
+          "label": "Wind-textured"
+        },
+        {
+          "value": "cracks",
+          "label": "Cracked"
+        },
+        {
+          "value": "slush",
+          "label": "Wet / slushy"
+        },
+        {
+          "value": "overflow",
+          "label": "Overflow"
+        },
+        {
+          "value": "open",
+          "label": "Open water"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "ice_measurement": {
+      "id": "ice_measurement",
+      "label": "Was thickness measured?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "not_measured",
+          "label": "Not measured"
+        },
+        {
+          "value": "drilled",
+          "label": "I measured at one drilled spot"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "ice_thickness": {
+      "id": "ice_thickness",
+      "label": "Thickness at that spot · cm, not a crossing assessment",
+      "type": "number",
+      "options": [],
+      "min": 1,
+      "max": 200,
+      "showWhen": {
+        "field": "ice_measurement",
+        "values": ["drilled"]
+      }
+    },
+    "water_context": {
+      "id": "water_context",
+      "label": "Water setting",
+      "type": "choice",
+      "options": [
+        {
+          "value": "lake",
+          "label": "Lake"
+        },
+        {
+          "value": "river",
+          "label": "River / moving water"
+        },
+        {
+          "value": "tidal",
+          "label": "Tidal / coastal"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "climb_ice": {
+      "id": "climb_ice",
+      "label": "Climbing ice condition",
+      "type": "choice",
+      "options": [
+        {
+          "value": "picked",
+          "label": "Picked-out"
+        },
+        {
+          "value": "chandelier",
+          "label": "Chandelier ice"
+        },
+        {
+          "value": "thin",
+          "label": "Thin / discontinuous"
+        },
+        {
+          "value": "wet",
+          "label": "Wet / running water"
+        },
+        {
+          "value": "aerated",
+          "label": "Aerated"
+        },
+        {
+          "value": "brittle",
+          "label": "Brittle"
+        },
+        {
+          "value": "sun",
+          "label": "Sun-affected"
+        },
+        {
+          "value": "fall",
+          "label": "Observed icefall"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "grade_system": {
+      "id": "grade_system",
+      "label": "Difficulty scale · not stability",
+      "type": "choice",
+      "options": [
+        {
+          "value": "wi",
+          "label": "WI · water ice"
+        },
+        {
+          "value": "ai",
+          "label": "AI · alpine ice"
+        },
+        {
+          "value": "m",
+          "label": "M · mixed"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "grade_basis": {
+      "id": "grade_basis",
+      "label": "Grade source",
+      "type": "choice",
+      "options": [
+        {
+          "value": "published",
+          "label": "Published grade · user-cited"
+        },
+        {
+          "value": "estimate",
+          "label": "My estimate · unverified"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "grade": {
+      "id": "grade",
+      "label": "Difficulty grade · optional",
+      "type": "text",
+      "options": [],
+      "maxLength": 24
+    },
+    "route_reference": {
+      "id": "route_reference",
+      "label": "Route / grade reference · avoid sensitive locations",
+      "type": "text",
+      "options": [],
+      "maxLength": 160
+    },
+    "rock_type": {
+      "id": "rock_type",
+      "label": "Rock type",
+      "type": "choice",
+      "options": [
+        {
+          "value": "granite",
+          "label": "Granite"
+        },
+        {
+          "value": "shale",
+          "label": "Shale"
+        },
+        {
+          "value": "limestone",
+          "label": "Limestone"
+        },
+        {
+          "value": "other",
+          "label": "Other"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "rock_condition": {
+      "id": "rock_condition",
+      "label": "Rock / approach surface",
+      "type": "choice",
+      "options": [
+        {
+          "value": "solid",
+          "label": "Appears solid · not anchor assurance"
+        },
+        {
+          "value": "fractured",
+          "label": "Fractured"
+        },
+        {
+          "value": "friable",
+          "label": "Chossy / friable / crumbly"
+        },
+        {
+          "value": "blocks",
+          "label": "Loose blocks / talus"
+        },
+        {
+          "value": "scree",
+          "label": "Scree"
+        },
+        {
+          "value": "wet",
+          "label": "Wet"
+        },
+        {
+          "value": "icy",
+          "label": "Icy"
+        },
+        {
+          "value": "snow",
+          "label": "Snow-covered"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "vehicle_type": {
+      "id": "vehicle_type",
+      "label": "Vehicle observed",
+      "type": "choice",
+      "options": [
+        {
+          "value": "4x4",
+          "label": "4×4"
+        },
+        {
+          "value": "atv",
+          "label": "ATV"
+        },
+        {
+          "value": "utv",
+          "label": "UTV"
+        },
+        {
+          "value": "snowmachine",
+          "label": "Snowmachine"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "access_condition": {
+      "id": "access_condition",
+      "label": "What affected access?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "snow",
+          "label": "Snow / drifting"
+        },
+        {
+          "value": "mud",
+          "label": "Mud / ruts"
+        },
+        {
+          "value": "washout",
+          "label": "Washout"
+        },
+        {
+          "value": "tree",
+          "label": "Downed tree"
+        },
+        {
+          "value": "gate",
+          "label": "Gate / barrier"
+        },
+        {
+          "value": "parking",
+          "label": "Parking / turnaround"
+        },
+        {
+          "value": "closure",
+          "label": "Official closure notice · add source"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "animal_sign": {
+      "id": "animal_sign",
+      "label": "Animal sign",
+      "type": "choice",
+      "options": [
+        {
+          "value": "tracks",
+          "label": "Tracks"
+        },
+        {
+          "value": "scat",
+          "label": "Scat"
+        },
+        {
+          "value": "digging",
+          "label": "Digging"
+        },
+        {
+          "value": "rubs",
+          "label": "Rubs"
+        },
+        {
+          "value": "feeding",
+          "label": "Feeding signs"
+        },
+        {
+          "value": "sounds",
+          "label": "Sounds"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "carcass_basis": {
+      "id": "carcass_basis",
+      "label": "What did you witness?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "carcass",
+          "label": "Carcass present"
+        },
+        {
+          "value": "feeding",
+          "label": "Animal feeding"
+        },
+        {
+          "value": "kill",
+          "label": "Kill witnessed"
+        },
+        {
+          "value": "suspected",
+          "label": "Suspected kill site · uncertain"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "moose_sex": {
+      "id": "moose_sex",
+      "label": "Moose · if known",
+      "type": "choice",
+      "options": [
+        {
+          "value": "bull",
+          "label": "Bull"
+        },
+        {
+          "value": "cow",
+          "label": "Cow"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ],
+      "showWhen": {
+        "field": "animal",
+        "values": ["moose"]
+      }
+    },
+    "fish_species": {
+      "id": "fish_species",
+      "label": "Fish species",
+      "type": "choice",
+      "options": [
+        {
+          "value": "chinook",
+          "label": "Chinook / king salmon"
+        },
+        {
+          "value": "coho",
+          "label": "Coho / silver salmon"
+        },
+        {
+          "value": "sockeye",
+          "label": "Sockeye / red salmon"
+        },
+        {
+          "value": "pink",
+          "label": "Pink / humpy salmon"
+        },
+        {
+          "value": "chum",
+          "label": "Chum / dog salmon"
+        },
+        {
+          "value": "rainbow",
+          "label": "Rainbow trout"
+        },
+        {
+          "value": "dolly",
+          "label": "Dolly Varden"
+        },
+        {
+          "value": "char",
+          "label": "Arctic char"
+        },
+        {
+          "value": "grayling",
+          "label": "Arctic grayling"
+        },
+        {
+          "value": "lake_trout",
+          "label": "Lake trout"
+        },
+        {
+          "value": "pike",
+          "label": "Northern pike"
+        },
+        {
+          "value": "burbot",
+          "label": "Burbot"
+        },
+        {
+          "value": "whitefish",
+          "label": "Whitefish"
+        },
+        {
+          "value": "halibut",
+          "label": "Halibut"
+        },
+        {
+          "value": "rockfish",
+          "label": "Rockfish"
+        },
+        {
+          "value": "lingcod",
+          "label": "Lingcod"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "fish_behavior": {
+      "id": "fish_behavior",
+      "label": "What did you see?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "sighting",
+          "label": "Fish present"
+        },
+        {
+          "value": "schooling",
+          "label": "Schooling"
+        },
+        {
+          "value": "spawning",
+          "label": "Spawning activity"
+        },
+        {
+          "value": "moving",
+          "label": "Fish moving through · not official run counts"
+        },
+        {
+          "value": "distressed",
+          "label": "Dead / distressed fish"
+        },
+        {
+          "value": "blocked",
+          "label": "Passage obstruction"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "water_condition": {
+      "id": "water_condition",
+      "label": "Water observation",
+      "type": "choice",
+      "options": [
+        {
+          "value": "clear",
+          "label": "Clear"
+        },
+        {
+          "value": "sediment",
+          "label": "Visible sediment"
+        },
+        {
+          "value": "low",
+          "label": "Low water"
+        },
+        {
+          "value": "high",
+          "label": "High water"
+        },
+        {
+          "value": "ice",
+          "label": "Ice affecting access"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "glacier_feature": {
+      "id": "glacier_feature",
+      "label": "What did you observe?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "open",
+          "label": "Open crevasse"
+        },
+        {
+          "value": "bridge",
+          "label": "Visible snow-bridge change"
+        },
+        {
+          "value": "fall",
+          "label": "Observed icefall"
+        },
+        {
+          "value": "surface",
+          "label": "Surface change"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
     }
   }
 }

@@ -130,6 +130,41 @@ export default function NativeMap({
         attributionPosition={{ bottom: attributionBottom, right: 10 }}
         logo
       >
+        <GeoJSONSource
+          id="community-extents"
+          data={{
+            type: "FeatureCollection",
+            features: observations
+              .filter((o) => o.extent && o.privacy_class === "approximate")
+              .map((o) => ({
+                type: "Feature",
+                properties: { id: o.id, color: reportAppearance(o).color },
+                geometry: o.extent as GeoJSON.Geometry,
+              })),
+          }}
+          onPress={(event) => {
+            const id = event.nativeEvent.features[0]?.properties?.id;
+            const row = observations.find((o) => o.id === id);
+            if (row) onSelect(row);
+          }}
+        >
+          <Layer
+            id="community-areas"
+            type="fill"
+            filter={["==", ["geometry-type"], "Polygon"]}
+            paint={{ "fill-color": ["get", "color"], "fill-opacity": 0.12 }}
+          />
+          <Layer
+            id="community-stretches"
+            type="line"
+            paint={{
+              "line-color": ["get", "color"],
+              "line-width": 3,
+              "line-opacity": 0.7,
+              "line-dasharray": [2, 2],
+            }}
+          />
+        </GeoJSONSource>
         <Images
           images={Object.fromEntries(
             Object.entries(mapSymbols).map(([key, value]) => [
