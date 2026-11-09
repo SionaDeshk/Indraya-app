@@ -3,9 +3,11 @@ Every person is a point of awareness. Together, we see the world.
 
 ## Current development update
 
-Release follow-up: [readiness audit](docs/release-readiness-audit.md) and [short iPhone checklist](docs/iphone-acceptance-checklist.md). Three synthetic reproductions identify account-switch and uncertain-save issues that remain open; this is not release approval.
+Current reliability review: [fixes, validation and the one pending migration](docs/release-reliability-handoff.md). No new backend rollout or merge has occurred.
 
-`feat/phases-1-4` adds optional notes, drafts, freshness/history, firsthand updates, private followed places, account recovery and backcountry vocabulary/extents. See [the review handoff and pending deployment plan](docs/phases-1-4-handoff.md) and [Codex brief](docs/phases-1-4-codex.md). This branch requires three additional reviewed migrations (six total), an updated media function and native acceptance; it is not deployed. The setup instructions below describe the older baseline.
+Historical release follow-up: [readiness audit](docs/release-readiness-audit.md) and [short iPhone checklist](docs/iphone-acceptance-checklist.md). Three synthetic reproductions identified account-switch and uncertain-save issues; the follow-up above contains review fixes, not release approval.
+
+`feat/phases-1-4` adds optional notes, drafts, freshness/history, firsthand updates, private followed places, account recovery and backcountry vocabulary/extents. See [the review handoff and pending deployment plan](docs/phases-1-4-handoff.md) and [Codex brief](docs/phases-1-4-codex.md). Its six database migrations and updated media function were subsequently deployed with separate approval; client/native acceptance and merge remain pending. The setup instructions below describe the older baseline.
 
 `feat/observation-flow` introduces a three-step sharing flow and private photo/video attachments. See [the update and rollout plan](docs/observation-flow-update.md). Video requires the new fourth migration, updated Edge Function and a rebuilt native development client; these are not deployed automatically. The older sections below describe the existing guided baseline.
 
@@ -31,13 +33,15 @@ Sensitive reports enter private review and use regional information. My reports 
 ## Map-first home
 The home screen starts with search and a small account icon, a compact demo badge, right-side map controls, Layers and a compact + Report button. Nearby observations start collapsed; tap or swipe the handle up to browse, and collapse it to return map space. Category filters and the legend live inside Layers, alongside a link to official sources. Branding is in Account. Alaska-only provider queries and a second result filter prevent out-of-state search matches. No native rebuild is needed for this layout/search update.
 
-## Run the update on the Mac
+## Historical guided-baseline Mac instructions
+
+For the current reliability branch, follow release-reliability-handoff.md; preserve local settings and do not switch back to an older branch to recover an uncertain save.
 Preserve local app.json/package.json changes before pulling the follow-up branch feat/guided-observations. No dependency or app.json changes were added by this branch; if the prior photo/time development build is already installed, restart Metro or reload without rebuilding native code. Keep this checkout outside iCloud Documents. Start `npx expo start --dev-client --localhost --port 8081` in a dedicated Terminal tab and keep it running. Native dependency changes in the earlier update require `npm ci`, `npx expo prebuild --platform ios`, then `npx expo run:ios`; do not use --clean or discard local settings to resolve conflicts.
 
 ## Verification and limits
 Typecheck, lint, unit tests, real disposable PostGIS role tests, browser workflow checks, Deno handler checking and all-platform JavaScript exports are documented in [testing](docs/testing.md). Browser screenshots do not prove native map, pin, photo permission or time-picker behavior. Local SQL tests do not prove hosted Auth/email/Storage. Live geocoder accuracy and official feeds remain blocked pending network/endpoint validation; [official sources](docs/official-sources.md) stay gated.
 
-Shared accounts/reports require a configured Supabase project, all three migrations and the photo Edge Function. Nothing was deployed to a hosted project. Follow [shared backend](docs/shared-backend.md); never put service-role keys in the app. Push delivery, background tracking and offline map downloads are not implemented. This MVP does not dispatch emergency responders.
+The production backend is now at the six-migration baseline with the updated media function. The current reliability client additionally requires the one proposed seventh migration in the current handoff; it has not been deployed. Follow [shared backend](docs/shared-backend.md); never put service-role keys in the app. Push delivery, background tracking and offline map downloads are not implemented. This MVP does not dispatch emergency responders.
 
 ## Map symbols and previews
 Community markers use original bundled symbols for roads, wildlife, recreation, weather, fire/environment, infrastructure, assistance and discoveries. Type colors remain underneath; separate staff-risk rings keep their existing meanings. Symbols do not confirm an incident or assign danger. No remote icon/font service is needed.

@@ -76,10 +76,12 @@ test("server-matched line and area survive an anchor outside the viewport", () =
     nearbyObservations(reports, options).map((r) => r.id),
     ["area", "line"],
   );
-  // Global/demo rows have no server intersection guarantee.
+  // Saved/global rows use a full local geometry intersection.
   assert.deepEqual(
-    nearbyObservations(reports, { ...options, spatiallyMatched: false }),
-    [],
+    nearbyObservations(reports, { ...options, spatiallyMatched: false }).map(
+      (r) => r.id,
+    ),
+    ["area", "line"],
   );
 });
 

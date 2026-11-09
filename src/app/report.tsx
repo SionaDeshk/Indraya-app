@@ -43,10 +43,12 @@ import ObservationTime from "../ObservationTime";
 import { pickPhoto, pickVideo, PreparedPhoto } from "../photos";
 import ExtentPicker from "../ExtentPicker";
 import { ObservationExtent, normalizeExtent } from "../observationExtent";
+import { newRequestId, type SubmissionAttempt } from "../submission";
 import useObservationDraft from "../useObservationDraft";
 import { Button, styles } from "../ui";
 const steps = ["What did you notice?", "When and where?", "Review and share"];
 export default function Report() {
+  const [attempt, setAttempt] = useState<SubmissionAttempt | null>(null);
   const [extent, setExtent] = useState<ObservationExtent | null>(null);
   const [stage, setStage] = useState("observation");
   const [noteOpen, setNoteOpen] = useState(false);
@@ -69,6 +71,7 @@ export default function Report() {
   const [saved, setSaved] = useState<{
     id: string;
     held: boolean;
+    status?: string;
     photoError?: string;
   } | null>(null);
   const lock = useRef(false),
@@ -83,9 +86,26 @@ export default function Report() {
       description,
       location,
       observedAt,
+      attempt,
     },
     !!saved,
   );
+  useEffect(() => {
+    if (!draft.boundary.invalidated) return;
+    setSelection(emptySelection);
+    setAnswers({});
+    setTitle("");
+    setDescription("");
+    setLocation(null);
+    setPhoto(null);
+    setConsent(false);
+    setSaved(null);
+    setExtent(null);
+    setAttempt(null);
+    setObservedAt(null);
+    setNotice("");
+    setMessage("");
+  }, [draft.boundary.invalidated]);
   function restoreDraft() {
     const value = draft.pending;
     if (!value) return;
@@ -97,7 +117,9 @@ export default function Report() {
     setNoteOpen(!!value.description);
     setLocation(value.location);
     setObservedAt(value.observedAt);
-    setStep(0);
+    setAttempt(value.attempt ?? null);
+    setExtent(value.attempt?.extent ?? null);
+    setStep(value.attempt ? 2 : 0);
     setNotice(
       "Draft restored. Recheck the saved time and place, reattach media, and redraw any extent before sharing.",
     );
@@ -141,12 +163,13 @@ export default function Report() {
     if (!location)
       throw Error("Choose where you observed this before reviewing.");
     validateReport(title, description, location.latitude, location.longitude);
-    validateDetails(
-      type!.legacyCategory,
-      type!.legacyKind,
-      {},
-      observedAt ?? new Date().toISOString(),
-    );
+    if (!attempt)
+      validateDetails(
+        type!.legacyCategory,
+        type!.legacyKind,
+        {},
+        observedAt ?? new Date().toISOString(),
+      );
     if (photo && !consent)
       throw Error("Check the attachment for sensitive details or remove it.");
     return prepared;
@@ -172,7 +195,7 @@ export default function Report() {
     setMessage("");
     try {
       const next = await (kind === "video" ? pickVideo() : pickPhoto());
-      if (next) {
+      if (next && draft.boundary.current()) {
         setPhoto(next);
         setConsent(false);
       }
@@ -187,25 +210,56 @@ export default function Report() {
     }
   }
   async function save() {
-    if (lock.current) return;
+    if (lock.current || !draft.ready || !draft.boundary.current()) return;
     lock.current = true;
     setBusy(true);
     setMessage("");
     try {
       const prepared = validate();
+      if (supabase && !draft.boundary.actor)
+        throw Error("Sign in, then reopen sharing for your account.");
+      const nextAttempt = attempt ?? {
+        requestId: newRequestId(),
+        observedAt: observedAt ?? new Date().toISOString(),
+        extent: extent ?? null,
+      };
+      const safeLocation = publicLocation(selection, prepared, location!);
+      const frozenLocation = {
+        ...safeLocation,
+        name: location!.privateAddress
+          ? "Approximate map area"
+          : safeLocation.name,
+        privateAddress: false,
+      };
+      if (supabase) setAttempt(nextAttempt);
+      setObservedAt(nextAttempt.observedAt);
+      setLocation(frozenLocation);
+      if (supabase)
+        await draft.persistAttempt({
+          selection,
+          answers: prepared,
+          title,
+          titleEdited,
+          description,
+          location: frozenLocation,
+          observedAt: nextAttempt.observedAt,
+          attempt: nextAttempt,
+        });
       const result = await submitGuided(
         {
           selection,
           answers: prepared,
           title,
           description,
-          location: location!,
-          observed_at: observedAt ?? new Date().toISOString(),
-          extent,
+          location: frozenLocation,
+          observed_at: nextAttempt.observedAt,
+          extent: nextAttempt.extent,
         },
         photo ?? undefined,
         setStage,
+        { actor: draft.boundary.actor!, requestId: nextAttempt.requestId },
       );
+      if (!draft.boundary.current()) return;
       await client.invalidateQueries({ queryKey: ["observations"] });
       await client.invalidateQueries({ queryKey: ["nearby-observations"] });
       await client.invalidateQueries({ queryKey: ["private", "my-reports"] });
@@ -223,11 +277,12 @@ export default function Report() {
     }
   }
   async function retryPhoto() {
-    if (!saved || !photo || lock.current) return;
+    if (!saved || !photo || lock.current || !draft.boundary.current()) return;
     lock.current = true;
     setBusy(true);
     try {
-      await attachPhoto(saved.id, photo);
+      await attachPhoto(saved.id, photo, draft.boundary.actor ?? undefined);
+      if (!draft.boundary.current()) return;
       setSaved({ ...saved, photoError: undefined });
       setMessage("");
     } catch (error) {
@@ -239,6 +294,18 @@ export default function Report() {
       setBusy(false);
     }
   }
+  if (draft.boundary.invalidated)
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#071719" }}>
+        <View style={styles.page}>
+          <Text accessibilityRole="alert" style={styles.text}>
+            Account changed. This form is locked and its private details have
+            been cleared. Reopen sharing to continue with the correct account.
+          </Text>
+          <Button label="Back to map" onPress={() => router.replace("/")} />
+        </View>
+      </SafeAreaView>
+    );
   const sharedLocation = location
     ? publicLocation(selection, answers, location)
     : null;
@@ -281,11 +348,13 @@ export default function Report() {
           </Text>
           <Text accessibilityRole="header" style={styles.heading}>
             {saved
-              ? saved.held
-                ? "Saved for private review"
-                : supabase
-                  ? "Observation shared"
-                  : "Saved on this device"
+              ? saved.status === "hidden"
+                ? "Observation is hidden"
+                : saved.held
+                  ? "Saved for private review"
+                  : supabase
+                    ? "Observation shared"
+                    : "Saved on this device"
               : steps[step]}
           </Text>
           <Text style={[styles.text, { fontSize: 13 }]}>
@@ -302,25 +371,37 @@ export default function Report() {
             <View style={styles.card}>
               <Text style={styles.heading}>Continue your draft?</Text>
               <Text style={styles.text}>
-                Saved on this device for this account. It has not been shared.
+                {draft.pending.attempt
+                  ? "A previous save needs confirmation. Continue to safely check the same observation; do not create a duplicate."
+                  : "Saved on this device for this account. It has not been shared."}
               </Text>
               <Button label="Continue draft" onPress={restoreDraft} />
-              <Button
-                label="Discard draft"
-                onPress={() => {
-                  void draft.discard();
-                }}
-              />
+              {!draft.pending.attempt && (
+                <Button
+                  label="Discard draft"
+                  onPress={() => {
+                    void draft.discard();
+                  }}
+                />
+              )}
             </View>
+          )}
+          {attempt && !saved && (
+            <Text accessibilityRole="alert" style={styles.text}>
+              A save may have completed. This draft is locked for a safe retry
+              of the same observation. You can leave and resume it later.
+            </Text>
           )}
           {saved ? (
             <View style={styles.card}>
               <Text accessibilityRole="alert" style={styles.text}>
-                {saved.held
-                  ? "This observation is held for private review. It is not on the public map and no alert was sent."
-                  : supabase
-                    ? "Your observation was shared. It has not been confirmed by emergency services."
-                    : "Your demo observation is saved on this device."}
+                {saved.status === "hidden"
+                  ? "This observation was saved previously and is now hidden. Retrying has not republished it."
+                  : saved.held
+                    ? "This observation is held for private review. It is not on the public map and no alert was sent."
+                    : supabase
+                      ? "Your observation was shared. It has not been confirmed by emergency services."
+                      : "Your demo observation is saved on this device."}
               </Text>
               {saved.photoError && (
                 <>
@@ -597,6 +678,7 @@ export default function Report() {
                     )}
                     <Button
                       label="Edit observation"
+                      disabled={busy || !!attempt}
                       onPress={() => setStep(0)}
                     />
                   </View>
@@ -618,6 +700,7 @@ export default function Report() {
                     </Text>
                     <Button
                       label="Edit time or place"
+                      disabled={busy || !!attempt}
                       onPress={() => setStep(1)}
                     />
                   </View>
@@ -634,8 +717,46 @@ export default function Report() {
                         label="Review attachment"
                       />
                     )}
+                    {!!attempt && (
+                      <>
+                        <Text style={styles.text}>
+                          After a restart, select the attachment again if
+                          needed. An attachment already saved will not be
+                          replaced.
+                        </Text>
+                        <Button
+                          label="Reattach photo"
+                          disabled={busy || preparing}
+                          onPress={() => {
+                            void selectPhoto();
+                          }}
+                        />
+                        <Button
+                          label="Reattach video"
+                          disabled={busy || preparing}
+                          onPress={() => {
+                            void selectPhoto("video");
+                          }}
+                        />
+                        {!!photo && (
+                          <Pressable
+                            accessibilityRole="checkbox"
+                            accessibilityLabel="I checked this attachment for sensitive details"
+                            accessibilityState={{ checked: consent }}
+                            onPress={() => setConsent(!consent)}
+                            style={{ minHeight: 44, justifyContent: "center" }}
+                          >
+                            <Text style={styles.text}>
+                              {consent ? "✓ " : ""}I checked this attachment for
+                              sensitive details
+                            </Text>
+                          </Pressable>
+                        )}
+                      </>
+                    )}
                     <Button
                       label="Edit attachment"
+                      disabled={busy || !!attempt}
                       onPress={() => setStep(1)}
                     />
                   </View>
@@ -681,7 +802,7 @@ export default function Report() {
               <View style={{ flex: 1 }}>
                 <Button
                   label="Back"
-                  disabled={busy || preparing}
+                  disabled={busy || preparing || !!attempt}
                   onPress={() => {
                     setStep(step - 1);
                     setMessage("");
@@ -705,6 +826,7 @@ export default function Report() {
                         : "Share observation"
                 }
                 disabled={
+                  !draft.ready ||
                   !!draft.pending ||
                   preparing ||
                   busy ||

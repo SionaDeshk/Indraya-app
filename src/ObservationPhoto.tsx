@@ -1,3 +1,4 @@
+import useActorBoundary from "./useActorBoundary";
 import { removeDemoAttachment } from "./photos";
 import MediaPreview from "./MediaPreview";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -32,27 +33,34 @@ export async function photoForReport(reportId: string) {
   };
 }
 export default function ObservationPhoto({ report }: { report: Observation }) {
+  const boundary = useActorBoundary();
   const [message, setMessage] = useState("");
   const [removed, setRemoved] = useState(false);
   const client = useQueryClient();
   const q = useQuery({
-    queryKey: ["report-photo", report.id],
+    queryKey: ["report-photo", report.id, boundary.actor],
     queryFn: () => photoForReport(report.id),
-    enabled: !!supabase && !report.demo,
+    enabled:
+      !!supabase &&
+      !report.demo &&
+      boundary.actor !== undefined &&
+      !boundary.invalidated,
     staleTime: 45000,
     refetchInterval: 50000,
     retry: 1,
   });
-  const uri = removed
-    ? undefined
-    : report.demo &&
-        (/^data:(image\/jpeg|video\/(mp4|quicktime));base64,/.test(
-          report.photo_uri ?? "",
-        ) ||
-          (report.media_kind === "video" &&
-            report.photo_uri?.startsWith("file://")))
-      ? report.photo_uri
-      : q.data?.url;
+  const uri =
+    boundary.invalidated || removed
+      ? undefined
+      : report.demo &&
+          (/^data:(image\/jpeg|video\/(mp4|quicktime));base64,/.test(
+            report.photo_uri ?? "",
+          ) ||
+            (report.media_kind === "video" &&
+              report.photo_uri?.startsWith("file://")))
+        ? report.photo_uri
+        : q.data?.url;
+  if (boundary.invalidated) return null;
   return (
     <View style={{ gap: 8 }}>
       {!!uri && (
@@ -102,7 +110,7 @@ export default function ObservationPhoto({ report }: { report: Observation }) {
           label="Remove my attachment"
           onPress={() => {
             const media = q.data;
-            if (!media || !supabase) return;
+            if (!media || !supabase || !boundary.current()) return;
             void supabase.functions
               .invoke("observation-photo", {
                 body: { action: "remove", mediaId: media.id },

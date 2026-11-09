@@ -1,3 +1,7 @@
+# Reliability follow-up verification
+
+See [release-reliability-handoff.md](release-reliability-handoff.md) for the current review branch, 50 tests, 154 SQL assertions, concurrent replay proof, nine synthetic account/network acceptance cases and the pending seventh migration. All six previously deployed migrations stay unchanged. tests/reliability_database.py creates a new disposable test database; tests/phases_upgrade.py now accepts --applied-count 6 for the populated current-production-baseline rehearsal. Never run the bootstrap/fixtures on a hosted project. Tests/release_audit_browser.py is historical diagnostic evidence; tests/reliability_browser.py asserts prevention of those failures.
+
 # Current Phases 1–4 verification
 
 See [the handoff](phases-1-4-handoff.md) for current results and release gates. The older instructions below cover earlier baselines. For this branch, apply all **six** migrations, each in a transaction, to a new disposable PostGIS database, then run all five suites: rls.sql, report_details.sql, guided_observations.sql, private_video.sql, lifecycle.sql. Never use production or load fixtures into an existing project. The bootstrap roles are cluster-wide; skip its two `create role` lines when creating another database in the same test container.

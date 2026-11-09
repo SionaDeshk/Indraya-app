@@ -2,15 +2,27 @@ import { ScrollView, Text, View } from "react-native";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
+import useActorBoundary from "../useActorBoundary";
 import { followedPlaces, unfollowPlace } from "../places";
 import { Button, styles } from "../ui";
 export default function Places() {
+  const boundary = useActorBoundary();
   const q = useQuery({
-      queryKey: ["private", "places"],
+      queryKey: ["private", "places", boundary.actor],
+      enabled: boundary.actor !== undefined && !boundary.invalidated,
       queryFn: followedPlaces,
     }),
     client = useQueryClient(),
     [message, setMessage] = useState("");
+  if (boundary.invalidated)
+    return (
+      <View style={styles.page}>
+        <Text accessibilityRole="alert" style={styles.text}>
+          Account changed. Reopen Following places.
+        </Text>
+        <Button label="Back to map" onPress={() => router.replace("/")} />
+      </View>
+    );
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Button label="Back to map" onPress={() => router.replace("/")} />

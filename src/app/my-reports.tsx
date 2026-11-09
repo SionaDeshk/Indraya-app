@@ -6,16 +6,19 @@ import { myObservations, supabase } from "../api";
 import { Observation } from "../domain";
 import ObservationCard from "../ObservationCard";
 import ObservationDetails from "../ObservationDetails";
+import useActorBoundary from "../useActorBoundary";
 import { useNow } from "../Clock";
 import { observationStatus } from "../observationLifecycle";
 import { Button, styles } from "../ui";
 export default function MyReports() {
   const now = useNow();
+  const boundary = useActorBoundary();
   const { observation } = useLocalSearchParams<{ observation?: string }>();
   const opened = useRef("");
   const [selected, setSelected] = useState<Observation | null>(null);
   const q = useQuery({
-    queryKey: ["private", "my-reports"],
+    queryKey: ["private", "my-reports", boundary.actor],
+    enabled: boundary.actor !== undefined && !boundary.invalidated,
     queryFn: myObservations,
     retry: 1,
   });
@@ -30,6 +33,15 @@ export default function MyReports() {
     if (selected && (!q.data || !q.data.some((r) => r.id === selected.id)))
       setSelected(null);
   }, [q.data, selected]);
+  if (boundary.invalidated)
+    return (
+      <View style={styles.page}>
+        <Text accessibilityRole="alert" style={styles.text}>
+          Account changed. Reopen My observations for the current account.
+        </Text>
+        <Button label="Back to map" onPress={() => router.replace("/")} />
+      </View>
+    );
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#071719" }}

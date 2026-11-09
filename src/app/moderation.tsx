@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ScrollView, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
+import useActorBoundary from "../useActorBoundary";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../api";
 import { Observation } from "../domain";
@@ -276,9 +277,11 @@ function StaffItem({
   );
 }
 export default function Moderation() {
+  const boundary = useActorBoundary();
   const client = useQueryClient();
   const q = useQuery<QueueItem[]>({
-    queryKey: ["staff", "review-queue"],
+    queryKey: ["staff", "review-queue", boundary.actor],
+    enabled: boundary.actor !== undefined && !boundary.invalidated,
     retry: false,
     queryFn: async () => {
       if (!supabase)
@@ -291,8 +294,9 @@ export default function Moderation() {
     },
   });
   const flags = useQuery<QueueItem[]>({
-    queryKey: ["staff", "flags"],
-    enabled: !!supabase,
+    queryKey: ["staff", "flags", boundary.actor],
+    enabled:
+      !!supabase && boundary.actor !== undefined && !boundary.invalidated,
     retry: false,
     queryFn: async () => {
       const { data, error } = await supabase!.rpc("staff_flag_queue");
@@ -308,6 +312,15 @@ export default function Moderation() {
       client.invalidateQueries({ queryKey: ["private"] }),
     ]);
   }
+  if (boundary.invalidated)
+    return (
+      <View style={styles.page}>
+        <Text accessibilityRole="alert" style={styles.text}>
+          Account changed. Reopen staff review with the correct account.
+        </Text>
+        <Button label="Back to map" onPress={() => router.replace("/")} />
+      </View>
+    );
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#071719" }}

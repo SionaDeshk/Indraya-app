@@ -315,7 +315,16 @@ export function changeTopic(selection: Selection, id: string): Selection {
   };
 }
 export function searchTypes(query: string, domain?: DomainId | null) {
-  const q = query.toLocaleLowerCase().trim();
+  const raw = query.toLocaleLowerCase().trim();
+  // Client-only query normalization leaves deployed catalog definitions intact.
+  const q =
+    (
+      {
+        snowmachining: "snowmachine",
+        offroading: "offroad",
+        "off-roading": "offroad",
+      } as Record<string, string>
+    )[raw] ?? raw;
   if (q.length < 2) return [];
   const results: {
     type: TypeDefinition;
@@ -331,7 +340,15 @@ export function searchTypes(query: string, domain?: DomainId | null) {
     const parent = domainById(topic?.domainId);
     if (topic && parent) results.push({ type, topic, domain: parent });
   }
-  return results.slice(0, 20);
+  const score = (type: TypeDefinition) => {
+    const terms = [type.label, ...type.aliases].map((s) => s.toLowerCase());
+    return terms.includes(q)
+      ? 0
+      : terms.some((s) => s.startsWith(q + " "))
+        ? 1
+        : 2;
+  };
+  return results.sort((a, b) => score(a.type) - score(b.type)).slice(0, 20);
 }
 export function legacyPath(
   category: LegacyCategory,

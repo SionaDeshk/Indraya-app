@@ -1,5 +1,7 @@
 # Release-readiness audit
 
+> Historical audit of e1ba30f. R1–R5 now have review-branch fixes and prevention tests; see [release-reliability-handoff.md](release-reliability-handoff.md). Nothing from that follow-up is deployed. The reproduction script below intentionally describes the earlier failures; use tests/reliability_browser.py for current acceptance.
+
 Audit base: `e1ba30f05c62453fc52a3bf81e05a7921fba5968` (PR #3). Review branch: `review/release-readiness`. Scope: account recovery, retry behavior, privacy, freshness and backcountry terminology. This branch adds diagnostics and documentation only; it does not fix application behavior or authorize a rollout.
 
 ## Decision

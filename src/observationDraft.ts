@@ -5,6 +5,8 @@ import {
   normalizeAnswers,
   publicLocation,
 } from "./taxonomy";
+import { validRequestId, type SubmissionAttempt } from "./submission";
+import { normalizeExtent } from "./observationExtent";
 import type { ReportLocation } from "./domain";
 export type ObservationDraft = {
   selection: Selection;
@@ -14,6 +16,7 @@ export type ObservationDraft = {
   description: string;
   location: ReportLocation | null;
   observedAt: string | null;
+  attempt?: SubmissionAttempt | null;
 };
 export function parseDraft(raw: string | null): ObservationDraft | null {
   try {
@@ -22,7 +25,7 @@ export function parseDraft(raw: string | null): ObservationDraft | null {
       !d ||
       d.version !== 1 ||
       !Number.isFinite(d.updatedAt) ||
-      Date.now() - d.updatedAt > 7 * 86400000 ||
+      (Date.now() - d.updatedAt > 7 * 86400000 && !d.value?.attempt) ||
       !validPath(d.value.selection)
     )
       return null;
@@ -53,6 +56,22 @@ export function parseDraft(raw: string | null): ObservationDraft | null {
           ? "Approximate map area"
           : v.location.name,
       });
+    }
+    if (v.attempt) {
+      if (
+        !validRequestId(v.attempt.requestId) ||
+        !v.location ||
+        !Number.isFinite(Date.parse(v.attempt.observedAt))
+      )
+        return null;
+      v.attempt.extent = normalizeExtent(
+        v.attempt.extent,
+        v.selection.typeId,
+        v.location.privacy ?? "approximate",
+        v.location.latitude,
+        v.location.longitude,
+      );
+      v.observedAt = v.attempt.observedAt;
     }
     return v;
   } catch {

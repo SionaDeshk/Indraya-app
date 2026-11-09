@@ -14,7 +14,7 @@ import {
 } from "react-native-safe-area-context";
 import { useNow } from "../Clock";
 import { isActive } from "../observationLifecycle";
-import { nearbyObservations } from "../nearbyObservations";
+import { nearbyObservations, nearbySource } from "../nearbyObservations";
 import { followPlace } from "../places";
 import ObservationPreview from "../ObservationPreview";
 import { mapSymbols } from "../mapSymbols";
@@ -101,18 +101,23 @@ export default function Home() {
   const visible = loadedReports
     .filter((o) => history || isActive(o, now))
     .filter((o) => filters === "all" || filters === observationDomain(o));
-  const spatiallyMatched = !!supabase && viewport.bounds !== null && !history;
-  const nearbyReports = nearbyObservations(
-    spatiallyMatched ? (spatial.data ?? []) : loadedReports,
-    {
-      now,
-      history,
-      domain: filters,
-      bounds: viewport.bounds,
-      center: viewport.center,
-      spatiallyMatched,
-    },
-  );
+  const source = nearbySource({
+    loaded: loadedReports,
+    spatial: spatial.data,
+    viewport: !!supabase && viewport.bounds !== null,
+    history,
+    failed: spatial.isError,
+    savedAt: q.dataUpdatedAt || spatial.dataUpdatedAt || Date.now(),
+  });
+  const spatiallyMatched = source.spatiallyMatched;
+  const nearbyReports = nearbyObservations(source.rows, {
+    now,
+    history,
+    domain: filters,
+    bounds: viewport.bounds,
+    center: viewport.center,
+    spatiallyMatched,
+  });
   function selectReport(report: Observation) {
     setSearchPlace(null);
     if (report.privacy_class !== "restricted")
@@ -246,7 +251,7 @@ export default function Home() {
             <Text style={{ color: "#d0e8e3", fontSize: 25 }}>◎</Text>
           </Pressable>
         </View>
-        {q.data?.some((r) => r.offline_snapshot_at) && (
+        {(source.snapshot || q.data?.some((r) => r.offline_snapshot_at)) && (
           <Text
             accessibilityRole="alert"
             style={{
@@ -255,9 +260,11 @@ export default function Home() {
               padding: 10,
             }}
           >
-            Offline snapshot · saved{" "}
+            Saved snapshot · limited coverage · saved{" "}
             {new Date(
-              q.data.find((r) => r.offline_snapshot_at)!.offline_snapshot_at!,
+              (source.rows.find((r) => r.offline_snapshot_at) ??
+                q.data?.find((r) => r.offline_snapshot_at))!
+                .offline_snapshot_at!,
             ).toLocaleString()}
             . Conditions may have changed; no updates are being received.
           </Text>
@@ -477,6 +484,12 @@ export default function Home() {
             )}
             {spatial.isFetching && (
               <Text style={styles.text}>Updating this map area…</Text>
+            )}
+            {source.snapshot && (
+              <Text accessibilityRole="alert" style={styles.text}>
+                Showing saved observations only. Coverage may be incomplete; no
+                live updates are available.
+              </Text>
             )}
             {spatial.error && (
               <Button

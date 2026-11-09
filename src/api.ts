@@ -4,14 +4,14 @@ import type { PreparedPhoto } from "./photos";
 import "react-native-url-polyfill/auto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  Selection,
-  Answers,
   normalizeAnswers,
   typeById,
   catalog,
   publicLocation,
 } from "./taxonomy";
+import type { GuidedReportInput } from "./submission";
 import { normalizeExtent } from "./observationExtent";
+import { fetchWithTimeout } from "./requestTimeout";
 import { createClient } from "@supabase/supabase-js";
 import {
   demo,
@@ -26,6 +26,7 @@ const key = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 export const supabase =
   url && key
     ? createClient(url, key, {
+        global: { fetch: fetchWithTimeout },
         auth: {
           storage: AsyncStorage,
           autoRefreshToken: true,
@@ -35,6 +36,50 @@ export const supabase =
         },
       })
     : null;
+// Verify identity, then pin this operation's token so an account switch cannot
+// silently reassign a pending write to the new account.
+async function actorToken(actor: string) {
+  if (!supabase) throw Error("Sign in before continuing.");
+  const { data, error } = await supabase.auth.getSession();
+  if (error || data.session?.user.id !== actor)
+    throw Error("Account changed. Reopen this screen before continuing.");
+  const token = data.session.access_token;
+  const verified = await supabase.auth.getUser(token);
+  const current = await supabase.auth.getSession();
+  if (
+    verified.error ||
+    verified.data.user?.id !== actor ||
+    current.data.session?.user.id !== actor
+  )
+    throw Error("Account changed. Reopen this screen before continuing.");
+  return token;
+}
+async function actorClient(actor: string) {
+  const token = await actorToken(actor);
+  return createClient(url!, key!, {
+    accessToken: async () => token,
+    global: { fetch: fetchWithTimeout },
+  });
+}
+export async function updatePasswordForActor(
+  actor: string,
+  password: string,
+  current: () => boolean,
+) {
+  const token = await actorToken(actor);
+  if (!current()) throw Error("Recovery session changed. Request a new link.");
+  const response = await fetchWithTimeout(`${url}/auth/v1/user`, {
+    method: "PUT",
+    headers: {
+      apikey: key!,
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password }),
+  });
+  if (!response.ok)
+    throw Error("Password update failed. Request a new recovery link.");
+}
 export const localKey = "indraya.demo.observations.v1";
 export async function observations(): Promise<Observation[]> {
   if (!supabase)
@@ -52,7 +97,7 @@ export async function observations(): Promise<Observation[]> {
     .limit(300);
   if (error) {
     if (
-      /Failed to fetch|Network request failed|fetch failed|NetworkError/i.test(
+      /Failed to fetch|Network request failed|fetch failed|NetworkError|AbortError|aborted|timed out|timeout/i.test(
         error.message,
       )
     ) {
@@ -98,11 +143,13 @@ export type ReportInput = Pick<
 export async function attachPhoto(
   observationId: string,
   attachment: string | PreparedPhoto,
+  actor?: string,
 ) {
   const media =
     typeof attachment === "string" ? { base64: attachment } : attachment;
   if (!supabase) throw Error("Shared media storage is not connected.");
-  const { data, error } = await supabase.functions.invoke("observation-photo", {
+  const client = actor ? await actorClient(actor) : supabase;
+  const { data, error } = await client.functions.invoke("observation-photo", {
     body: {
       action: "upload",
       observationId,
@@ -199,20 +246,18 @@ export async function submit(
   }
   return { id: data.id };
 }
-export type GuidedReportInput = {
-  selection: Selection;
-  answers: Answers;
-  title: string;
-  description: string;
-  location: import("./domain").ReportLocation;
-  observed_at: string;
-  extent?: import("./observationExtent").ObservationExtent | null;
-};
+export type { GuidedReportInput } from "./submission";
 export async function submitGuided(
   input: GuidedReportInput,
   photo?: PreparedPhoto,
   onStage?: (stage: "observation" | "attachment") => void,
-): Promise<{ id: string; held: boolean; photoError?: string }> {
+  attempt?: { actor: string; requestId: string },
+): Promise<{
+  id: string;
+  held: boolean;
+  status?: string;
+  photoError?: string;
+}> {
   onStage?.("observation");
   const answers = normalizeAnswers(input.selection, input.answers),
     type = typeById(input.selection.typeId)!;
@@ -222,7 +267,13 @@ export async function submitGuided(
     input.location.latitude,
     input.location.longitude,
   );
-  validateDetails(type.legacyCategory, type.legacyKind, {}, input.observed_at);
+  if (!supabase)
+    validateDetails(
+      type.legacyCategory,
+      type.legacyKind,
+      {},
+      input.observed_at,
+    );
   const location = publicLocation(input.selection, answers, input.location);
   const payload = {
     category: type.legacyCategory,
@@ -288,34 +339,36 @@ export async function submitGuided(
     await AsyncStorage.setItem(localKey, JSON.stringify([...previous, report]));
     return { id, held };
   }
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw Error("Sign in before sharing an observation.");
-  const version = await supabase
-    .from("observation_catalog_versions")
-    .select("version")
-    .eq("version", catalog.version)
-    .maybeSingle();
-  if (version.error || !version.data)
+  if (!attempt) throw Error("Reopen sharing before saving this observation.");
+  const client = await actorClient(attempt.actor);
+  const { data, error } = await client.rpc("submit_observation", {
+    request_id: attempt.requestId,
+    payload,
+  });
+  if (error) {
+    if (error.message.includes("Limit of five observations per hour"))
+      throw Error(
+        "Sharing limit reached. Keep this draft and retry later; it will check the same observation.",
+      );
+    if (error.code === "PGRST202" || error.code === "42883")
+      throw Error(
+        "Reliable sharing is not released on this backend yet. Your draft is saved; do not submit it with an older app.",
+      );
     throw Error(
-      "Sharing is unavailable for this app version until its update is released. Your draft is still here.",
+      "Save not confirmed. Your draft is kept. Retry to check the same observation; do not start a duplicate.",
     );
-  const { data, error } = await supabase
-    .from("observations")
-    .insert({ ...payload, author_id: user.id })
-    .select("id,status")
-    .single();
-  if (error)
-    throw Error(
-      "Unable to share your observation. Check your connection and account, then try again.",
-    );
-  const result = { id: data.id as string, held: data.status !== "published" };
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row?.id) throw Error("Save not confirmed. Retry this same draft.");
+  const result = {
+    id: row.id as string,
+    held: row.status !== "published",
+    status: row.status as string,
+  };
   if (photo) {
     try {
       onStage?.("attachment");
-      await attachPhoto(result.id, photo);
+      await attachPhoto(result.id, photo, attempt.actor);
     } catch (error) {
       return {
         ...result,

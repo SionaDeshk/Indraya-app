@@ -1,3 +1,5 @@
+> Historical baseline setup below. Six migrations and the updated media function were subsequently deployed with separate approval. The current reliability branch proposes only one new migration and no Edge Function update; see [the current handoff](release-reliability-handoff.md). Do not replay the older setup/deployment commands against production.
+
 # Connecting real shared accounts, reports and photos
 
 The project is still in demo mode until a real Supabase project is configured. No project URL or public app key was present during this delivery. Nothing was deployed to a hosted project. Local SQL role tests and a Deno type check are not a hosted integration test.

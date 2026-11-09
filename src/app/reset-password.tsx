@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, Text, TextInput } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { supabase } from "../api";
+import { supabase, updatePasswordForActor } from "../api";
 import { Button, styles } from "../ui";
 export default function ResetPassword() {
-  const recovery = useRef<{ code: string; promise: Promise<boolean> } | null>(
-    null,
-  );
+  const expected = useRef<string | null>(null);
+  const version = useRef(0);
+  const invalid = useRef(false);
+  const recovery = useRef<{
+    code: string;
+    promise: Promise<string | null>;
+  } | null>(null);
   const { code } = useLocalSearchParams<{ code?: string }>();
   const [ready, setReady] = useState(false),
     [password, setPassword] = useState(""),
@@ -14,7 +18,29 @@ export default function ResetPassword() {
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState("Checking your recovery link…");
   useEffect(() => {
+    if (!supabase) return;
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (expected.current && session?.user.id !== expected.current) {
+        invalid.current = true;
+        expected.current = null;
+        setReady(false);
+        setPassword("");
+        setConfirm("");
+        setMessage(
+          "Account changed. Request a new recovery link for the account you want to update.",
+        );
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+  useEffect(() => {
     let active = true;
+    version.current++;
+    setReady(false);
+    setPassword("");
+    setConfirm("");
+    expected.current = null;
+    invalid.current = false;
     async function recover() {
       if (!supabase || !code) {
         if (active)
@@ -28,16 +54,19 @@ export default function ResetPassword() {
         recovery.current = {
           code,
           promise: (async () => {
-            const { error } = await client.auth.exchangeCodeForSession(code);
-            if (error) return false;
+            const exchanged = await client.auth.exchangeCodeForSession(code);
+            if (exchanged.error || !exchanged.data.user) return null;
             const { data } = await client.auth.getUser();
-            return !!data.user;
-          })().catch(() => false),
+            return data.user?.id === exchanged.data.user.id
+              ? data.user.id
+              : null;
+          })().catch(() => null),
         };
       }
       const ok = await recovery.current.promise;
-      if (active) {
-        setReady(ok);
+      if (active && !invalid.current) {
+        expected.current = ok;
+        setReady(!!ok);
         setMessage(
           ok
             ? "Choose a new password."
@@ -51,15 +80,30 @@ export default function ResetPassword() {
     };
   }, [code]);
   async function save() {
-    if (!supabase || busy) return;
+    if (!supabase || busy || !ready || !expected.current || invalid.current)
+      return;
     if (password.length < 8 || password !== confirm) {
       setMessage("Use at least 8 characters and match both passwords.");
       return;
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      const actor = expected.current;
+      const epoch = version.current;
+      await updatePasswordForActor(
+        actor,
+        password,
+        () =>
+          !invalid.current &&
+          expected.current === actor &&
+          version.current === epoch,
+      );
+      if (
+        invalid.current ||
+        expected.current !== actor ||
+        version.current !== epoch
+      )
+        return;
       setReady(false);
       setPassword("");
       setConfirm("");

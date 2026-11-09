@@ -98,3 +98,66 @@ export function normalizeExtent(
     coordinates: value.type === "Polygon" ? [points] : points,
   };
 }
+
+// Saved snapshots have no server intersection query. Handle lines crossing a
+// viewport and polygons covering it, not just vertices/anchor points.
+export function extentIntersectsBounds(
+  extent: ObservationExtent,
+  bounds: [number, number, number, number],
+) {
+  const points = (
+    extent.type === "Polygon" ? extent.coordinates[0] : extent.coordinates
+  ) as number[][];
+  const [west, south, east, north] = bounds;
+  const rects =
+    west <= east
+      ? [[west, south, east, north]]
+      : [
+          [west, south, 180, north],
+          [-180, south, east, north],
+        ];
+  return rects.some(([w, s, e, n]) => {
+    const inside = ([x, y]: number[]) => x >= w && x <= e && y >= s && y <= n;
+    if (points.some(inside)) return true;
+    const corners = [
+      [w, s],
+      [e, s],
+      [e, n],
+      [w, n],
+      [w, s],
+    ];
+    const cross = (a: number[], b: number[], c: number[]) =>
+      (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+    const on = (a: number[], b: number[], p: number[]) =>
+      Math.abs(cross(a, b, p)) < 1e-10 &&
+      p[0] >= Math.min(a[0], b[0]) &&
+      p[0] <= Math.max(a[0], b[0]) &&
+      p[1] >= Math.min(a[1], b[1]) &&
+      p[1] <= Math.max(a[1], b[1]);
+    for (let i = 1; i < points.length; i++)
+      for (let j = 1; j < corners.length; j++) {
+        const a = points[i - 1],
+          b = points[i],
+          c = corners[j - 1],
+          d = corners[j];
+        if (
+          (cross(a, b, c) * cross(a, b, d) < 0 &&
+            cross(c, d, a) * cross(c, d, b) < 0) ||
+          on(a, b, c) ||
+          on(a, b, d) ||
+          on(c, d, a) ||
+          on(c, d, b)
+        )
+          return true;
+      }
+    if (extent.type !== "Polygon") return false;
+    let contained = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      const [xi, yi] = points[i],
+        [xj, yj] = points[j];
+      if (yi > s !== yj > s && w < ((xj - xi) * (s - yi)) / (yj - yi) + xi)
+        contained = !contained;
+    }
+    return contained;
+  });
+}

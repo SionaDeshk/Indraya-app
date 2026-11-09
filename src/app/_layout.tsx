@@ -10,8 +10,16 @@ const client = new QueryClient({
 export default function Layout() {
   useEffect(() => {
     if (!supabase) return;
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+    let actor: string | null | undefined;
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const next = session?.user.id ?? null;
+      if (actor !== undefined && actor !== next) {
+        void client.cancelQueries({ queryKey: ["report-photo"] });
+        void client.cancelQueries({ queryKey: ["private"] });
+        void client.cancelQueries({ queryKey: ["staff"] });
+        client.removeQueries({ queryKey: ["report-photo"] });
+        client.removeQueries({ queryKey: ["private"] });
+        client.removeQueries({ queryKey: ["staff"] });
         setTimeout(() => {
           void client.resetQueries({ queryKey: ["report-photo"] });
           void client.resetQueries({ queryKey: ["private"] });
@@ -21,6 +29,7 @@ export default function Layout() {
           void client.invalidateQueries({ queryKey: ["nearby-observations"] });
         }, 0);
       }
+      actor = next;
     });
     const listener =
       Platform.OS !== "web"

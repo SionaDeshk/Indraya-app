@@ -1,5 +1,7 @@
 # Observation flow update and video rollout
 
+> Historical implementation/rollout plan. The video migration and updated function were subsequently deployed with user approval. Do not reapply that rollout. See [the current reliability handoff](release-reliability-handoff.md) for the only newly proposed migration and current release gates.
+
 Work branch: `feat/observation-flow`, based on `feat/guided-observations` at `7f870e3`. No production changes or deployments are part of this update. The executable brief is in observation-flow-brief.md.
 
 ## Experience

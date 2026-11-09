@@ -12,6 +12,7 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       disabled={disabled}
+      accessibilityState={{ disabled }}
       onPress={onPress}
       style={[styles.button, disabled && { opacity: 0.4 }]}
     >
@@ -38,6 +39,8 @@ export const styles = StyleSheet.create({
     borderColor: "#345056",
   },
   button: {
+    minHeight: 44,
+    justifyContent: "center",
     backgroundColor: "#19383b",
     padding: 14,
     borderRadius: 24,
