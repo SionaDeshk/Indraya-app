@@ -1,6 +1,8 @@
 # Phases 1–4 review handoff
 
-Branch: `feat/phases-1-4`, based on `feat/observation-flow` at `42c6eea97f52bcdb4a24031064bf2232befef43a`. The executable Codex brief is [phases-1-4-codex.md](phases-1-4-codex.md). This is review code, not a production rollout. No production SQL, Auth email, storage writes, Edge deployment, merge, environment publication or device build was performed.
+> Deployment status update: the user subsequently applied the three migrations below (six total), and read-only post-deployment checks passed. The user also deployed the updated observation-photo function, including both shared modules; basic live unauthenticated checks passed. These were separately approved actions in the conversation. **The deployment commands below are historical—do not reapply them.** PR #3 remains unmerged. See [the later release-readiness audit](release-readiness-audit.md) for remaining issues; database/function deployment does not establish native acceptance.
+
+Branch: `feat/phases-1-4`, based on `feat/observation-flow` at `42c6eea97f52bcdb4a24031064bf2232befef43a`. The executable Codex brief is [phases-1-4-codex.md](phases-1-4-codex.md). The initial implementation work was a review build with no production rollout; the subsequent approved backend deployment is recorded above. No merge, environment publication or cloud native-device build was performed.
 
 ## Implemented
 

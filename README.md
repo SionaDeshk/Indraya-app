@@ -3,6 +3,8 @@ Every person is a point of awareness. Together, we see the world.
 
 ## Current development update
 
+Release follow-up: [readiness audit](docs/release-readiness-audit.md) and [short iPhone checklist](docs/iphone-acceptance-checklist.md). Three synthetic reproductions identify account-switch and uncertain-save issues that remain open; this is not release approval.
+
 `feat/phases-1-4` adds optional notes, drafts, freshness/history, firsthand updates, private followed places, account recovery and backcountry vocabulary/extents. See [the review handoff and pending deployment plan](docs/phases-1-4-handoff.md) and [Codex brief](docs/phases-1-4-codex.md). This branch requires three additional reviewed migrations (six total), an updated media function and native acceptance; it is not deployed. The setup instructions below describe the older baseline.
 
 `feat/observation-flow` introduces a three-step sharing flow and private photo/video attachments. See [the update and rollout plan](docs/observation-flow-update.md). Video requires the new fourth migration, updated Edge Function and a rebuilt native development client; these are not deployed automatically. The older sections below describe the existing guided baseline.
