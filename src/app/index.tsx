@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -12,10 +12,14 @@ import {
   useSafeAreaInsets,
   SafeAreaView,
 } from "react-native-safe-area-context";
+import { useNow } from "../Clock";
+import { isActive } from "../observationLifecycle";
+import { nearbyObservations } from "../nearbyObservations";
+import { followPlace } from "../places";
 import ObservationPreview from "../ObservationPreview";
 import { mapSymbols } from "../mapSymbols";
 import ActivitySheet from "../ActivitySheet";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import * as Location from "expo-location";
 import {
@@ -25,9 +29,7 @@ import {
   age,
   MapBounds,
   normalizeBounds,
-  withinBounds,
   distanceKm,
-  observedTime,
 } from "../domain";
 import { observations, flag, supabase } from "../api";
 import { Button, styles } from "../ui";
@@ -42,6 +44,15 @@ import * as Linking from "expo-linking";
 import { useOfficialFeeds } from "../official/useOfficialFeeds";
 import { OfficialItem } from "../official/adapters";
 export default function Home() {
+  const params = useLocalSearchParams<{
+    observation?: string;
+    latitude?: string;
+    longitude?: string;
+    place?: string;
+  }>();
+  const opened = useRef("");
+  const now = useNow();
+  const [history, setHistory] = useState(false);
   const [filters, setFilters] = useState("all");
   const [searchPlace, setSearchPlace] = useState<ReportLocation | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -87,26 +98,21 @@ export default function Home() {
       ]),
     ).values(),
   ];
-  const visible = loadedReports.filter(
-    (o) => filters === "all" || filters === observationDomain(o),
+  const visible = loadedReports
+    .filter((o) => history || isActive(o, now))
+    .filter((o) => filters === "all" || filters === observationDomain(o));
+  const spatiallyMatched = !!supabase && viewport.bounds !== null && !history;
+  const nearbyReports = nearbyObservations(
+    spatiallyMatched ? (spatial.data ?? []) : loadedReports,
+    {
+      now,
+      history,
+      domain: filters,
+      bounds: viewport.bounds,
+      center: viewport.center,
+      spatiallyMatched,
+    },
   );
-  const nearbyReports = (
-    supabase && viewport.bounds
-      ? (spatial.data ?? []).filter(
-          (report) =>
-            filters === "all" || filters === observationDomain(report),
-        )
-      : visible
-  )
-    .filter((report) =>
-      viewport.bounds
-        ? withinBounds(report, viewport.bounds)
-        : distanceKm(report, {
-            longitude: viewport.center[0],
-            latitude: viewport.center[1],
-          }) <= 50,
-    )
-    .sort((a, b) => Date.parse(observedTime(b)) - Date.parse(observedTime(a)));
   function selectReport(report: Observation) {
     setSearchPlace(null);
     if (report.privacy_class !== "restricted")
@@ -115,6 +121,46 @@ export default function Home() {
     setDetailsOpen(false);
     setSelected(report);
   }
+  useEffect(() => {
+    const id = params.observation;
+    if (!id || opened.current === id || !q.data) return;
+    const report = q.data.find((o) => o.id === id);
+    opened.current = id;
+    if (!report) {
+      setMessage("This observation is unavailable or no longer public.");
+      return;
+    }
+    if (!isActive(report, Date.now())) {
+      setHistory(true);
+      setMessage(
+        "Showing an outdated observation. It is not evidence that conditions are resolved.",
+      );
+    }
+    if (report.privacy_class !== "restricted")
+      setCenter([report.longitude, report.latitude]);
+    setSelected(report);
+    setActivityOpen(false);
+    setDetailsOpen(false);
+  }, [params.observation, q.data]);
+  useEffect(() => {
+    const latitude = Number(params.latitude),
+      longitude = Number(params.longitude);
+    if (
+      params.latitude &&
+      params.longitude &&
+      Number.isFinite(latitude) &&
+      Number.isFinite(longitude) &&
+      Math.abs(latitude) <= 90 &&
+      Math.abs(longitude) <= 180
+    ) {
+      setCenter([longitude, latitude]);
+      setSearchPlace({
+        name: params.place?.slice(0, 160) || "Saved place",
+        latitude,
+        longitude,
+      });
+    }
+  }, [params.latitude, params.longitude, params.place]);
   async function locate() {
     try {
       const permission = await Location.requestForegroundPermissionsAsync();
@@ -200,6 +246,22 @@ export default function Home() {
             <Text style={{ color: "#d0e8e3", fontSize: 25 }}>◎</Text>
           </Pressable>
         </View>
+        {q.data?.some((r) => r.offline_snapshot_at) && (
+          <Text
+            accessibilityRole="alert"
+            style={{
+              color: "#e6c68b",
+              backgroundColor: "#10282c",
+              padding: 10,
+            }}
+          >
+            Offline snapshot · saved{" "}
+            {new Date(
+              q.data.find((r) => r.offline_snapshot_at)!.offline_snapshot_at!,
+            ).toLocaleString()}
+            . Conditions may have changed; no updates are being received.
+          </Text>
+        )}
         {!supabase && (
           <View style={{ alignItems: "flex-start" }}>
             <Pressable
@@ -251,6 +313,27 @@ export default function Home() {
                 Place reference only · no observation created
               </Text>
             </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Follow this place"
+              style={{ padding: 10, minHeight: 44 }}
+              onPress={() => {
+                if (searchPlace)
+                  void followPlace(searchPlace)
+                    .then(() =>
+                      setMessage(
+                        "Place followed privately. No alerts or emergency monitoring are enabled.",
+                      ),
+                    )
+                    .catch(() =>
+                      setMessage(
+                        "Sign in to follow places, or try again when connected.",
+                      ),
+                    );
+              }}
+            >
+              <Text style={{ color: "#9ce5d9" }}>Follow</Text>
+            </Pressable>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Clear selected place"
@@ -460,6 +543,16 @@ export default function Home() {
           >
             <Button label="Back to map" onPress={() => setLayersOpen(false)} />
             <Text style={styles.heading}>Layers</Text>
+            <Button
+              label={
+                history ? "Show current observations" : "Show recent history"
+              }
+              onPress={() => setHistory(!history)}
+            />
+            <Text style={styles.text}>
+              Outdated items leave the active map, not the history. No recent
+              observations does not mean no hazards.
+            </Text>
             <ChoiceSheet
               label="Observation category"
               value={filters}
@@ -647,20 +740,27 @@ export default function Home() {
             {selected && (
               <>
                 <ObservationDetails report={selected} />
-                {(["misleading", "dangerous", "abusive"] as const).map(
-                  (reason) => (
-                    <Button
-                      key={reason}
-                      label={`Flag ${reason}`}
-                      onPress={() => {
-                        void flag(selected.id, reason)
-                          .then(() => setMessage("Flag submitted for review."))
-                          .catch((e) => setMessage(String(e)));
-                        setSelected(null);
-                      }}
-                    />
-                  ),
-                )}
+                {(
+                  [
+                    "misleading",
+                    "dangerous",
+                    "abusive",
+                    "privacy",
+                    "impersonation",
+                    "spam",
+                  ] as const
+                ).map((reason) => (
+                  <Button
+                    key={reason}
+                    label={`Flag ${reason}`}
+                    onPress={() => {
+                      void flag(selected.id, reason)
+                        .then(() => setMessage("Flag submitted for review."))
+                        .catch((e) => setMessage(String(e)));
+                      setSelected(null);
+                    }}
+                  />
+                ))}
                 <Button
                   label="Back to preview"
                   onPress={() => setDetailsOpen(false)}

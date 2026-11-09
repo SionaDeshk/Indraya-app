@@ -41,9 +41,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import LocationPicker from "../LocationPicker";
 import ObservationTime from "../ObservationTime";
 import { pickPhoto, pickVideo, PreparedPhoto } from "../photos";
+import ExtentPicker from "../ExtentPicker";
+import { ObservationExtent, normalizeExtent } from "../observationExtent";
+import useObservationDraft from "../useObservationDraft";
 import { Button, styles } from "../ui";
 const steps = ["What did you notice?", "When and where?", "Review and share"];
 export default function Report() {
+  const [extent, setExtent] = useState<ObservationExtent | null>(null);
+  const [stage, setStage] = useState("observation");
+  const [noteOpen, setNoteOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [titleOpen, setTitleOpen] = useState(false);
   const [step, setStep] = useState(0),
@@ -68,6 +74,35 @@ export default function Report() {
   const lock = useRef(false),
     scroll = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const client = useQueryClient();
+  const draft = useObservationDraft(
+    {
+      selection,
+      answers,
+      title,
+      titleEdited,
+      description,
+      location,
+      observedAt,
+    },
+    !!saved,
+  );
+  function restoreDraft() {
+    const value = draft.pending;
+    if (!value) return;
+    setSelection(value.selection);
+    setAnswers(value.answers);
+    setTitle(value.title);
+    setTitleEdited(value.titleEdited);
+    setDescription(value.description);
+    setNoteOpen(!!value.description);
+    setLocation(value.location);
+    setObservedAt(value.observedAt);
+    setStep(0);
+    setNotice(
+      "Draft restored. Recheck the saved time and place, reattach media, and redraw any extent before sharing.",
+    );
+    draft.accept();
+  }
   useEffect(() => {
     scroll.current?.scrollTo({ y: 0, animated: false });
   }, [step, saved]);
@@ -79,6 +114,7 @@ export default function Report() {
       setNotice(
         "Details that no longer fit were removed. Your text, time, place and attachment are kept.",
       );
+    setExtent(null);
     setSelection(next);
     setAnswers(kept);
     if (!titleEdited) setTitle(defaultTitle(next, kept));
@@ -87,11 +123,20 @@ export default function Report() {
   function answer(key: string, value: string) {
     const next = reconcileAnswers(selection, { ...answers, [key]: value });
     setAnswers(next);
+    if (privacyFor(selection, next) !== "approximate") setExtent(null);
     if (!titleEdited) setTitle(defaultTitle(selection, next));
     setMessage("");
   }
   function validate() {
     const prepared = normalizeAnswers(selection, answers);
+    if (location)
+      normalizeExtent(
+        extent,
+        selection.typeId!,
+        privacy,
+        location.latitude,
+        location.longitude,
+      );
     validateReportText(title, description);
     if (!location)
       throw Error("Choose where you observed this before reviewing.");
@@ -156,13 +201,16 @@ export default function Report() {
           description,
           location: location!,
           observed_at: observedAt ?? new Date().toISOString(),
+          extent,
         },
         photo ?? undefined,
+        setStage,
       );
       await client.invalidateQueries({ queryKey: ["observations"] });
       await client.invalidateQueries({ queryKey: ["nearby-observations"] });
       await client.invalidateQueries({ queryKey: ["private", "my-reports"] });
       setSaved(result);
+      await draft.clear();
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -245,6 +293,26 @@ export default function Report() {
               ? "Community observation · Unverified"
               : "DEMO · Nothing is shared publicly"}
           </Text>
+          {!!draft.error && (
+            <Text accessibilityRole="alert" style={styles.text}>
+              {draft.error}
+            </Text>
+          )}
+          {draft.pending && !saved && (
+            <View style={styles.card}>
+              <Text style={styles.heading}>Continue your draft?</Text>
+              <Text style={styles.text}>
+                Saved on this device for this account. It has not been shared.
+              </Text>
+              <Button label="Continue draft" onPress={restoreDraft} />
+              <Button
+                label="Discard draft"
+                onPress={() => {
+                  void draft.discard();
+                }}
+              />
+            </View>
+          )}
           {saved ? (
             <View style={styles.card}>
               <Text accessibilityRole="alert" style={styles.text}>
@@ -272,6 +340,19 @@ export default function Report() {
               <Button
                 label="View my observations"
                 onPress={() => router.replace("/my-reports")}
+              />
+              <Button
+                label={saved.held ? "View status" : "View on map"}
+                onPress={() =>
+                  router.replace(
+                    saved.held
+                      ? {
+                          pathname: "/my-reports",
+                          params: { observation: saved.id },
+                        }
+                      : { pathname: "/", params: { observation: saved.id } },
+                  )
+                }
               />
               <Button label="Return to map" onPress={() => router.back()} />
             </View>
@@ -304,31 +385,45 @@ export default function Report() {
                   {notice}
                 </Text>
               )}
+              {privacy === "restricted" && (
+                <Text style={{ color: "#e6c68b", lineHeight: 22 }}>
+                  This observation will go to private review. It will not appear
+                  on the public map yet.
+                </Text>
+              )}
               {step === 0 && (
                 <>
                   <TaxonomyPicker value={selection} onChange={choose} />
                   {validPath(selection) && (
                     <>
-                      <Text style={[styles.heading, { fontSize: 22 }]}>
-                        Tell us a little more
-                      </Text>
-                      <Text style={styles.text}>
-                        Describe only what you witnessed. Avoid names, private
-                        addresses and identifying details.
-                      </Text>
-                      <Text style={styles.text}>
-                        What did you see? · Required
-                      </Text>
-                      <TextInput
-                        accessibilityLabel="Description"
-                        placeholder="A few words about what you noticed"
-                        placeholderTextColor="#9ab3b7"
-                        value={description}
-                        onChangeText={setDescription}
-                        style={[styles.input, { minHeight: 100 }]}
-                        multiline
-                        maxLength={2000}
+                      <Button
+                        label={
+                          noteOpen
+                            ? "Hide note"
+                            : description
+                              ? "Edit note"
+                              : "Add a note · Optional"
+                        }
+                        onPress={() => setNoteOpen(!noteOpen)}
                       />
+                      {noteOpen && (
+                        <>
+                          <Text style={styles.text}>
+                            Describe only what you witnessed. Avoid identifying
+                            people or private addresses.
+                          </Text>
+                          <TextInput
+                            accessibilityLabel="Description"
+                            placeholder="Anything else you want to add?"
+                            placeholderTextColor="#9ab3b7"
+                            value={description}
+                            onChangeText={setDescription}
+                            style={[styles.input, { minHeight: 72 }]}
+                            multiline
+                            maxLength={2000}
+                          />
+                        </>
+                      )}
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel="Edit title"
@@ -381,7 +476,20 @@ export default function Report() {
                     value={observedAt}
                     onChange={setObservedAt}
                   />
-                  <LocationPicker value={location} onChange={setLocation} />
+                  <LocationPicker
+                    value={location}
+                    onChange={(next) => {
+                      setLocation(next);
+                      setExtent(null);
+                    }}
+                  />
+                  <ExtentPicker
+                    value={extent}
+                    onChange={setExtent}
+                    type={selection.typeId!}
+                    privacy={privacy}
+                    location={location}
+                  />
                   <Text style={styles.text}>
                     {privacy === "restricted"
                       ? "This observation stays private for review. Any approved public version uses regional information, with no incident pin."
@@ -589,12 +697,15 @@ export default function Report() {
                       ? "Review observation"
                       : "Continue"
                     : busy
-                      ? "Sharing…"
+                      ? stage === "attachment"
+                        ? "Uploading attachment…"
+                        : "Sharing observation…"
                       : privacy === "restricted"
                         ? "Send for private review"
                         : "Share observation"
                 }
                 disabled={
+                  !!draft.pending ||
                   preparing ||
                   busy ||
                   (step === 0 && !validPath(selection)) ||

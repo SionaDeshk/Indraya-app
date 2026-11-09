@@ -1,19 +1,35 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Modal, ScrollView, Text, View } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { myObservations, supabase } from "../api";
 import { Observation } from "../domain";
 import ObservationCard from "../ObservationCard";
 import ObservationDetails from "../ObservationDetails";
+import { useNow } from "../Clock";
+import { observationStatus } from "../observationLifecycle";
 import { Button, styles } from "../ui";
 export default function MyReports() {
+  const now = useNow();
+  const { observation } = useLocalSearchParams<{ observation?: string }>();
+  const opened = useRef("");
   const [selected, setSelected] = useState<Observation | null>(null);
   const q = useQuery({
     queryKey: ["private", "my-reports"],
     queryFn: myObservations,
     retry: 1,
   });
+  useEffect(() => {
+    if (observation && opened.current !== observation && q.data) {
+      const row = q.data.find((r) => r.id === observation);
+      if (row) setSelected(row);
+      opened.current = observation;
+    }
+  }, [observation, q.data]);
+  useEffect(() => {
+    if (selected && (!q.data || !q.data.some((r) => r.id === selected.id)))
+      setSelected(null);
+  }, [q.data, selected]);
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#071719" }}
@@ -28,10 +44,12 @@ export default function MyReports() {
       </Text>
       <Text style={styles.text}>
         {supabase
-          ? "Your submitted observations, including those held for private review."
+          ? "Your observations, including private holds and outdated conditions. Outdated does not mean resolved."
           : "DEMO · These reports stay on this device. Private-review reports are not sent to staff."}
       </Text>
-      {q.isLoading && <Text style={styles.text}>Loading your reports…</Text>}
+      {q.isLoading && (
+        <Text style={styles.text}>Loading your observations…</Text>
+      )}
       {q.error && (
         <>
           <Text accessibilityRole="alert" style={styles.text}>
@@ -49,7 +67,9 @@ export default function MyReports() {
         </>
       )}
       {q.data?.length === 0 && (
-        <Text style={styles.text}>You have not submitted any reports yet.</Text>
+        <Text style={styles.text}>
+          You have not shared any observations yet.
+        </Text>
       )}
       {q.data?.map((report) => (
         <View key={report.id} style={{ gap: 8 }}>
@@ -58,11 +78,8 @@ export default function MyReports() {
             onPress={() => setSelected(report)}
           />
           <Text style={styles.text}>
-            {report.status === "review"
-              ? "Private review"
-              : report.status === "hidden"
-                ? "Hidden by moderation"
-                : "Unverified / reviewed community report"}
+            {observationStatus(report, now).label} ·{" "}
+            {observationStatus(report, now).explanation}
           </Text>
         </View>
       ))}

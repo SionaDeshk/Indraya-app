@@ -1,3 +1,4 @@
+import RegionalSources from "../RegionalSources";
 import { ScrollView, Text, View } from "react-native";
 import { router } from "expo-router";
 import * as Linking from "expo-linking";
@@ -30,6 +31,7 @@ export default function Sources() {
         A topographic map underneath. Community observations and official
         information as separate layers above it.
       </Text>
+      <RegionalSources />
       <View style={styles.card}>
         <Text style={styles.heading}>Topographic map</Text>
         <Text style={styles.text}>

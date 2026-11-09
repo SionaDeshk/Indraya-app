@@ -26,7 +26,7 @@ reset role;
 set local role anon;
 select set_config('request.jwt.claim.sub','',true);
 select pg_temp.assert_true((select count(*)=0 from observations),'hidden observation unavailable anonymously');
-select pg_temp.assert_true((select count(*)=0 from report_flags),'flags private');
+select pg_temp.denied($q$select * from report_flags$q$,'flags private');
 select pg_temp.assert_true((select count(*)=0 from moderators),'moderator membership private');
 select pg_temp.denied($q$insert into observations(author_id,category,title,description,latitude,longitude) values('00000000-0000-0000-0000-000000000001','Safety','Anonymous report','Anonymous test report.',61,-149)$q$,'anonymous writes blocked');
 select pg_temp.assert_true((select count(*)=0 from observation_media),'unpublished media unavailable');

@@ -12,12 +12,18 @@ import { Button, styles } from "./ui";
 import useTileHealth from "./useTileHealth";
 import ZoomControls from "./ZoomControls";
 import { topographicStyle } from "./mapStyle";
+import type { ObservationExtent } from "./observationExtent";
 import { ReportLocation } from "./domain";
 export type LocationMapProps = {
   location: ReportLocation | null;
   onPick: (location: ReportLocation) => void;
+  extent?: ObservationExtent | null;
 };
-export default function LocationMap({ location, onPick }: LocationMapProps) {
+export default function LocationMap({
+  location,
+  onPick,
+  extent,
+}: LocationMapProps) {
   const center: [number, number] = location
     ? [location.longitude, location.latitude]
     : [-149.9, 61.218];
@@ -74,6 +80,33 @@ export default function LocationMap({ location, onPick }: LocationMapProps) {
           minZoom={1}
           maxZoom={17}
         />
+        {extent && (
+          <GeoJSONSource
+            id="observed-extent"
+            data={{
+              type: "Feature",
+              properties: {},
+              geometry: extent as GeoJSON.Geometry,
+            }}
+          >
+            {extent.type === "Polygon" && (
+              <Layer
+                id="extent-fill"
+                type="fill"
+                paint={{ "fill-color": "#9ce5d9", "fill-opacity": 0.15 }}
+              />
+            )}
+            <Layer
+              id="extent-line"
+              type="line"
+              paint={{
+                "line-color": "#9ce5d9",
+                "line-width": 3,
+                "line-dasharray": [2, 2],
+              }}
+            />
+          </GeoJSONSource>
+        )}
         {location !== null && (
           <GeoJSONSource
             id="report-pin"
