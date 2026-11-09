@@ -14,6 +14,7 @@ import {
 } from "react-native-safe-area-context";
 import { useNow } from "../Clock";
 import { isActive } from "../observationLifecycle";
+import { nearbyObservations } from "../nearbyObservations";
 import { followPlace } from "../places";
 import ObservationPreview from "../ObservationPreview";
 import { mapSymbols } from "../mapSymbols";
@@ -28,9 +29,7 @@ import {
   age,
   MapBounds,
   normalizeBounds,
-  withinBounds,
   distanceKm,
-  observedTime,
 } from "../domain";
 import { observations, flag, supabase } from "../api";
 import { Button, styles } from "../ui";
@@ -102,23 +101,18 @@ export default function Home() {
   const visible = loadedReports
     .filter((o) => history || isActive(o, now))
     .filter((o) => filters === "all" || filters === observationDomain(o));
-  const nearbyReports = (
-    supabase && viewport.bounds && !history
-      ? (spatial.data ?? []).filter(
-          (report) =>
-            filters === "all" || filters === observationDomain(report),
-        )
-      : visible
-  )
-    .filter((report) =>
-      viewport.bounds
-        ? withinBounds(report, viewport.bounds)
-        : distanceKm(report, {
-            longitude: viewport.center[0],
-            latitude: viewport.center[1],
-          }) <= 50,
-    )
-    .sort((a, b) => Date.parse(observedTime(b)) - Date.parse(observedTime(a)));
+  const spatiallyMatched = !!supabase && viewport.bounds !== null && !history;
+  const nearbyReports = nearbyObservations(
+    spatiallyMatched ? (spatial.data ?? []) : loadedReports,
+    {
+      now,
+      history,
+      domain: filters,
+      bounds: viewport.bounds,
+      center: viewport.center,
+      spatiallyMatched,
+    },
+  );
   function selectReport(report: Observation) {
     setSearchPlace(null);
     if (report.privacy_class !== "restricted")

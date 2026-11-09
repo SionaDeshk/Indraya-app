@@ -163,6 +163,11 @@ end $$;
 alter table report_flags add column resolved_at timestamptz;
 alter table report_flags add column resolution text check(length(trim(resolution)) between 5 and 2000);
 alter table report_flags add column resolved_by uuid references auth.users on delete set null;
+-- Supabase table-level INSERT grants also cover newly added columns. Clients
+-- may submit a flag, but only the checked staff RPC can write its resolution.
+revoke insert on report_flags from anon,authenticated;
+revoke insert(resolved_at,resolution,resolved_by) on report_flags from anon,authenticated;
+grant insert(observation_id,reporter_id,reason) on report_flags to authenticated;
 revoke select on report_flags from anon,authenticated;
 grant select(id,observation_id,reporter_id,reason,created_at,resolved_at,resolution) on report_flags to authenticated;
 create function public.staff_flag_queue() returns table(report jsonb,review_priority text,flag_counts jsonb) language plpgsql stable security definer set search_path=public as $$

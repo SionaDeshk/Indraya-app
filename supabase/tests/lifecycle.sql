@@ -67,6 +67,10 @@ select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001'
 select pg_temp.denied($q$insert into followed_places(name,latitude,longitude) select 'Synthetic '||i,60+i*0.01,-149 from generate_series(1,50) i$q$,'followed places capped at fifty');
 select pg_temp.assert_true((select count(*)=1 from followed_places),'failed bulk follow is atomic');
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',true);
+select pg_temp.denied($q$insert into report_flags(observation_id,reporter_id,reason,resolved_at) values(current_setting('test.observation')::uuid,auth.uid(),'privacy',now())$q$,'client cannot mark a new flag resolved');
+select pg_temp.denied($q$insert into report_flags(observation_id,reporter_id,reason,resolution) values(current_setting('test.observation')::uuid,auth.uid(),'privacy','Forged staff decision')$q$,'client cannot supply a staff resolution');
+select pg_temp.denied($q$insert into report_flags(observation_id,reporter_id,reason,resolved_by) values(current_setting('test.observation')::uuid,auth.uid(),'privacy',auth.uid())$q$,'client cannot impersonate a flag resolver');
+select pg_temp.denied($q$insert into report_flags(observation_id,reporter_id,reason,resolved_at,resolution,resolved_by) values(current_setting('test.observation')::uuid,auth.uid(),'privacy',now(),'Forged staff decision',auth.uid())$q$,'pre-resolved flag cannot bypass the staff queue');
 insert into report_flags(observation_id,reporter_id,reason) values(current_setting('test.observation')::uuid,auth.uid(),'privacy');
 select pg_temp.denied($q$select * from staff_flag_queue()$q$,'ordinary account cannot access flag queue');
 select pg_temp.denied($q$select resolve_report_flags(current_setting('test.observation')::uuid,'No staff authority')$q$,'ordinary account cannot resolve flags');
@@ -75,6 +79,7 @@ insert into moderators values('00000000-0000-0000-0000-000000000003');
 set local role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',true);
 select pg_temp.assert_true((select count(*)=1 from staff_flag_queue()),'staff sees flagged observations');
+select pg_temp.assert_true((select resolved_at is null and resolution is null from report_flags),'new ordinary flag is unresolved');
 select resolve_report_flags(current_setting('test.observation')::uuid,'Synthetic privacy review completed');
 select pg_temp.assert_true((select count(*)=0 from staff_flag_queue()),'resolved flags leave active queue');
 select pg_temp.assert_true((select count(*)=1 from moderation_actions where reason like 'Flags resolved:%'),'flag decision audited');

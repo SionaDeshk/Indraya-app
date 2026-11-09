@@ -18,13 +18,19 @@ Branch: `feat/phases-1-4`, based on `feat/observation-flow` at `42c6eea97f52bcdb
 
 ## Local evidence
 
-TypeScript, ESLint and 40 unit/handler tests passed. A fresh disposable PostGIS 17 database accepted all six migrations in filename order; all 129 assertions passed across RLS (18), report/photo (19), guided (37), video (12), lifecycle/access (43). Supabase auth/storage schemas and API roles are emulated locally; this is not hosted Supabase HTTP acceptance.
+TypeScript, ESLint and 45 unit/handler tests passed. A fresh disposable PostGIS 17 database accepted all six migrations in filename order; all 134 assertions passed across RLS (18), report/photo (19), guided (37), video (12), lifecycle/access (48). Supabase auth/storage schemas and API roles are emulated locally; this is not hosted Supabase HTTP acceptance.
 
 A separate populated upgrade from the first three migrations through the pending three preserved every original observation/media column, including private moderation states, ownership, timestamps, text and photo association. Reproduce with `python tests/phases_upgrade.py --container YOUR_DISPOSABLE_TEST_CONTAINER` after bootstrap roles exist; it creates a dedicated database and refuses an existing destination.
 
 All three browser suites passed: `phases_browser.py`, `guided_browser.py`, `home_browser.py` (320/390/768px). New acceptance covers optional notes, draft recovery/discard, selected-map success, private status, expiry/history, places, source disclosure and recovery fallback. It aborts all Supabase requests and asserts zero. Browser artifacts are in `/workspace/outputs/indraya-phases`, `/workspace/outputs/indraya-flow`, `/workspace/outputs/indraya-home`. They do not prove native map drawing or real email/auth flows.
 
 Deno checking of `observation-photo` passed. iOS/Android/web Expo JavaScript exports passed. No Xcode/Android native compile or iPhone test is claimed.
+
+## PR #3 review fixes
+
+The pending lifecycle migration now revokes table-level client INSERT on report_flags and grants INSERT only for observation_id/reporter_id/reason. Clients cannot supply resolution fields; checked staff resolution and its audit remain intact. The new SQL regression fails against the original PR migration and passes after the correction, including normal flag creation and staff queue/resolution checks. This edits an unapproved, unapplied migration only; the production-applied first three files remain untouched. The updated lifecycle checksum below supersedes the earlier proposed checksum; there are still exactly three pending migrations.
+
+The nearby list now applies expiry using the shared clock even to cached spatial results. It trusts full-geometry matches returned by observations_in_bounds for the current viewport, rather than discarding intersecting lines/areas because their anchor is off-screen. Local/demo point filtering, category filters, observed-time ordering and explicit history remain. Five unit regression tests cover expiry without refetch, history retention, line/area intersections, category/bounds/dateline/radius and ordering/cache immutability.
 
 ## Exact pending deployment, approval required
 
@@ -43,7 +49,7 @@ SHA-256:
 ```text
 d3b44d484426a4fdc3ec979fd3e700c6abc8465793e845f912ab594b140e5b98  202611090001_private_video.sql
 9ceef877b13a83242120b5c6578187e73057cae56152df714e92820cff7262da  202611090002_backcountry_catalog.sql
-0c2f69565ba2de7653356a85bd3b2356f3391112bd7058c5c38017cd79b4468e  202611090003_lifecycle_and_access.sql
+2a2b444af3b9edce27445bc15ba7e42a8a589f84d5a01b1a3551658de919c672  202611090003_lifecycle_and_access.sql
 ```
 
 No migration deletes/truncates existing data or drops a table. They do change constraints/functions/grants, bucket configuration and existing-row expiry. Expiry may immediately remove old observations from the active map while retaining history. The backfill/table/index locks need a backup, duration check on representative data and a maintenance decision. Do not treat these as having no production impact.
