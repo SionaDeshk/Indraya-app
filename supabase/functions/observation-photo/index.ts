@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.119.0";
 import { decodeBase64, sanitizeJpeg } from "../_shared/media.ts";
+import { MAX_VIDEO_BYTES, sanitizeVideo } from "../_shared/video.ts";
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -16,6 +17,15 @@ Deno.serve(async (request) => {
     return new Response(null, { headers: cors });
   if (request.method !== "POST") return reply({ error: "POST required" }, 405);
   try {
+    const service = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+    const token = request.headers
+      .get("Authorization")
+      ?.replace(/^Bearer\s+/i, "");
+    const user = token ? (await service.auth.getUser(token)).data.user : null;
     const reader = request.body?.getReader();
     if (!reader) return reply({ error: "Request body required" }, 400);
     let size = 0;
@@ -24,9 +34,9 @@ Deno.serve(async (request) => {
       const chunk = await reader.read();
       if (chunk.done) break;
       size += chunk.value.length;
-      if (size > 2900000) {
+      if (size > (user ? 29000000 : 16384)) {
         await reader.cancel();
-        return reply({ error: "Photo request too large" }, 413);
+        return reply({ error: "Attachment request too large" }, 413);
       }
       chunks.push(chunk.value);
     }
@@ -37,15 +47,6 @@ Deno.serve(async (request) => {
       cursor += chunk.length;
     }
     const body = JSON.parse(new TextDecoder().decode(raw));
-    const service = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { auth: { persistSession: false, autoRefreshToken: false } },
-    );
-    const token = request.headers
-      .get("Authorization")
-      ?.replace(/^Bearer\s+/i, "");
-    const user = token ? (await service.auth.getUser(token)).data.user : null;
     const uuid = (v: unknown): v is string =>
       typeof v === "string" &&
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
@@ -74,18 +75,50 @@ Deno.serve(async (request) => {
         .maybeSingle();
       if (existing) return reply({ ok: true, mediaId: existing.id });
       let image: Uint8Array;
+      let contentType = "image/jpeg",
+        duration: number | null = null;
       try {
-        image = sanitizeJpeg(decodeBase64(body.base64));
+        if (
+          body.mediaKind !== undefined &&
+          !["photo", "video"].includes(body.mediaKind)
+        )
+          return reply({ error: "Unsupported attachment type" }, 400);
+        if (body.mediaKind === "video") {
+          if (body.base64.length > Math.ceil(MAX_VIDEO_BYTES / 3) * 4)
+            throw Error("Video too large");
+          const raw = atob(body.base64);
+          const clip = sanitizeVideo(
+            Uint8Array.from(raw, (c) => c.charCodeAt(0)),
+          );
+          image = clip.bytes;
+          contentType = clip.mime;
+          duration = clip.duration;
+        } else image = sanitizeJpeg(decodeBase64(body.base64));
       } catch {
-        return reply({ error: "Use a resized JPEG under 2 MB" }, 400);
+        return reply(
+          {
+            error:
+              "Use a JPEG under 2 MB, or a standard MP4/MOV up to 60 seconds and 20 MB.",
+          },
+          400,
+        );
       }
-      const path = `${report.id}/${crypto.randomUUID()}.jpg`;
+      const extension =
+        contentType === "image/jpeg"
+          ? "jpg"
+          : contentType === "video/mp4"
+            ? "mp4"
+            : "mov";
+      const path = `${report.id}/${crypto.randomUUID()}.${extension}`;
       const upload = await service.storage
         .from("observation-media")
-        .upload(path, image, { contentType: "image/jpeg", upsert: false });
+        .upload(path, image, { contentType, upsert: false });
       if (upload.error)
         return reply(
-          { error: "Unable to save photo. The report is already saved." },
+          {
+            error:
+              "Unable to save attachment. The observation is already saved.",
+          },
           503,
         );
       const insert = await service
@@ -94,6 +127,9 @@ Deno.serve(async (request) => {
           observation_id: report.id,
           storage_path: path,
           status: "pending",
+          media_kind: body.mediaKind === "video" ? "video" : "photo",
+          content_type: contentType,
+          duration_seconds: duration,
         })
         .select("id")
         .single();
@@ -102,7 +138,7 @@ Deno.serve(async (request) => {
         return reply(
           {
             error:
-              "Unable to attach photo. Try again; the report is already saved.",
+              "Unable to attach media. Try again; the observation is already saved.",
           },
           409,
         );
@@ -141,7 +177,7 @@ Deno.serve(async (request) => {
       if (!uuid(body.mediaId)) return reply({ error: "Invalid photo" }, 400);
       const { data: media } = await service
         .from("observation_media")
-        .select("id,observation_id,storage_path,status")
+        .select("id,observation_id,storage_path,status,media_kind")
         .eq("id", body.mediaId)
         .maybeSingle();
       if (!media) return reply({ error: "Photo unavailable" }, 404);
@@ -171,6 +207,7 @@ Deno.serve(async (request) => {
       return reply({
         url: data.signedUrl,
         status: media.status,
+        kind: media.media_kind ?? "photo",
         canRemove: !!user && user.id === report?.author_id,
       });
     }

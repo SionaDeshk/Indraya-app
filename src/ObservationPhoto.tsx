@@ -1,5 +1,7 @@
+import { removeDemoAttachment } from "./photos";
+import MediaPreview from "./MediaPreview";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Image, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase, localKey } from "./api";
@@ -19,12 +21,14 @@ export async function photoForReport(reportId: string) {
     body: { action: "url", mediaId: data.id },
   });
   if (response.error || response.data?.error || !response.data?.url)
-    throw Error("Photo unavailable. Try again shortly.");
+    throw Error("Attachment unavailable. Try again shortly.");
   return {
     id: data.id,
     status: data.status,
     url: response.data.url as string,
     canRemove: response.data.canRemove === true,
+    kind:
+      response.data.kind === "video" ? ("video" as const) : ("photo" as const),
   };
 }
 export default function ObservationPhoto({ report }: { report: Observation }) {
@@ -41,23 +45,26 @@ export default function ObservationPhoto({ report }: { report: Observation }) {
   });
   const uri = removed
     ? undefined
-    : report.demo && report.photo_uri?.startsWith("data:image/jpeg;base64,")
+    : report.demo &&
+        (/^data:(image\/jpeg|video\/(mp4|quicktime));base64,/.test(
+          report.photo_uri ?? "",
+        ) ||
+          (report.media_kind === "video" &&
+            report.photo_uri?.startsWith("file://")))
       ? report.photo_uri
       : q.data?.url;
   return (
     <View style={{ gap: 8 }}>
       {!!uri && (
-        <Image
-          accessibilityLabel="Observation photo"
-          source={{ uri }}
-          style={{ width: "100%", height: 220, borderRadius: 16 }}
-          resizeMode="contain"
-          onError={() => setMessage("Unable to display the photo.")}
+        <MediaPreview
+          uri={uri}
+          kind={report.demo ? report.media_kind : q.data?.kind}
+          label="Observation attachment"
         />
       )}
       {report.demo && !!uri && (
         <Button
-          label="Remove demo photo"
+          label="Remove demo attachment"
           onPress={() => {
             void AsyncStorage.getItem(localKey)
               .then((raw) => {
@@ -68,7 +75,10 @@ export default function ObservationPhoto({ report }: { report: Observation }) {
                     reports.map((item) => {
                       if (item.id !== report.id) return item;
                       const copy = { ...item };
+                      if (copy.photo_uri) removeDemoAttachment(copy.photo_uri);
                       delete copy.photo_uri;
+                      delete copy.media_bytes;
+                      delete copy.media_kind;
                       return copy;
                     }),
                   ),
@@ -84,12 +94,12 @@ export default function ObservationPhoto({ report }: { report: Observation }) {
       )}
       {q.data?.status === "pending" && (
         <Text style={styles.text}>
-          Your photo is private until a moderator reviews it.
+          Your attachment is private until a moderator reviews it.
         </Text>
       )}
       {q.data?.canRemove && (
         <Button
-          label="Remove my photo"
+          label="Remove my attachment"
           onPress={() => {
             const media = q.data;
             if (!media || !supabase) return;
@@ -99,7 +109,7 @@ export default function ObservationPhoto({ report }: { report: Observation }) {
               })
               .then(({ data, error }) => {
                 if (error || data?.error)
-                  throw Error("Unable to remove photo.");
+                  throw Error("Unable to remove attachment.");
                 void client.invalidateQueries({
                   queryKey: ["report-photo", report.id],
                 });
@@ -110,7 +120,7 @@ export default function ObservationPhoto({ report }: { report: Observation }) {
       )}
       {q.error && (
         <Button
-          label="Photo unavailable · Retry"
+          label="Attachment unavailable · Retry"
           onPress={() => {
             void q.refetch();
           }}

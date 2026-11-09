@@ -1,3 +1,6 @@
+import { demoAttachmentUri } from "./photos";
+import { Platform } from "react-native";
+import type { PreparedPhoto } from "./photos";
 import "react-native-url-polyfill/auto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -59,20 +62,30 @@ export type ReportInput = Pick<
   observed_at: string;
   details: ReportDetails;
 };
-export async function attachPhoto(observationId: string, base64: string) {
-  if (!supabase) throw Error("Shared photo storage is not connected.");
+export async function attachPhoto(
+  observationId: string,
+  attachment: string | PreparedPhoto,
+) {
+  const media =
+    typeof attachment === "string" ? { base64: attachment } : attachment;
+  if (!supabase) throw Error("Shared media storage is not connected.");
   const { data, error } = await supabase.functions.invoke("observation-photo", {
-    body: { action: "upload", observationId, base64 },
+    body: {
+      action: "upload",
+      observationId,
+      base64: media.base64,
+      mediaKind: "kind" in media ? media.kind : "photo",
+    },
   });
   if (error || data?.error || !data?.ok)
     throw Error(
       data?.error ||
-        "The photo upload could not finish. Check your connection and retry; your report is already saved.",
+        "The attachment upload could not finish. Check your connection and retry; your observation is already saved.",
     );
 }
 export async function submit(
   input: ReportInput,
-  photo?: { base64: string; uri: string },
+  photo?: PreparedPhoto,
 ): Promise<{ id: string; photoError?: string }> {
   validateReport(
     input.title,
@@ -99,13 +112,14 @@ export async function submit(
     if (
       photo &&
       previous.reduce(
-        (total, report) => total + (report.photo_uri?.length ?? 0),
-        photo.uri.length,
+        (total, report) =>
+          total + (report.media_bytes ?? report.photo_uri?.length ?? 0),
+        photo.base64.length,
       ) >
-        4 * 1024 * 1024
+        (Platform.OS === "web" ? 4 : 32) * 1024 * 1024
     )
       throw Error(
-        "Demo photo storage is full. Remove the attachment to submit without a photo.",
+        "Device attachment storage is full. Remove the attachment to share without it.",
       );
     const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const report = {
@@ -115,7 +129,13 @@ export async function submit(
       verification: "unverified",
       source: "DEMO · this device",
       demo: true,
-      ...(photo ? { photo_uri: photo.uri } : {}),
+      ...(photo
+        ? {
+            photo_uri: await demoAttachmentUri(photo, id),
+            media_kind: photo.kind ?? "photo",
+            media_bytes: photo.base64.length,
+          }
+        : {}),
     };
     await AsyncStorage.setItem(localKey, JSON.stringify([...previous, report]));
     return { id };
@@ -124,8 +144,7 @@ export async function submit(
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user)
-    throw Error("Sign in before publishing a community observation.");
+  if (authError || !user) throw Error("Sign in before sharing an observation.");
   const { data, error } = await supabase
     .from("observations")
     .insert({ ...payload, author_id: user.id })
@@ -134,7 +153,7 @@ export async function submit(
   if (error) throw error;
   if (photo) {
     try {
-      await attachPhoto(data.id, photo.base64);
+      await attachPhoto(data.id, photo);
     } catch (error) {
       return {
         id: data.id,
@@ -157,7 +176,7 @@ export type GuidedReportInput = {
 };
 export async function submitGuided(
   input: GuidedReportInput,
-  photo?: { base64: string; uri: string },
+  photo?: PreparedPhoto,
 ): Promise<{ id: string; held: boolean; photoError?: string }> {
   const answers = normalizeAnswers(input.selection, input.answers),
     type = typeById(input.selection.typeId)!;
@@ -196,13 +215,13 @@ export async function submitGuided(
     if (
       photo &&
       previous.reduce(
-        (total, r) => total + (r.photo_uri?.length ?? 0),
-        photo.uri.length,
+        (total, r) => total + (r.media_bytes ?? r.photo_uri?.length ?? 0),
+        photo.base64.length,
       ) >
-        4 * 1024 * 1024
+        (Platform.OS === "web" ? 4 : 32) * 1024 * 1024
     )
       throw Error(
-        "Demo photo storage is full. Remove the attachment to submit without a photo.",
+        "Device attachment storage is full. Remove the attachment to share without it.",
       );
     const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       held = location.privacy === "restricted";
@@ -215,7 +234,13 @@ export async function submitGuided(
       verification: "unverified",
       source: "DEMO · this device",
       demo: true,
-      ...(photo ? { photo_uri: photo.uri } : {}),
+      ...(photo
+        ? {
+            photo_uri: await demoAttachmentUri(photo, id),
+            media_kind: photo.kind ?? "photo",
+            media_bytes: photo.base64.length,
+          }
+        : {}),
     };
     await AsyncStorage.setItem(localKey, JSON.stringify([...previous, report]));
     return { id, held };
@@ -224,8 +249,7 @@ export async function submitGuided(
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user)
-    throw Error("Sign in before publishing a community observation.");
+  if (authError || !user) throw Error("Sign in before sharing an observation.");
   const { data, error } = await supabase
     .from("observations")
     .insert({ ...payload, author_id: user.id })
@@ -233,19 +257,19 @@ export async function submitGuided(
     .single();
   if (error)
     throw Error(
-      "Unable to save your report. Check your connection and account, then try again.",
+      "Unable to share your observation. Check your connection and account, then try again.",
     );
   const result = { id: data.id as string, held: data.status !== "published" };
   if (photo) {
     try {
-      await attachPhoto(result.id, photo.base64);
+      await attachPhoto(result.id, photo);
     } catch (error) {
       return {
         ...result,
         photoError:
           error instanceof Error
             ? error.message
-            : "The photo could not be attached. Your report is saved.",
+            : "The attachment could not be added. Your observation is saved.",
       };
     }
   }

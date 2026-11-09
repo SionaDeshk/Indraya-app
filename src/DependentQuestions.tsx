@@ -5,7 +5,7 @@ import {
   allowedQuestions,
   visibleQuestion,
 } from "./taxonomy";
-import ChoiceSheet from "./ChoiceSheet";
+import ChoiceChips from "./ChoiceChips";
 import { styles } from "./ui";
 export default function DependentQuestions({
   selection,
@@ -23,12 +23,11 @@ export default function DependentQuestions({
         .map((question) => (
           <View key={question.id} style={{ gap: 6 }}>
             {question.type === "choice" ? (
-              <ChoiceSheet
+              <ChoiceChips
                 label={question.label}
                 value={String(answers[question.id] ?? "")}
                 options={question.options}
                 onChange={(value) => onChange(question.id, value)}
-                placeholder="Not provided"
               />
             ) : (
               <>

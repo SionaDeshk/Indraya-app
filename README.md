@@ -1,6 +1,10 @@
 # INDRAYA
 Every person is a point of awareness. Together, we see the world.
 
+## Current development update
+
+`feat/observation-flow` introduces a three-step sharing flow and private photo/video attachments. See [the update and rollout plan](docs/observation-flow-update.md). Video requires the new fourth migration, updated Edge Function and a rebuilt native development client; these are not deployed automatically. The older sections below describe the existing guided baseline.
+
 An Alaska-first Expo mobile MVP. Original text-led identity, teal/ice/amber controls, map filters, observation cards, foreground location, provider-backed place search, approximate-location report submission, account screens and Supabase foundation.
 
 ## Run

@@ -339,7 +339,7 @@ export default function Home() {
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Report an observation"
+            accessibilityLabel="Share an observation"
             onPress={() => router.push("/report")}
             style={{
               paddingHorizontal: 20,
@@ -350,7 +350,7 @@ export default function Home() {
             }}
           >
             <Text style={{ color: "#12302f", fontWeight: "700", fontSize: 15 }}>
-              ＋ Report
+              ＋ Share
             </Text>
           </Pressable>
         </View>

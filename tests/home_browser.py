@@ -18,7 +18,7 @@ with sync_playwright() as p:
   expect(page.get_by_text('Together, we see the world.',exact=True)).to_have_count(0)
   expect(page.get_by_role('button',name=re.compile('^Thin ice|^Visibility on'))).to_have_count(0)
   search=page.get_by_role('textbox',name='Search places',exact=True).bounding_box()
-  report=button('Report an observation').bounding_box();activity=handle.bounding_box()
+  report=button('Share an observation').bounding_box();activity=handle.bounding_box()
   assert search['y']+search['height']<height*.22
   assert report['height']<=52 and report['width']<150
   assert report['y']+report['height']<=activity['y']
@@ -42,14 +42,14 @@ with sync_playwright() as p:
   page.screenshot(path=f'{OUT}/browser-preview-{width}.png')
   click('View full observation');expect(button('Flag misleading')).to_be_visible()
   click('Back to preview');expect(button('View full observation')).to_be_visible()
-  click('Close observation preview');expect(button('Report an observation')).to_be_visible()
+  click('Close observation preview');expect(button('Share an observation')).to_be_visible()
   click('Layers');click('Observation category: All categories');click('Wildlife & Animals')
   expect(button('Observation category: Wildlife & Animals')).to_be_visible()
   expect(page.get_by_text('Map legend',exact=True)).to_be_visible()
   click('Back to map');expect(button('Observation category: Wildlife & Animals')).to_have_count(0)
   click('Expand nearby activity');expect(page.get_by_text('Nearby observations',exact=False)).to_contain_text('filtered')
   click('Collapse nearby activity')
-  click('Report an observation');expect(page.get_by_text('Share what you see.',exact=True)).to_be_visible();click('← Back to map')
+  click('Share an observation');expect(page.get_by_role('heading',name='What did you notice?',exact=True)).to_be_visible();click('Back to map')
   expect(button('Expand nearby activity')).to_be_visible()
   assert not errors,errors
   if width==390:
