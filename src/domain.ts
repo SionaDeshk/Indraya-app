@@ -33,6 +33,8 @@ export type Observation = PublicAssessment & {
   observed_at?: string;
   details?: ReportDetails;
   photo_uri?: string;
+  media_kind?: "photo" | "video";
+  media_bytes?: number;
   demo?: boolean;
   taxonomy_version?: number;
   domain_id?: DomainId;

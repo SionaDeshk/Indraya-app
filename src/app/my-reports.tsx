@@ -24,7 +24,7 @@ export default function MyReports() {
     >
       <Button label="← Back to map" onPress={() => router.dismissTo("/")} />
       <Text accessibilityRole="header" style={styles.heading}>
-        My reports
+        My observations
       </Text>
       <Text style={styles.text}>
         {supabase

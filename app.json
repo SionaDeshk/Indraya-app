@@ -35,11 +35,12 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Choose a photo to attach to your observation. New photos stay private until reviewed.",
+          "photosPermission": "Choose a photo or video to attach to your observation. New attachments stay private until reviewed.",
           "cameraPermission": false,
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-video"
     ]
   }
 }
