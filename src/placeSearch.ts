@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export type { PlaceResult } from "./searchDomain";
 import {
   normalize,
+  canonicalPlaceQuery,
   rankPlaces,
   parsePhoton,
   PlaceResult,
@@ -15,7 +16,7 @@ export async function searchPlaces(
   focus: [number, number],
   signal?: AbortSignal,
 ): Promise<PlaceResult[]> {
-  const q = query.trim();
+  const q = canonicalPlaceQuery(query);
   const curated = recreationPlaces(q);
   if (q.length < 3 || q.length > 160)
     throw Error("Enter 3–160 characters to search.");
@@ -37,7 +38,7 @@ export async function searchPlaces(
         Array.isArray(data.results) &&
         data.results.every(
           (p: PlaceResult) =>
-            p.provider === "photon" &&
+            ["photon", "nominatim", "gnis"].includes(p.provider) &&
             Number.isFinite(p.latitude) &&
             Number.isFinite(p.longitude),
         )

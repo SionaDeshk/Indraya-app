@@ -1,6 +1,6 @@
 import type { ReportLocation, MapBounds } from "./domain";
 export type PlaceResult = ReportLocation & {
-  provider: "photon";
+  provider: "photon" | "nominatim" | "gnis";
   retrievedAt?: string;
   state?: string;
   countryCode?: string;
@@ -11,6 +11,18 @@ export const normalize = (s: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase()
     .trim();
+/** Common local spellings; never merge a resort, summit and pass into one place. */
+export function canonicalPlaceQuery(value: string) {
+  const aliases: Record<string, string> = {
+    "alyeska mountain": "Mount Alyeska",
+    "hatchers pass": "Hatcher Pass",
+    "hatcher pass area": "Hatcher Pass Public Use Area",
+    "hatchers pass area": "Hatcher Pass Public Use Area",
+    "ekluta lake": "Eklutna Lake",
+    "seattles ridge": "Seattle Ridge",
+  };
+  return aliases[normalize(value)] ?? value.trim();
+}
 const clean = (value: unknown) =>
   typeof value === "string"
     ? value
@@ -180,7 +192,7 @@ export function rankPlaces(
   results: PlaceResult[],
   query: string,
 ): PlaceResult[] {
-  const q = normalize(query);
+  const q = normalize(canonicalPlaceQuery(query));
   const score = (p: PlaceResult) => {
     const n = normalize(p.name);
     const geographic = [
@@ -200,7 +212,7 @@ export function rankPlaces(
 export function initialPlaceCount(results: PlaceResult[], query: string) {
   const first = results[0];
   return first &&
-    normalize(first.name) === normalize(query) &&
+    normalize(first.name) === normalize(canonicalPlaceQuery(query)) &&
     ["city", "town", "village", "hamlet", "lake", "bay"].includes(
       first.featureType ?? "",
     ) &&
@@ -208,7 +220,7 @@ export function initialPlaceCount(results: PlaceResult[], query: string) {
       .slice(1)
       .some(
         (p) =>
-          normalize(p.name) === normalize(query) &&
+          normalize(p.name) === normalize(canonicalPlaceQuery(query)) &&
           p.featureType === first.featureType,
       )
     ? 1

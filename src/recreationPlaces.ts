@@ -1,13 +1,38 @@
+import type { MapBounds } from "./domain";
 import data from "../data/recreation-places.json";
-import { normalize, PlaceResult } from "./searchDomain";
+import { normalize, canonicalPlaceQuery, PlaceResult } from "./searchDomain";
 export function recreationPlaces(query: string): PlaceResult[] {
-  const q = normalize(query);
+  const q = normalize(canonicalPlaceQuery(query));
   if (q.length < 3) return [];
   return data
     .filter((p) => normalize(p.name).includes(q))
-    .map((p) => ({ ...p, provider: "photon" as const }));
+    .map((p) => ({
+      ...p,
+      provider: p.provider as PlaceResult["provider"],
+      bounds: p.bounds as MapBounds | undefined,
+    }));
 }
 export function recreationReferences(query: string) {
+  if (
+    /^(?:alaska )?(?:ski lines|ski routes|powder project)$/i.test(query.trim())
+  )
+    return [
+      {
+        label: "Alaska ski lines · Powder Project",
+        url: "https://www.powderproject.com/search?q=alaska",
+      },
+    ];
+  if (
+    /^(?:south ?central alaska ice(?: and alpine)?|alaska ice climbs)$/i.test(
+      query.trim(),
+    )
+  )
+    return [
+      {
+        label: "South Central Alaska ice & alpine · Mountain Project",
+        url: "https://www.mountainproject.com/area/105909315/south-central-alaska-ice-and-alpine",
+      },
+    ];
   const q = normalize(query).replace(/[’']/g, "");
   if (/\bbeer(s)?\b/.test(q))
     return [

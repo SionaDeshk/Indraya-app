@@ -3,6 +3,14 @@
 Review branch: `feat/place-discovery`. No production database writes, migrations,
 function deployments or app publication performed for this update.
 
+## Expanded geography follow-up
+
+Now 21 verified mapped outlines and 33 saved OSM/GNIS geographic references.
+Details, exact identities, source checks and remaining Mount Alyeska/route gaps:
+[geographic-expansion.md](geographic-expansion.md). Earlier two-outline/seven-place
+counts below describe the initial implementation. Warning system recommendation:
+[condition-warning-proposal.md](condition-warning-proposal.md); no algorithm enabled.
+
 ## Implemented
 
 - 96 original bundled glyphs with explicit mappings for all 114 existing types;
@@ -22,7 +30,7 @@ function deployments or app publication performed for this update.
   minutes. Background polling disabled; native AppState controls query focus.
 - Short ranked place results: exact geographic names precede transit stops, with
   More places. Exact provider IDs deduplicate; distinct business branches survive.
-- Seven finite OSM recreation/place references: Tincan Peak, Tincan Mountain Ski
+- Initial seven finite OSM recreation/place references: Tincan Peak, Tincan Mountain Ski
   Trail, Hatch Peak, Skyscraper Peak (Hatcher Pass), Microdot peak, Eklutna Lake,
   Turnagain Arm. No guessed Seattle Ridge / Kid's Corner / Beer Climbs pins.
 - Verified Eklutna Lake and Turnagain Arm outlines use identity-matched OSM
@@ -43,7 +51,7 @@ function deployments or app publication performed for this update.
 
 ## Validation
 
-Typecheck, lint, 58 unit tests; iOS/Android/web JavaScript exports. Existing demo
+Typecheck, lint, 60 unit tests; iOS/Android/web JavaScript exports. Existing demo
 home, phases and guided browser workflows; new compact-details/newest-first/edit
 workflow at 390×844 and 320×568; synthetic NWS panel; nine synthetic release
 reliability scenarios. Screenshots: `/workspace/outputs/indraya-discovery`.

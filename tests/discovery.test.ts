@@ -226,3 +226,80 @@ test("verified recreation search keeps map identities and proprietary guides sep
     ),
   );
 });
+
+test("expanded outlines preserve real multipolygons, park enclaves and lake islands", async () => {
+  const data = JSON.parse(
+    readFileSync("data/place-outlines.json", "utf8"),
+  ) as GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon>;
+  assert.equal(data.features.length, 21);
+  const ids = data.features.map((f) => f.properties?.placeId);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const f of data.features) {
+    const polygons =
+      f.geometry.type === "Polygon"
+        ? [f.geometry.coordinates]
+        : f.geometry.coordinates;
+    assert.ok(polygons.length > 0);
+    for (const polygon of polygons)
+      for (const ring of polygon) {
+        assert.ok(ring.length >= 4);
+        assert.deepEqual(ring[0], ring.at(-1));
+        assert.ok(
+          ring.every(
+            ([x, y]) =>
+              Number.isFinite(x) &&
+              Number.isFinite(y) &&
+              x >= -180 &&
+              x <= -129.9 &&
+              y >= 51 &&
+              y <= 72,
+          ),
+        );
+      }
+  }
+  const park = data.features.find(
+    (f) => f.properties?.placeId === "osm:R:12188016",
+  );
+  assert.equal(park?.geometry.type, "MultiPolygon");
+  const parts = (park?.geometry as GeoJSON.MultiPolygon).coordinates;
+  assert.equal(parts.length, 10);
+  assert.equal(
+    parts.reduce((n, p) => n + p.length - 1, 0),
+    9,
+  );
+  const lake = data.features.find(
+    (f) => f.properties?.placeId === "osm:R:1555333",
+  );
+  assert.equal((lake?.geometry as GeoJSON.Polygon).coordinates.length - 1, 13);
+  assert.ok(ids.includes("osm:W:1343608838"));
+  assert.ok(
+    !ids.includes("osm:N:241887948"),
+    "a summit never acquires a guessed area outline",
+  );
+});
+test("common spellings find genuine map features while ski/climb guide links stay separate", async () => {
+  const { recreationPlaces, recreationReferences } =
+    await import("../src/recreationPlaces");
+  assert.equal(
+    recreationPlaces("Alyeska Mountain")[0].placeId,
+    "osm:N:241887948",
+  );
+  assert.ok(
+    recreationPlaces("Hatchers Pass area").some(
+      (p) => p.placeId === "osm:W:1343608838",
+    ),
+  );
+  assert.ok(
+    recreationPlaces("Ekluta Lake").some((p) => p.placeId === "osm:W:49200373"),
+  );
+  const government = recreationPlaces("Government Peak");
+  assert.equal(government.length, 1);
+  assert.equal(government[0].provider, "gnis");
+  assert.equal(government[0].placeId, "gnis:1402812");
+  assert.ok(
+    recreationReferences("ski lines")[0].url.includes("powderproject.com"),
+  );
+  assert.ok(
+    recreationReferences("Alaska ice climbs")[0].url.includes("105909315"),
+  );
+});

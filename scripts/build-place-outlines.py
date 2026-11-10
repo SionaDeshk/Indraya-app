@@ -4,7 +4,9 @@ No network requests. Public Overpass is not an application backend.
 """
 import json,sys,pathlib
 raw=json.load(open(sys.argv[1]))
-features=[]
+# Preserve later independently reviewed geometry when regenerating this historical subset.
+existing=pathlib.Path('data/place-outlines.json')
+features=json.loads(existing.read_text())['features'] if existing.exists() else []
 for e in raw['elements']:
     if (e['type'],e['id']) not in [('way',49200373),('relation',8921978)]:continue
     def points(g):return [[p['lon'],p['lat']] for p in g]
@@ -22,6 +24,8 @@ for e in raw['elements']:
                 ring+=g[1:]
             rings.append(ring)
     assert all(len(r)>=4 and r[0]==r[-1] for r in rings)
+    source_id=f"osm:{'W' if e['type']=='way' else 'R'}:{e['id']}"
+    features=[f for f in features if f['properties']['placeId']!=source_id]
     features.append({'type':'Feature','properties':{'placeId':f"osm:{'W' if e['type']=='way' else 'R'}:{e['id']}",'name':e['tags']['name'],'featureType':e['tags'].get('water',e['tags'].get('natural')),'sourceUrl':f"https://www.openstreetmap.org/{e['type']}/{e['id']}",'checkedAt':'2026-11-10','attribution':'© OpenStreetMap contributors · ODbL 1.0'},'geometry':{'type':'MultiPolygon','coordinates':[[r] for r in rings]}})
 pathlib.Path('data/place-outlines.json').write_text(json.dumps({'type':'FeatureCollection','features':features},separators=(',',':'))+'\n')
 print('Built',len(features),'reviewed mapped features')

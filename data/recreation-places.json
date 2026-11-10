@@ -1,16 +1,328 @@
 [
   {
-    "name": "Skyscraper Peak",
-    "longitude": -149.3021607,
-    "latitude": 61.7785545,
+    "name": "Byron Glacier",
+    "longitude": -148.8464738,
+    "latitude": 60.7603984,
     "provider": "photon",
-    "placeId": "osm:N:7817817325",
+    "placeId": "osm:W:232970776",
+    "context": "Portage Valley, Alaska",
+    "featureType": "glacier",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -148.8491674,
+      60.7590279,
+      -148.844086,
+      60.7618722
+    ],
+    "retrievedAt": "2026-11-10T02:08:29.817108+00:00"
+  },
+  {
+    "name": "Byron Glacier",
+    "longitude": -148.8542601,
+    "latitude": 60.7452898,
+    "provider": "photon",
+    "placeId": "osm:W:233086494",
+    "context": "Portage Valley, Alaska",
+    "featureType": "glacier",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -148.8645097,
+      60.7363244,
+      -148.845259,
+      60.7549514
+    ],
+    "retrievedAt": "2026-11-10T02:08:29.817108+00:00"
+  },
+  {
+    "name": "Campbell Lake",
+    "longitude": -149.9413928,
+    "latitude": 61.1332828,
+    "provider": "photon",
+    "placeId": "osm:R:17075573",
+    "context": "Anchorage, Alaska",
+    "featureType": "lake",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.9589072,
+      61.1294107,
+      -149.9229997,
+      61.1371613
+    ],
+    "retrievedAt": "2026-11-10T02:08:19.718994+00:00"
+  },
+  {
+    "name": "Chugach State Park",
+    "longitude": -149.1221832,
+    "latitude": 61.2150465,
+    "provider": "photon",
+    "placeId": "osm:R:12188016",
+    "context": "Southcentral Alaska",
+    "featureType": "protected_area",
+    "focusZoom": 11,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.8037121,
+      60.9063185,
+      -148.821256,
+      61.5064819
+    ],
+    "retrievedAt": "2026-11-10T02:08:09.137425+00:00"
+  },
+  {
+    "name": "Crow Pass",
+    "longitude": -149.1175253,
+    "latitude": 61.0597149,
+    "provider": "photon",
+    "placeId": "osm:N:65244765",
+    "context": "Girdwood / Eagle River, Alaska",
+    "featureType": "mountain_pass",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "retrievedAt": "2026-11-10T02:08:31.330088+00:00"
+  },
+  {
+    "name": "Eklutna Lake",
+    "longitude": -149.0306676,
+    "latitude": 61.3722642,
+    "provider": "photon",
+    "placeId": "osm:W:49200373",
+    "context": "Southcentral Alaska",
+    "featureType": "lake",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "retrievedAt": "2026-11-10T01:27:36.479244+00:00"
+  },
+  {
+    "name": "Far North Bicentennial Park",
+    "longitude": -149.7605263,
+    "latitude": 61.1552146,
+    "provider": "photon",
+    "placeId": "osm:W:913965341",
+    "context": "Anchorage, Alaska",
+    "featureType": "park",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.8082831,
+      61.1362144,
+      -149.7083965,
+      61.1803377
+    ],
+    "retrievedAt": "2026-11-10T02:08:12.269556+00:00"
+  },
+  {
+    "name": "Finger Lake",
+    "longitude": -149.28372,
+    "latitude": 61.6040218,
+    "provider": "photon",
+    "placeId": "osm:R:2896634",
+    "context": "Mat-Su, Alaska",
+    "featureType": "lake",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.3006178,
+      61.5950014,
+      -149.2577498,
+      61.6131451
+    ],
+    "retrievedAt": "2026-11-10T02:08:24.072316+00:00"
+  },
+  {
+    "name": "Flattop Mountain",
+    "longitude": -149.66802438254354,
+    "latitude": 61.0895182614394,
+    "provider": "gnis",
+    "placeId": "gnis:1402210",
+    "context": "Anchorage, Alaska \u00b7 USGS GNIS",
+    "featureType": "peak",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "retrievedAt": "2026-11-10T02:15:24.694178+00:00"
+  },
+  {
+    "name": "Goose Lake",
+    "longitude": -149.8205272,
+    "latitude": 61.1948904,
+    "provider": "photon",
+    "placeId": "osm:W:71432763",
+    "context": "Anchorage, Alaska",
+    "featureType": "lake",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.8233802,
+      61.1933072,
+      -149.8165674,
+      61.1965142
+    ],
+    "retrievedAt": "2026-11-10T02:08:16.804730+00:00"
+  },
+  {
+    "name": "Government Peak",
+    "longitude": -149.30139829748722,
+    "latitude": 61.73396346869755,
+    "provider": "gnis",
+    "placeId": "gnis:1402812",
+    "context": "Matanuska-Susitna, Alaska \u00b7 USGS GNIS",
+    "featureType": "peak",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "retrievedAt": "2026-11-10T02:15:24.694178+00:00"
+  },
+  {
+    "name": "Hatch Peak",
+    "longitude": -149.312042,
+    "latitude": 61.7606717,
+    "provider": "photon",
+    "placeId": "osm:N:7817817326",
     "context": "Hatcher Pass, Alaska",
     "featureType": "peak",
     "focusZoom": 12,
     "state": "Alaska",
     "countryCode": "US",
-    "retrievedAt": "2026-11-10T01:27:47.288519+00:00"
+    "retrievedAt": "2026-11-10T01:27:45.800744+00:00"
+  },
+  {
+    "name": "Hatcher Pass",
+    "longitude": -149.322595,
+    "latitude": 61.7671451,
+    "provider": "photon",
+    "placeId": "osm:N:4758947334",
+    "context": "Hatcher Pass, Alaska",
+    "featureType": "mountain_pass",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "retrievedAt": "2026-11-10T02:08:06.049899+00:00"
+  },
+  {
+    "name": "Hatcher Pass Public Use Area",
+    "longitude": -149.2085996,
+    "latitude": 61.7737114,
+    "provider": "photon",
+    "placeId": "osm:W:1343608838",
+    "context": "Hatcher Pass, Alaska",
+    "featureType": "nature_reserve",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.2467879,
+      61.700611,
+      -149.0653749,
+      61.8451078
+    ],
+    "retrievedAt": "2026-11-10T02:08:06.049899+00:00"
+  },
+  {
+    "name": "Independence Mine State Historical Park",
+    "longitude": -149.2750818,
+    "latitude": 61.7867906,
+    "provider": "photon",
+    "placeId": "osm:R:12545836",
+    "context": "Hatcher Pass, Alaska",
+    "featureType": "protected_area",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.303947,
+      61.7728573,
+      -149.258122,
+      61.799983
+    ],
+    "retrievedAt": "2026-11-10T02:08:13.735641+00:00"
+  },
+  {
+    "name": "Kenai Lake",
+    "longitude": -149.6644959,
+    "latitude": 60.4137999,
+    "provider": "photon",
+    "placeId": "osm:R:1527882",
+    "context": "Kenai Peninsula, Alaska",
+    "featureType": "lake",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.8331385,
+      60.3331506,
+      -149.3446953,
+      60.4948088
+    ],
+    "retrievedAt": "2026-11-10T02:08:25.518464+00:00"
+  },
+  {
+    "name": "Kincaid Park",
+    "longitude": -150.0401984,
+    "latitude": 61.1553426,
+    "provider": "photon",
+    "placeId": "osm:R:18433834",
+    "context": "Anchorage, Alaska",
+    "featureType": "park",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -150.0693155,
+      61.1405012,
+      -150.010625,
+      61.1675854
+    ],
+    "retrievedAt": "2026-11-10T02:08:10.579707+00:00"
+  },
+  {
+    "name": "Lower Summit Lake",
+    "longitude": -149.4789742,
+    "latitude": 60.6617267,
+    "provider": "photon",
+    "placeId": "osm:W:111498561",
+    "context": "Kenai Peninsula, Alaska",
+    "featureType": "water",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.4831562,
+      60.6580064,
+      -149.4748211,
+      60.6650467
+    ],
+    "retrievedAt": "2026-11-10T02:08:28.383283+00:00"
+  },
+  {
+    "name": "Matanuska Glacier",
+    "longitude": -147.5508346,
+    "latitude": 61.6053437,
+    "provider": "photon",
+    "placeId": "osm:W:74719477",
+    "context": "Mat-Su, Alaska",
+    "featureType": "glacier",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -147.7614684,
+      61.4347597,
+      -147.3703934,
+      61.7777455
+    ],
+    "retrievedAt": "2026-11-10T02:08:37.300777+00:00"
   },
   {
     "name": "Microdot",
@@ -26,43 +338,138 @@
     "retrievedAt": "2026-11-10T01:27:49.077188+00:00"
   },
   {
-    "name": "Turnagain Arm",
-    "longitude": -149.8364423,
-    "latitude": 60.9943667,
+    "name": "Mount Alyeska",
+    "longitude": -149.0561364,
+    "latitude": 60.9592482,
     "provider": "photon",
-    "placeId": "osm:R:8921978",
-    "context": "Southcentral Alaska, Alaska",
-    "featureType": "bay",
-    "focusZoom": 12,
-    "state": "Alaska",
-    "countryCode": "US",
-    "retrievedAt": "2026-11-10T01:27:40.868754+00:00"
-  },
-  {
-    "name": "Eklutna Lake",
-    "longitude": -149.0306676,
-    "latitude": 61.3722642,
-    "provider": "photon",
-    "placeId": "osm:W:49200373",
-    "context": "Southcentral Alaska, Alaska",
-    "featureType": "lake",
-    "focusZoom": 12,
-    "state": "Alaska",
-    "countryCode": "US",
-    "retrievedAt": "2026-11-10T01:27:36.479244+00:00"
-  },
-  {
-    "name": "Tincan Peak",
-    "longitude": -149.0926497,
-    "latitude": 60.7413792,
-    "provider": "photon",
-    "placeId": "osm:N:4483055327",
-    "context": "Turnagain Pass, Alaska",
+    "placeId": "osm:N:241887948",
+    "context": "Girdwood, Alaska",
     "featureType": "peak",
     "focusZoom": 12,
     "state": "Alaska",
     "countryCode": "US",
-    "retrievedAt": "2026-11-10T01:27:43.904718+00:00"
+    "retrievedAt": "2026-11-10T02:08:07.641557+00:00"
+  },
+  {
+    "name": "Nancy Lake",
+    "longitude": -150.0146467,
+    "latitude": 61.6905298,
+    "provider": "photon",
+    "placeId": "osm:R:16928071",
+    "context": "Mat-Su, Alaska",
+    "featureType": "lake",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -150.02873,
+      61.6734601,
+      -149.9719289,
+      61.7075523
+    ],
+    "retrievedAt": "2026-11-10T02:08:22.598580+00:00"
+  },
+  {
+    "name": "Nancy Lake State Recreation Area",
+    "longitude": -150.1198821,
+    "latitude": 61.6399447,
+    "provider": "photon",
+    "placeId": "osm:R:18432255",
+    "context": "Mat-Su, Alaska",
+    "featureType": "nature_reserve",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -150.2146596,
+      61.5742704,
+      -149.9735268,
+      61.7072397
+    ],
+    "retrievedAt": "2026-11-10T02:08:22.598580+00:00"
+  },
+  {
+    "name": "Portage Lake",
+    "longitude": -148.8060894,
+    "latitude": 60.7688756,
+    "provider": "photon",
+    "placeId": "osm:R:21378422",
+    "context": "Portage Valley, Alaska",
+    "featureType": "lake",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -148.8424516,
+      60.7504515,
+      -148.7736049,
+      60.7869268
+    ],
+    "retrievedAt": "2026-11-10T02:08:15.322201+00:00"
+  },
+  {
+    "name": "Ptarmigan Peak",
+    "longitude": -149.60470899051495,
+    "latitude": 61.059576833754846,
+    "provider": "gnis",
+    "placeId": "gnis:1415999",
+    "context": "Anchorage, Alaska \u00b7 USGS GNIS",
+    "featureType": "peak",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "retrievedAt": "2026-11-10T02:15:24.694178+00:00"
+  },
+  {
+    "name": "Skilak Lake",
+    "longitude": -150.3746846,
+    "latitude": 60.4286694,
+    "provider": "photon",
+    "placeId": "osm:R:1555333",
+    "context": "Kenai Peninsula, Alaska",
+    "featureType": "lake",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -150.5218578,
+      60.3843137,
+      -150.1197041,
+      60.4729333
+    ],
+    "retrievedAt": "2026-11-10T02:08:25.518464+00:00"
+  },
+  {
+    "name": "Skyscraper Peak",
+    "longitude": -149.3021607,
+    "latitude": 61.7785545,
+    "provider": "photon",
+    "placeId": "osm:N:7817817325",
+    "context": "Hatcher Pass, Alaska",
+    "featureType": "peak",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "retrievedAt": "2026-11-10T01:27:47.288519+00:00"
+  },
+  {
+    "name": "Summit Lake",
+    "longitude": -149.5060648,
+    "latitude": 60.6324583,
+    "provider": "photon",
+    "placeId": "osm:W:111498564",
+    "context": "Kenai Peninsula, Alaska",
+    "featureType": "water",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.5207686,
+      60.6228737,
+      -149.4931386,
+      60.6416213
+    ],
+    "retrievedAt": "2026-11-10T02:08:28.383283+00:00"
   },
   {
     "name": "Tincan Mountain Ski Trail",
@@ -78,16 +485,61 @@
     "retrievedAt": "2026-11-10T01:27:43.904718+00:00"
   },
   {
-    "name": "Hatch Peak",
-    "longitude": -149.312042,
-    "latitude": 61.7606717,
+    "name": "Tincan Peak",
+    "longitude": -149.0926497,
+    "latitude": 60.7413792,
     "provider": "photon",
-    "placeId": "osm:N:7817817326",
-    "context": "Hatcher Pass, Alaska",
+    "placeId": "osm:N:4483055327",
+    "context": "Turnagain Pass, Alaska",
     "featureType": "peak",
     "focusZoom": 12,
     "state": "Alaska",
     "countryCode": "US",
-    "retrievedAt": "2026-11-10T01:27:45.800744+00:00"
+    "retrievedAt": "2026-11-10T01:27:43.904718+00:00"
+  },
+  {
+    "name": "Turnagain Arm",
+    "longitude": -149.8364423,
+    "latitude": 60.9943667,
+    "provider": "photon",
+    "placeId": "osm:R:8921978",
+    "context": "Southcentral Alaska",
+    "featureType": "bay",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "retrievedAt": "2026-11-10T01:27:40.868754+00:00"
+  },
+  {
+    "name": "Westchester Lagoon",
+    "longitude": -149.9200468,
+    "latitude": 61.2056633,
+    "provider": "photon",
+    "placeId": "osm:R:2375186",
+    "context": "Anchorage, Alaska",
+    "featureType": "lake",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "bounds": [
+      -149.9241559,
+      61.2027873,
+      -149.9114707,
+      61.2085533
+    ],
+    "retrievedAt": "2026-11-10T02:08:18.300222+00:00"
+  },
+  {
+    "name": "Wolverine Peak",
+    "longitude": -149.6144264909481,
+    "latitude": 61.13479744652021,
+    "provider": "gnis",
+    "placeId": "gnis:1412235",
+    "context": "Anchorage, Alaska \u00b7 USGS GNIS",
+    "featureType": "peak",
+    "focusZoom": 12,
+    "state": "Alaska",
+    "countryCode": "US",
+    "retrievedAt": "2026-11-10T02:15:24.694178+00:00"
   }
 ]
