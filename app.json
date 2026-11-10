@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Indraya",
+    "name": "Nuna",
     "slug": "indraya",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -28,7 +28,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Show your position while using Indraya."
+          "locationWhenInUsePermission": "Show your position while using Nuna."
         }
       ],
       "@react-native-community/datetimepicker",
