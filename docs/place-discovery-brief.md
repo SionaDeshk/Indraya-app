@@ -11,3 +11,22 @@ Keep three-step sharing, optional notes/measurements, inline choices, private re
 ## User-selected ski reference
 
 Use Joe Stock's *The Alaska Factor* as a starting reference for backcountry ski place names, regional organization and local aliases (user confirmed this author/title interpretation). No book contents, route coordinates or permissions have been verified in this task. Cross-check geographic identity and coordinates against appropriate map/land-manager sources. Cite/link the reference; copying maps, GPS tracks or detailed route descriptions requires suitable rights. Route inclusion is not an endorsement of current access or conditions. Alaska Ice Climbing (https://alaskaiceclimbing.com/) remains the user-selected ice-route reference; verify Kids Corner/Beers Climb names and locations before adding pins.
+
+## November 10 adjustments
+
+Use progressive disclosure in observation details: headline/place/time, provenance,
+up to three concise facts, optional note/media, collapsed community updates and
+source links; keep history/expiry/full answers under More observation details.
+Unassessed records do not need a default staff-risk row. Active assessments are
+manual moderator notes, never a community-derived avalanche forecast. Do not
+invent a five-level forecast when no authorized official forecast is loaded.
+Refresh foreground community observations every two minutes and opted-in NWS
+station readings every five minutes. Keep avalanche forecasts link-only until
+an authorized feed and coverage mapping are verified.
+
+My observations: newest **shared** first, regardless of observed time. Prepare a
+10-minute correction window for notes and condition answers. Do not permit edits
+to reviewed/held/hidden observations or after independent responses/assessments.
+Changing location/type/media or updating conditions later uses a new observation.
+The new server enforcement migration is a review proposal, not deployment
+permission. Original seven deployed migrations remain byte-for-byte unchanged.

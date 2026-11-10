@@ -1,5 +1,13 @@
 # Recreation-place search and weather-station research
 
+**November 10 follow-up:** Source access now works for the checked endpoints.
+The optional NWS station panel and finite OSM reference data are implemented on
+`feat/place-discovery`; avalanche/guide content remains link-only. See
+[source-validation-20261110.md](source-validation-20261110.md) for current evidence
+and [place-discovery-handoff.md](place-discovery-handoff.md) for remaining gates.
+The older blocked-access/preparation notes below describe the earlier revision.
+
+
 Status: preparation, **not a verified gazetteer or enabled weather feed**. Review branch: research/recreation-weather. No application, migration, catalog, Supabase variable or production changes. The seven deployed migrations and current media function remain untouched.
 
 ## Recommended sequence

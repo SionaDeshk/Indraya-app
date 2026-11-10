@@ -11,9 +11,9 @@ export type PublicAssessment = {
 };
 export const riskPresentation = {
   none: { label: "Not assessed", color: "#b3c8c8" },
-  caution: { label: "Staff caution", color: "#e7ce78" },
-  hazard: { label: "Staff hazard", color: "#ffa561" },
-  urgent: { label: "Staff urgent danger", color: "#f4767e" },
+  caution: { label: "Moderator caution note", color: "#e7ce78" },
+  hazard: { label: "Moderator hazard note", color: "#ffa561" },
+  urgent: { label: "Moderator urgent note", color: "#f4767e" },
 } as const;
 export function effectiveAssessment(
   report: PublicAssessment,

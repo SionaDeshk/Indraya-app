@@ -40,8 +40,8 @@ with sync_playwright() as p:
  page.goto(BASE+'/account',wait_until='networkidle');click('My observations');expect(page.get_by_text('Outdated ·',exact=False)).to_be_visible()
  page.goto(BASE,wait_until='networkidle');page.get_by_role('textbox',name='Search places',exact=True).fill('Trail fixture');click('Search');click('TEST winter trail');click('Follow this place')
  page.goto(BASE+'/places',wait_until='networkidle');expect(page.get_by_role('heading',name='Following places',exact=True)).to_be_visible();expect(btn('Open TEST winter trail')).to_be_visible();click('Open TEST winter trail')
- expect(page.get_by_text('Place reference only · no observation created')).to_be_visible()
- page.goto(BASE+'/sources',wait_until='networkidle');click('Regional forecasts, trails and access');click('Area: Hatcher Pass');expect(btn('Open Hatcher Pass Avalanche Center')).to_be_visible();expect(page.get_by_text('Source links and coverage still need local verification.',exact=False)).to_be_visible()
+ expect(page.get_by_text('Place pin · mapped outline unavailable')).to_be_visible()
+ page.goto(BASE+'/sources',wait_until='networkidle');click('Local forecasts & updates');click('Area: Hatcher Pass');expect(btn('Hatcher Pass Avalanche Center · forecast')).to_be_visible();expect(page.get_by_text('No external forecast is loaded here.',exact=False)).to_be_visible()
  page.goto(BASE+'/reset-password',wait_until='networkidle');expect(page.get_by_text('Open the recovery link from your email',exact=False)).to_be_visible()
  # A sensitive observation needs no typed note, explains its hold and opens owner status.
  page.goto(BASE+'/report',wait_until='networkidle');click('Safety & Assistance');page.get_by_label('Find an observation type',exact=True).fill('gunfire');click('Possible gunfire heard · Safety & Assistance')

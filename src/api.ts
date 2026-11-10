@@ -1,3 +1,4 @@
+import { newestFirst, editTimeLeft } from "./myObservations";
 import { demoAttachmentUri } from "./photos";
 import { Platform } from "react-native";
 import type { PreparedPhoto } from "./photos";
@@ -383,14 +384,18 @@ export async function submitGuided(
 }
 export async function myObservations(): Promise<Observation[]> {
   if (!supabase)
-    return JSON.parse((await AsyncStorage.getItem(localKey)) || "[]");
+    return newestFirst(
+      JSON.parse((await AsyncStorage.getItem(localKey)) || "[]"),
+    );
   const { data, error } = await supabase.rpc("my_observations");
   if (error)
     throw Error("Sign in to view your reports, or try again when connected.");
-  return (data ?? []).map((report: Observation) => ({
-    ...report,
-    source: "Community",
-  }));
+  return newestFirst(
+    (data ?? []).map((report: Observation) => ({
+      ...report,
+      source: "Community",
+    })),
+  );
 }
 export async function flag(id: string, reason: string) {
   if (!supabase)
@@ -405,4 +410,48 @@ export async function flag(id: string, reason: string) {
     .from("report_flags")
     .insert({ observation_id: id, reporter_id: user.id, reason });
   if (error) throw error;
+}
+
+export async function correctObservation(
+  report: Observation,
+  note: string,
+  answers: import("./taxonomy").Answers,
+  actor: string,
+) {
+  if (!editTimeLeft(report))
+    throw Error(
+      "The correction window has closed. Share a new observation for changed conditions.",
+    );
+  if (note.length > 2000) throw Error("Keep the note under 2,000 characters.");
+  if (!supabase) {
+    const rows: Observation[] = JSON.parse(
+      (await AsyncStorage.getItem(localKey)) || "[]",
+    );
+    const current = rows.find((r) => r.id === report.id);
+    if (actor !== "demo" || !current || !editTimeLeft(current))
+      throw Error("The correction window has closed.");
+    await AsyncStorage.setItem(
+      localKey,
+      JSON.stringify(
+        rows.map((r) =>
+          r.id === report.id ? { ...r, description: note.trim(), answers } : r,
+        ),
+      ),
+    );
+    return;
+  }
+  const client = await actorClient(actor);
+  const { error } = await client.rpc("correct_observation", {
+    report: report.id,
+    note: note.trim(),
+    condition_answers: answers,
+  });
+  if (error?.code === "PGRST202" || error?.code === "42883")
+    throw Error(
+      "Corrections are not released on this backend yet. Your original observation is unchanged.",
+    );
+  if (error)
+    throw Error(
+      "Correction not confirmed. Refresh your observations before retrying; the window may have closed.",
+    );
 }

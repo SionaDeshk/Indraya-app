@@ -16,6 +16,8 @@ export type ReportLocation = {
   context?: string;
   reference_name?: string;
   privateAddress?: boolean;
+  /** Provider feature identity; never an access or safety boundary. */
+  placeId?: string;
 };
 export type Category = "Safety" | "Outdoors" | "Travel";
 export type Observation = PublicAssessment & {

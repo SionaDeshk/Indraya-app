@@ -1,5 +1,13 @@
 # Official source validation and release gate
 
+**November 10 follow-up:** Source access now works for the checked endpoints.
+The optional NWS station panel and finite OSM reference data are implemented on
+`feat/place-discovery`; avalanche/guide content remains link-only. See
+[source-validation-20261110.md](source-validation-20261110.md) for current evidence
+and [place-discovery-handoff.md](place-discovery-handoff.md) for remaining gates.
+The older blocked-access/preparation notes below describe the earlier revision.
+
+
 No live feed is enabled in this revision. The managed environment's current HTTP allowlist does not include the official sites, and read-only NWS/USGS probes returned HTTP 403. Required hosts were added to the configuration draft, but draft persistence does not apply runtime networking. There are no API keys to request for these candidate public feeds. Do not treat network denial as an upstream service outage.
 
 ## Candidate adapters

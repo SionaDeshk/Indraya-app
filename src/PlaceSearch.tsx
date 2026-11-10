@@ -1,7 +1,10 @@
+import * as Linking from "expo-linking";
+import { recreationReferences } from "./recreationPlaces";
 import { useEffect, useRef, useState } from "react";
 import { Keyboard, Text, TextInput, View, ScrollView } from "react-native";
 import { ReportLocation } from "./domain";
 import { PlaceResult, searchPlaces } from "./placeSearch";
+import { initialPlaceCount } from "./searchDomain";
 import { Button, styles } from "./ui";
 export default function PlaceSearch({
   onChoose,
@@ -17,6 +20,7 @@ export default function PlaceSearch({
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const request = useRef(0);
   const abort = useRef<AbortController | null>(null);
   useEffect(
@@ -30,6 +34,7 @@ export default function PlaceSearch({
     request.current++;
     abort.current?.abort();
     setQuery(value);
+    setShowAll(false);
     setResults([]);
     setMessage("");
     setBusy(false);
@@ -91,12 +96,30 @@ export default function PlaceSearch({
               Searching…
             </Text>
           )}
+          {recreationReferences(query).map((reference) => (
+            <View key={reference.url} style={{ gap: 4 }}>
+              <Button
+                label={reference.label}
+                onPress={() => {
+                  void Linking.openURL(reference.url).catch(() =>
+                    setMessage("Could not open the route reference."),
+                  );
+                }}
+              />
+              <Text style={[styles.text, { fontSize: 12 }]}>
+                External guide · exact route pin not verified in Indraya
+              </Text>
+            </View>
+          ))}
           <ScrollView
             style={{ maxHeight: 220 }}
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled
           >
-            {results.map((place, i) => (
+            {(showAll
+              ? results
+              : results.slice(0, initialPlaceCount(results, query))
+            ).map((place, i) => (
               <View
                 key={`${place.name}:${place.latitude}:${i}`}
                 style={{ gap: 4, marginBottom: 8 }}
@@ -116,6 +139,12 @@ export default function PlaceSearch({
               </View>
             ))}
           </ScrollView>
+          {!showAll && results.length > initialPlaceCount(results, query) && (
+            <Button
+              label={`More places (${results.length - initialPlaceCount(results, query)})`}
+              onPress={() => setShowAll(true)}
+            />
+          )}
           {searched && results.length === 0 && (
             <Text style={styles.text}>
               No places found in Alaska. Try a nearby town or a more specific

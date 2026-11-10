@@ -1,9 +1,9 @@
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { Observation, age, observedTime, reportAppearance } from "./domain";
-import { effectiveAssessment, riskPresentation } from "./assessment";
+import AssessmentBadge from "./AssessmentBadge";
+import { effectiveAssessment } from "./assessment";
 import { useNow } from "./Clock";
-import { markerFamily } from "./markerFamily";
-import { mapSymbols } from "./mapSymbols";
+import ObservationIcon from "./ObservationIcon";
 import { styles } from "./ui";
 export default function ObservationPreview({
   report,
@@ -20,12 +20,6 @@ export default function ObservationPreview({
 }) {
   const appearance = reportAppearance(report),
     assessment = effectiveAssessment(report, useNow());
-  const risk =
-    assessment.state === "active"
-      ? riskPresentation[assessment.level].label
-      : assessment.state === "not_assessed"
-        ? "Staff risk: not assessed"
-        : `Staff assessment ${assessment.state}`;
   return (
     <View
       style={{
@@ -43,22 +37,7 @@ export default function ObservationPreview({
     >
       <View style={{ paddingHorizontal: 16, paddingTop: 8 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <View
-            style={{
-              backgroundColor: appearance.color,
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Image
-              source={mapSymbols[markerFamily(report)].image}
-              style={{ width: 22, height: 22 }}
-              accessible={false}
-            />
-          </View>
+          <ObservationIcon report={report} />
           <Text
             numberOfLines={1}
             style={{
@@ -107,17 +86,7 @@ export default function ObservationPreview({
           Observed {age(observedTime(report))} ·{" "}
           {report.demo ? "DEMO" : report.source} · {report.verification}
         </Text>
-        <Text
-          style={{
-            color:
-              assessment.state === "active"
-                ? riskPresentation[assessment.level].color
-                : "#afc9c8",
-            fontSize: 12,
-          }}
-        >
-          {risk}
-        </Text>
+        {assessment.state === "active" && <AssessmentBadge report={report} />}
       </ScrollView>
       <View style={{ paddingHorizontal: 16, paddingBottom: 12, paddingTop: 4 }}>
         <Pressable
@@ -133,7 +102,7 @@ export default function ObservationPreview({
           }}
         >
           <Text style={{ color: "#9ce5d9", fontWeight: "700" }}>
-            View full report
+            View observation
           </Text>
         </Pressable>
       </View>

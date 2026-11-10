@@ -22,6 +22,8 @@ export default function ObservationResponses({
     responseQuery = useQuery({
       queryKey: ["observation-responses", report.id],
       enabled: !!supabase && !report.demo,
+      refetchInterval: 120000,
+      refetchIntervalInBackground: false,
       queryFn: async () => {
         const { data, error } = await supabase!.rpc(
           "observation_response_summary",
@@ -66,51 +68,66 @@ export default function ObservationResponses({
       setBusy(false);
     }
   }
+  const count =
+    (summary?.observed ?? 0) +
+    (summary?.changed ?? 0) +
+    (summary?.not_observed ?? 0);
   return (
     <View style={{ gap: 10 }}>
-      <Text style={[styles.heading, { fontSize: 20 }]}>Firsthand updates</Text>
-      {summary && (
-        <Text style={styles.text}>
-          {summary.observed} observed too · {summary.changed} changed ·{" "}
-          {summary.not_observed} did not observe
-          {summary.latest
-            ? ` · Latest ${new Date(summary.latest).toLocaleString()}`
-            : ""}
-        </Text>
-      )}
-      <Text style={styles.text}>
-        These are independent observations, not staff verification. Not seeing
-        something does not mean it is gone or safe.
-      </Text>
-      {!report.demo && isActive(report, now) && (
-        <Button
-          label={open ? "Cancel update" : "Add a firsthand update"}
-          onPress={() => setOpen(!open)}
-        />
-      )}
-      {report.demo && (
-        <Text style={styles.text}>
-          Firsthand responses require a real signed-in account; demo
-          observations are not sent to other people.
-        </Text>
-      )}
+      <Button
+        label={
+          open
+            ? "Close community updates"
+            : count
+              ? `${count} firsthand update${count === 1 ? "" : "s"}`
+              : "Community updates"
+        }
+        onPress={() => setOpen(!open)}
+      />
       {open && (
         <>
-          <ObservationTime value={seenAt} onChange={setSeenAt} />
-          {[
-            ["observed", "I observed this too"],
-            ["changed", "Conditions have changed"],
-            ["not_observed", "I didn't observe this"],
-          ].map(([value, label]) => (
-            <Button
-              key={value}
-              label={label}
-              disabled={busy}
-              onPress={() => {
-                void respond(value);
-              }}
-            />
-          ))}
+          {summary && count > 0 && (
+            <Text style={styles.text}>
+              {summary.observed} observed too · {summary.changed} changed ·{" "}
+              {summary.not_observed} did not observe
+              {summary.latest
+                ? ` · Latest ${new Date(summary.latest).toLocaleString()}`
+                : ""}
+            </Text>
+          )}
+          <Text style={styles.text}>
+            Firsthand updates do not verify safety or renew the original
+            observation.
+          </Text>
+          {report.demo ? (
+            <Text style={styles.text}>
+              Demo updates stay on this device. Sign in to a connected project
+              to share a firsthand update.
+            </Text>
+          ) : isActive(report, now) ? (
+            <>
+              <ObservationTime value={seenAt} onChange={setSeenAt} />
+              {[
+                ["observed", "I observed this too"],
+                ["changed", "Conditions have changed"],
+                ["not_observed", "I didn't observe this"],
+              ].map(([value, label]) => (
+                <Button
+                  key={value}
+                  label={label}
+                  disabled={busy}
+                  onPress={() => {
+                    void respond(value);
+                  }}
+                />
+              ))}
+            </>
+          ) : (
+            <Text style={styles.text}>
+              This observation is outdated; share a new observation if you have
+              current information.
+            </Text>
+          )}
         </>
       )}
       {!!message && (

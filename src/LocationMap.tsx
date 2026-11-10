@@ -1,3 +1,4 @@
+import PlaceOutlineLayer from "./PlaceOutlineLayer";
 import { useRef, useState } from "react";
 import {
   Map,
@@ -74,6 +75,7 @@ export default function LocationMap({
           });
         }}
       >
+        <PlaceOutlineLayer place={location} />
         <Camera
           ref={camera}
           initialViewState={initialView.current}

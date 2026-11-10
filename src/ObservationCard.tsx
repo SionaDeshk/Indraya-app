@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import { age, Observation, observedTime, reportAppearance } from "./domain";
+import ObservationIcon from "./ObservationIcon";
 import AssessmentBadge from "./AssessmentBadge";
 import { styles } from "./ui";
 export default function ObservationCard({
@@ -31,14 +32,7 @@ export default function ObservationCard({
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-        <View
-          style={{
-            width: 9,
-            height: 9,
-            borderRadius: 5,
-            backgroundColor: appearance.color,
-          }}
-        />
+        <ObservationIcon report={report} size={25} />
         <Text
           numberOfLines={1}
           style={{ color: appearance.color, fontWeight: "700", fontSize: 13 }}

@@ -1,7 +1,9 @@
+import { recreationPlaces, mergePlaces } from "./recreationPlaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 export type { PlaceResult } from "./searchDomain";
 import {
   normalize,
+  rankPlaces,
   parsePhoton,
   PlaceResult,
   alaskaPlaces,
@@ -14,6 +16,7 @@ export async function searchPlaces(
   signal?: AbortSignal,
 ): Promise<PlaceResult[]> {
   const q = query.trim();
+  const curated = recreationPlaces(q);
   if (q.length < 3 || q.length > 160)
     throw Error("Enter 3–160 characters to search.");
   const bias = inAlaskaSearchRegion(focus[0], focus[1])
@@ -21,7 +24,7 @@ export async function searchPlaces(
     : [-149.9, 61.2];
   const lon = Math.round(bias[0] * 10) / 10,
     lat = Math.round(bias[1] * 10) / 10;
-  const key = `indraya.search.v3.alaska:${normalize(q)}:${lon}:${lat}`;
+  const key = `indraya.search.v4.alaska:${normalize(q)}:${lon}:${lat}`;
   if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
   try {
     const cached = await AsyncStorage.getItem(key);
@@ -39,7 +42,7 @@ export async function searchPlaces(
             Number.isFinite(p.longitude),
         )
       )
-        return alaskaPlaces(data.results);
+        return rankPlaces(mergePlaces(curated, alaskaPlaces(data.results)), q);
     }
   } catch {
     /* Cache is optional and never substitutes an invented result. */
@@ -88,8 +91,9 @@ export async function searchPlaces(
     } catch {
       /* A full cache must not discard a successful search. */
     }
-    return results;
+    return rankPlaces(mergePlaces(curated, results), q);
   } catch (error) {
+    if (curated.length && !signal?.aborted) return rankPlaces(curated, q);
     if (error instanceof Error && error.name === "AbortError")
       throw Error("Search took too long. Please try again.");
     throw error instanceof Error && error.message.startsWith("Search is busy")

@@ -19,19 +19,31 @@ export default function AssessmentBadge({
     current.state === "active"
       ? riskPresentation[current.level].label
       : current.state === "expired"
-        ? "Staff assessment expired"
+        ? "Moderator note expired"
         : current.state === "resolved"
-          ? "Staff assessment resolved"
+          ? "Moderator note resolved"
           : current.state === "disputed"
-            ? "Staff assessment disputed"
-            : "Staff risk: not assessed";
+            ? "Moderator note disputed"
+            : "No moderator note";
   const color =
     current.state === "active"
       ? riskPresentation[current.level].color
       : "#b3c8c8";
   return (
-    <View style={{ gap: 5 }}>
+    <View
+      style={{
+        gap: 5,
+        borderLeftWidth: 4,
+        borderLeftColor: color,
+        paddingLeft: 10,
+      }}
+    >
       <Text style={{ color, fontSize: 12, fontWeight: "700" }}>{label}</Text>
+      {current.state === "active" && (
+        <Text style={[styles.text, { fontSize: 12 }]}>
+          Manual review note · not an avalanche forecast
+        </Text>
+      )}
       {current.state === "active" && report.assessment_expires_at && (
         <Text style={[styles.text, { fontSize: 12 }]}>
           Review due {new Date(report.assessment_expires_at).toLocaleString()}

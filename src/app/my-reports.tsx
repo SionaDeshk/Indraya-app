@@ -1,3 +1,5 @@
+import { newestFirst } from "../myObservations";
+import ObservationCorrection from "../ObservationCorrection";
 import { useEffect, useRef, useState } from "react";
 import { Modal, ScrollView, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -21,6 +23,8 @@ export default function MyReports() {
     enabled: boundary.actor !== undefined && !boundary.invalidated,
     queryFn: myObservations,
     retry: 1,
+    refetchInterval: 120000,
+    refetchIntervalInBackground: false,
   });
   useEffect(() => {
     if (observation && opened.current !== observation && q.data) {
@@ -83,18 +87,20 @@ export default function MyReports() {
           You have not shared any observations yet.
         </Text>
       )}
-      {q.data?.map((report) => (
-        <View key={report.id} style={{ gap: 8 }}>
-          <ObservationCard
-            report={report}
-            onPress={() => setSelected(report)}
-          />
-          <Text style={styles.text}>
-            {observationStatus(report, now).label} ·{" "}
-            {observationStatus(report, now).explanation}
-          </Text>
-        </View>
-      ))}
+      <Text style={[styles.text, { fontSize: 12 }]}>Newest shared first</Text>
+      {q.data &&
+        newestFirst(q.data).map((report) => (
+          <View key={report.id} style={{ gap: 8 }}>
+            <ObservationCard
+              report={report}
+              onPress={() => setSelected(report)}
+            />
+            <Text style={styles.text}>
+              {observationStatus(report, now).label} ·{" "}
+              {observationStatus(report, now).explanation}
+            </Text>
+          </View>
+        ))}
       <Modal
         visible={selected !== null}
         transparent
@@ -118,6 +124,15 @@ export default function MyReports() {
             contentContainerStyle={{ padding: 24, paddingBottom: 45, gap: 16 }}
           >
             {selected && <ObservationDetails report={selected} />}
+            {selected && boundary.actor && (
+              <ObservationCorrection
+                key={selected.id}
+                report={selected}
+                actor={boundary.actor}
+                current={boundary.current}
+                onSaved={() => setSelected(null)}
+              />
+            )}
             <Button label="Close my report" onPress={() => setSelected(null)} />
           </ScrollView>
         </View>

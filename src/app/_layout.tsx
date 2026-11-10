@@ -3,13 +3,25 @@ import { AppState, Platform } from "react-native";
 import { supabase } from "../api";
 import { ClockProvider } from "../Clock";
 import { Stack } from "expo-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  focusManager,
+} from "@tanstack/react-query";
 const client = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 60000 } },
 });
 export default function Layout() {
   useEffect(() => {
-    if (!supabase) return;
+    if (Platform.OS !== "web")
+      focusManager.setFocused(AppState.currentState === "active");
+    const focusListener =
+      Platform.OS !== "web"
+        ? AppState.addEventListener("change", (state) =>
+            focusManager.setFocused(state === "active"),
+          )
+        : null;
+    if (!supabase) return () => focusListener?.remove();
     let actor: string | null | undefined;
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       const next = session?.user.id ?? null;
@@ -43,6 +55,7 @@ export default function Layout() {
     return () => {
       data.subscription.unsubscribe();
       listener?.remove();
+      focusListener?.remove();
       if (Platform.OS !== "web") supabase?.auth.stopAutoRefresh();
     };
   }, []);

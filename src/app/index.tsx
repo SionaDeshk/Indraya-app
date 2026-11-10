@@ -1,3 +1,4 @@
+import { placeOutline } from "../placeOutlines";
 import { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -72,7 +73,12 @@ export default function Home() {
     null,
   );
   const feeds = useOfficialFeeds();
-  const q = useQuery({ queryKey: ["observations"], queryFn: observations });
+  const q = useQuery({
+    queryKey: ["observations"],
+    queryFn: observations,
+    refetchInterval: supabase ? 120000 : false,
+    refetchIntervalInBackground: false,
+  });
   const spatial = useQuery<Observation[]>({
     queryKey: ["nearby-observations", viewport.bounds],
     enabled: !!supabase && viewport.bounds !== null,
@@ -89,6 +95,8 @@ export default function Home() {
       }));
     },
     staleTime: 30000,
+    refetchInterval: supabase ? 120000 : false,
+    refetchIntervalInBackground: false,
   });
   const loadedReports = [
     ...new Map(
@@ -317,7 +325,9 @@ export default function Home() {
                 numberOfLines={1}
                 style={{ color: "#9ab3b7", fontSize: 11 }}
               >
-                Place reference only · no observation created
+                {placeOutline(searchPlace)
+                  ? "Mapped outline · © OpenStreetMap contributors"
+                  : "Place pin · mapped outline unavailable"}
               </Text>
             </View>
             <Pressable
@@ -626,7 +636,9 @@ export default function Home() {
                 </Text>
               ))}
             <Text style={styles.text}>
-              Expired assessments lose their ring. No ring does not mean safe.
+              Rings are manual moderator notes, not calculated danger or
+              avalanche forecasts. Expired notes lose their ring. No ring does
+              not mean safe.
             </Text>
           </ScrollView>
         </SafeAreaView>

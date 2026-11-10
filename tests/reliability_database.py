@@ -9,8 +9,11 @@ args=parser.parse_args()
 root=pathlib.Path(__file__).resolve().parents[1];env=os.environ.copy()
 for k in ['DOCKER_HOST','DOCKER_CONTEXT','DOCKER_TLS','DOCKER_TLS_VERIFY','DOCKER_CERT_PATH']:env.pop(k,None)
 base=['docker','--host=unix:///var/run/docker.sock','exec','-i',args.container]
-for i in range(25):
- if subprocess.run(base+['pg_isready','-U','postgres'],env=env,stdout=subprocess.DEVNULL).returncode==0:break
+for i in range(50):
+ # pg_isready can succeed against the entrypoint's temporary bootstrap server.
+ # Wait for the final postgres process (PID 1), avoiding its subsequent restart.
+ ready='test "$(head -n 1 "$PGDATA/postmaster.pid" 2>/dev/null)" = "1" && pg_isready -U postgres'
+ if subprocess.run(base+['sh','-c',ready],env=env,stdout=subprocess.DEVNULL).returncode==0:break
  time.sleep(1)
 subprocess.run(base+['createdb','-U','postgres','-T','template0','indraya_reliability'],env=env,check=True)
 def run(s,check=True):
@@ -24,9 +27,15 @@ with open('/tmp/indraya-reliability-sql.log','w') as log:
  bootstrap=(root/'supabase/tests/bootstrap.sql').read_text()
  if existing=='2':bootstrap='\n'.join(l for l in bootstrap.splitlines() if not l.startswith('create role'))
  sql(bootstrap)
- for p in sorted((root/'supabase/migrations').glob('*.sql')):sql('begin;\n'+p.read_text()+'\ncommit;')
+ migrations=sorted((root/'supabase/migrations').glob('*.sql'))
+ assert len(migrations)==8 and migrations[-1].name=='202611100002_observation_edit_window.sql', 'Review the migration test sequence'
+ for p in migrations[:-1]:sql('begin;\n'+p.read_text()+'\ncommit;')
  for name in ['rls','report_details','guided_observations','private_video','lifecycle','idempotent_submissions']:sql((root/f'supabase/tests/{name}.sql').read_text())
  print('PASS: fresh seven-migration install and all six SQL suites',flush=True)
+ sql('begin;\n'+migrations[-1].read_text()+'\ncommit;')
+ sql((root/'supabase/tests/correction_window.sql').read_text())
+ sql((root/'supabase/tests/idempotent_submissions.sql').read_text())
+ print('PASS: proposed correction migration, RLS/deadline checks, moderation and replay protections',flush=True)
 # Two simultaneous connections simulate a replay arriving before the first commit.
 run("insert into auth.users values('00000000-0000-0000-0000-000000000099');")
 payload={'category':'Travel','kind':'road','title':'Concurrent synthetic ice','description':'','latitude':61.22,'longitude':-149.9,'place_name':'Synthetic place','observed_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'details':{},'extent':None,'taxonomy_version':2,'domain_id':'travel','topic_id':'travel.surface','event_type_id':'black_ice','related_type_ids':[],'answers':{}}

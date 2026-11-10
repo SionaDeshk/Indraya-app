@@ -1,3 +1,4 @@
+import PlaceOutlineLayer from "./PlaceOutlineLayer";
 import { useRef, useEffect, useState } from "react";
 import {
   Map,
@@ -14,7 +15,8 @@ import { useNow } from "./Clock";
 import { effectiveAssessment, riskPresentation } from "./assessment";
 import useTileHealth from "./useTileHealth";
 import { mapSymbols } from "./mapSymbols";
-import { markerFamily } from "./markerFamily";
+import { observationSymbol } from "./observationSymbols";
+import { eventSymbolImages } from "./eventSymbolImages";
 import ZoomControls from "./ZoomControls";
 import { topographicStyle } from "./mapStyle";
 import { OfficialItem } from "./official/adapters";
@@ -98,7 +100,7 @@ export default function NativeMap({
         properties: {
           id: o.id,
           category: o.category,
-          icon: markerFamily(o),
+          icon: observationSymbol(o).symbol,
           selected: o.id === selectedId,
           color: reportAppearance(o).color,
           risk:
@@ -166,13 +168,17 @@ export default function NativeMap({
           />
         </GeoJSONSource>
         <Images
-          images={Object.fromEntries(
-            Object.entries(mapSymbols).map(([key, value]) => [
-              key,
-              value.image,
-            ]),
-          )}
+          images={{
+            ...eventSymbolImages,
+            ...Object.fromEntries(
+              Object.entries(mapSymbols).map(([key, value]) => [
+                key,
+                value.image,
+              ]),
+            ),
+          }}
         />
+        <PlaceOutlineLayer place={selectedPlace} />
         <Camera
           ref={camera}
           initialViewState={initial.current}

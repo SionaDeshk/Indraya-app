@@ -105,6 +105,12 @@ export function parsePhoton(body: unknown): PlaceResult[] {
       bounds,
       focusZoom,
       provider: "photon",
+      placeId:
+        /^[NWR]$/.test(String(p.osm_type)) &&
+        Number.isSafeInteger(p.osm_id) &&
+        Number(p.osm_id) > 0
+          ? `osm:${p.osm_type}:${p.osm_id}`
+          : undefined,
       state: clean(p.state),
       countryCode: clean(p.countrycode).toUpperCase(),
       privateAddress:
@@ -114,9 +120,14 @@ export function parsePhoton(body: unknown): PlaceResult[] {
     if (
       !result.some(
         (r) =>
-          r.name === name &&
-          Math.abs(r.latitude - lat) < 0.001 &&
-          Math.abs(r.longitude - lon) < 0.001,
+          (item.placeId && r.placeId === item.placeId) ||
+          (!item.placeId &&
+            !r.placeId &&
+            r.name === name &&
+            r.featureType === featureType &&
+            r.context === context &&
+            r.latitude === lat &&
+            r.longitude === lon),
       )
     )
       result.push(item);
@@ -162,4 +173,44 @@ export function alaskaPlaces(results: PlaceResult[]) {
           : undefined;
       return { ...place, bounds };
     });
+}
+
+/** Prefer the geographic place over same-name transit stops, without discarding them. */
+export function rankPlaces(
+  results: PlaceResult[],
+  query: string,
+): PlaceResult[] {
+  const q = normalize(query);
+  const score = (p: PlaceResult) => {
+    const n = normalize(p.name);
+    const geographic = [
+      "city",
+      "town",
+      "village",
+      "hamlet",
+      "lake",
+      "bay",
+      "peak",
+      "mountain_pass",
+    ].includes(p.featureType ?? "");
+    return (n === q ? 100 : n.startsWith(q) ? 50 : 0) + (geographic ? 10 : 0);
+  };
+  return [...results].sort((a, b) => score(b) - score(a));
+}
+export function initialPlaceCount(results: PlaceResult[], query: string) {
+  const first = results[0];
+  return first &&
+    normalize(first.name) === normalize(query) &&
+    ["city", "town", "village", "hamlet", "lake", "bay"].includes(
+      first.featureType ?? "",
+    ) &&
+    !results
+      .slice(1)
+      .some(
+        (p) =>
+          normalize(p.name) === normalize(query) &&
+          p.featureType === first.featureType,
+      )
+    ? 1
+    : 3;
 }

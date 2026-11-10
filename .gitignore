@@ -46,3 +46,6 @@ yarn-error.*
 !.env.example
 supabase/.temp/
 supabase/.branches/
+
+# Local Python acceptance-test cache
+__pycache__/

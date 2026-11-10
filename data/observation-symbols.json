@@ -1,0 +1,458 @@
+{
+  "road_condition": {
+    "symbol": "event-road",
+    "label": "Road condition"
+  },
+  "black_ice": {
+    "symbol": "event-ice-road",
+    "label": "Black ice"
+  },
+  "snow_slush": {
+    "symbol": "event-snow-road",
+    "label": "Snow or slush"
+  },
+  "pothole": {
+    "symbol": "event-pothole",
+    "label": "Pothole"
+  },
+  "washout": {
+    "symbol": "event-washout",
+    "label": "Road washout"
+  },
+  "flooding": {
+    "symbol": "event-flood",
+    "label": "Flooding"
+  },
+  "high_water": {
+    "symbol": "event-flood",
+    "label": "High water"
+  },
+  "unusual_water": {
+    "symbol": "event-flood",
+    "label": "Unusual water level"
+  },
+  "coastal_flooding": {
+    "symbol": "event-flood",
+    "label": "Coastal flooding"
+  },
+  "debris": {
+    "symbol": "event-obstruction",
+    "label": "Debris or obstruction"
+  },
+  "blocked_access": {
+    "symbol": "event-obstruction",
+    "label": "Blocked access"
+  },
+  "rockfall": {
+    "symbol": "event-rockfall",
+    "label": "Rockfall"
+  },
+  "landslide": {
+    "symbol": "event-rockfall",
+    "label": "Landslide"
+  },
+  "fallen_tree": {
+    "symbol": "event-fallen-tree",
+    "label": "Fallen tree"
+  },
+  "whiteout": {
+    "symbol": "event-visibility",
+    "label": "Whiteout"
+  },
+  "fog": {
+    "symbol": "event-visibility",
+    "label": "Fog"
+  },
+  "poor_visibility": {
+    "symbol": "event-visibility",
+    "label": "Poor visibility"
+  },
+  "blowing_snow": {
+    "symbol": "event-snow-wind",
+    "label": "Blowing snow"
+  },
+  "smoke": {
+    "symbol": "event-smoke",
+    "label": "Smoke observed"
+  },
+  "poor_air": {
+    "symbol": "event-smoke",
+    "label": "Poor air clarity"
+  },
+  "collision": {
+    "symbol": "event-collision",
+    "label": "Collision observed"
+  },
+  "vehicle_off_road": {
+    "symbol": "event-off-road",
+    "label": "Vehicle off road"
+  },
+  "disabled_vehicle": {
+    "symbol": "event-car-wrench",
+    "label": "Disabled or stuck vehicle"
+  },
+  "vehicle_obstruction": {
+    "symbol": "event-blocked-car",
+    "label": "Vehicle obstructing traffic"
+  },
+  "traffic_delay": {
+    "symbol": "event-queue",
+    "label": "Traffic delay"
+  },
+  "closure": {
+    "symbol": "event-barrier",
+    "label": "Closure reported"
+  },
+  "damaged_bridge": {
+    "symbol": "event-bridge",
+    "label": "Damaged bridge"
+  },
+  "difficult_crossing": {
+    "symbol": "event-bridge",
+    "label": "Difficult crossing"
+  },
+  "construction": {
+    "symbol": "event-construction",
+    "label": "Construction or detour observed"
+  },
+  "transit_delay": {
+    "symbol": "event-bus",
+    "label": "Transit delay observed"
+  },
+  "ferry_disruption": {
+    "symbol": "event-ferry",
+    "label": "Ferry disruption observed"
+  },
+  "airport_disruption": {
+    "symbol": "event-plane",
+    "label": "Airport disruption observed"
+  },
+  "parking_issue": {
+    "symbol": "event-parking",
+    "label": "Parking or access issue"
+  },
+  "animal_sighting": {
+    "symbol": "event-paw",
+    "label": "Animal sighting"
+  },
+  "animal_encounter": {
+    "symbol": "event-paw-question",
+    "label": "Wildlife encounter"
+  },
+  "lost_pet": {
+    "symbol": "event-paw-question",
+    "label": "Lost pet information"
+  },
+  "animal_welfare": {
+    "symbol": "event-paw-aid",
+    "label": "Animal welfare concern"
+  },
+  "loose_animal": {
+    "symbol": "event-dog",
+    "label": "Loose domestic animal"
+  },
+  "found_pet": {
+    "symbol": "event-paw-check",
+    "label": "Found pet information"
+  },
+  "livestock": {
+    "symbol": "event-cattle",
+    "label": "Livestock near road"
+  },
+  "trail_condition": {
+    "symbol": "event-trail",
+    "label": "Trail condition"
+  },
+  "trail_erosion": {
+    "symbol": "event-broken-trail",
+    "label": "Trail erosion"
+  },
+  "damaged_trail": {
+    "symbol": "event-broken-trail",
+    "label": "Damaged trail"
+  },
+  "damaged_sign": {
+    "symbol": "event-sign",
+    "label": "Damaged sign"
+  },
+  "recreation_condition": {
+    "symbol": "event-mountain",
+    "label": "Recreation condition"
+  },
+  "campsite": {
+    "symbol": "event-tent",
+    "label": "Campsite condition"
+  },
+  "public_facility": {
+    "symbol": "event-building",
+    "label": "Public facility issue"
+  },
+  "accessible_route": {
+    "symbol": "event-accessible",
+    "label": "Accessible route segment observed"
+  },
+  "clear_trail": {
+    "symbol": "event-trail-check",
+    "label": "Clear trail segment observed"
+  },
+  "facility_available": {
+    "symbol": "event-building-check",
+    "label": "Public facility available observed"
+  },
+  "strong_wind": {
+    "symbol": "event-wind",
+    "label": "Strong wind observed"
+  },
+  "heavy_rain": {
+    "symbol": "event-rain",
+    "label": "Heavy rain"
+  },
+  "snowfall": {
+    "symbol": "event-snowflake",
+    "label": "Snowfall"
+  },
+  "hail": {
+    "symbol": "event-hail",
+    "label": "Hail"
+  },
+  "lightning": {
+    "symbol": "event-lightning",
+    "label": "Lightning observed"
+  },
+  "temperature": {
+    "symbol": "event-thermometer",
+    "label": "Temperature-related condition"
+  },
+  "unsafe_ice": {
+    "symbol": "event-cracked-ice",
+    "label": "Unsafe ice observed"
+  },
+  "snow_instability_sign": {
+    "symbol": "event-cracked-ice",
+    "label": "Snow warning signs"
+  },
+  "river_ice": {
+    "symbol": "event-lake-ice",
+    "label": "River or lake ice condition"
+  },
+  "hazardous_surf": {
+    "symbol": "event-waves",
+    "label": "Hazardous surf observed"
+  },
+  "avalanche": {
+    "symbol": "event-avalanche",
+    "label": "Avalanche observed"
+  },
+  "slide_debris": {
+    "symbol": "event-avalanche",
+    "label": "Snow-slide debris"
+  },
+  "erosion": {
+    "symbol": "event-cracked-ground",
+    "label": "Erosion"
+  },
+  "ground_movement": {
+    "symbol": "event-cracked-ground",
+    "label": "Ground movement"
+  },
+  "aurora": {
+    "symbol": "event-aurora",
+    "label": "Aurora sighting"
+  },
+  "sky_observation": {
+    "symbol": "event-stars",
+    "label": "Sky or seasonal observation"
+  },
+  "flames": {
+    "symbol": "event-flame",
+    "label": "Flames observed"
+  },
+  "prescribed_burn": {
+    "symbol": "event-flame",
+    "label": "Reported prescribed-burn activity"
+  },
+  "unattended_campfire": {
+    "symbol": "event-campfire",
+    "label": "Unattended campfire observed"
+  },
+  "odor": {
+    "symbol": "event-odor",
+    "label": "Unusual odor"
+  },
+  "spill": {
+    "symbol": "event-spill",
+    "label": "Visible spill"
+  },
+  "pollution": {
+    "symbol": "event-water-question",
+    "label": "Suspected pollution"
+  },
+  "water_discoloration": {
+    "symbol": "event-water-question",
+    "label": "Water discoloration"
+  },
+  "dumping": {
+    "symbol": "event-trash",
+    "label": "Dumping or litter"
+  },
+  "habitat_damage": {
+    "symbol": "event-leaf-damage",
+    "label": "Damaged habitat"
+  },
+  "power_outage": {
+    "symbol": "event-plug",
+    "label": "Power outage reported"
+  },
+  "fallen_line": {
+    "symbol": "event-utility-line",
+    "label": "Fallen utility line"
+  },
+  "damaged_pole": {
+    "symbol": "event-utility-line",
+    "label": "Damaged utility pole"
+  },
+  "water_service": {
+    "symbol": "event-tap",
+    "label": "Water-service issue"
+  },
+  "communications": {
+    "symbol": "event-signal",
+    "label": "Communications disruption"
+  },
+  "traffic_signal": {
+    "symbol": "event-traffic-light",
+    "label": "Traffic signal or streetlight issue"
+  },
+  "sidewalk": {
+    "symbol": "event-accessible-block",
+    "label": "Sidewalk damage or blockage"
+  },
+  "accessibility_issue": {
+    "symbol": "event-accessible-block",
+    "label": "Accessibility or entrance issue"
+  },
+  "drainage": {
+    "symbol": "event-drain",
+    "label": "Drainage issue"
+  },
+  "public_structure": {
+    "symbol": "event-building-crack",
+    "label": "Damaged public structure"
+  },
+  "public_amenity": {
+    "symbol": "event-bench",
+    "label": "Public amenity issue"
+  },
+  "service_interruption": {
+    "symbol": "event-wrench",
+    "label": "Community service interruption"
+  },
+  "resource_information": {
+    "symbol": "event-info",
+    "label": "Community resource information"
+  },
+  "useful_update": {
+    "symbol": "event-info",
+    "label": "Useful public-place update"
+  },
+  "gunfire_heard": {
+    "symbol": "event-sound-question",
+    "label": "Possible gunfire heard"
+  },
+  "shooting_witnessed": {
+    "symbol": "event-eye-impact",
+    "label": "Shooting witnessed"
+  },
+  "police_presence": {
+    "symbol": "event-police",
+    "label": "Police presence"
+  },
+  "emergency_response": {
+    "symbol": "event-ambulance",
+    "label": "Emergency response observed"
+  },
+  "disturbance": {
+    "symbol": "event-speech",
+    "label": "Disturbance observed"
+  },
+  "injury_assistance": {
+    "symbol": "event-first-aid",
+    "label": "Injury or assistance concern"
+  },
+  "stranded_traveler": {
+    "symbol": "event-person-question",
+    "label": "Stranded traveler"
+  },
+  "missing_person": {
+    "symbol": "event-person-question",
+    "label": "Missing-person information"
+  },
+  "vulnerable_person": {
+    "symbol": "event-person-aid",
+    "label": "Vulnerable-person concern"
+  },
+  "scenic_discovery": {
+    "symbol": "event-mountain-sun",
+    "label": "Scenic or natural discovery"
+  },
+  "seasonal_observation": {
+    "symbol": "event-leaf",
+    "label": "Seasonal observation"
+  },
+  "local_activity": {
+    "symbol": "event-calendar",
+    "label": "Local event or activity observed"
+  },
+  "other": {
+    "symbol": "event-other",
+    "label": "Other observation"
+  },
+  "snow_surface": {
+    "symbol": "event-skis",
+    "label": "Snow surface"
+  },
+  "winter_trail": {
+    "symbol": "event-nordic",
+    "label": "Winter trail condition"
+  },
+  "grooming": {
+    "symbol": "event-grooming",
+    "label": "Grooming / tracks"
+  },
+  "ice_skating": {
+    "symbol": "event-skate",
+    "label": "Skating / ice surface"
+  },
+  "river_crossing": {
+    "symbol": "event-river-crossing",
+    "label": "Frozen-water access / crossing"
+  },
+  "ice_climbing": {
+    "symbol": "event-ice-tools",
+    "label": "Ice / mixed climb"
+  },
+  "rock_approach": {
+    "symbol": "event-rock-approach",
+    "label": "Rock / approach condition"
+  },
+  "motorized_access": {
+    "symbol": "event-snowmachine",
+    "label": "Motorized route access"
+  },
+  "animal_signs": {
+    "symbol": "event-tracks",
+    "label": "Tracks / animal signs"
+  },
+  "carcass": {
+    "symbol": "event-feeding-site",
+    "label": "Carcass / feeding site"
+  },
+  "fish_activity": {
+    "symbol": "event-fish",
+    "label": "Fish / run activity"
+  },
+  "glacier_condition": {
+    "symbol": "event-glacier",
+    "label": "Glacier / crevasse observation"
+  }
+}
