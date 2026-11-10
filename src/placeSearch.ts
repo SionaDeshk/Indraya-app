@@ -1,4 +1,5 @@
-import { recreationPlaces, mergePlaces } from "./recreationPlaces";
+import { highwayMilepostSearch } from "./highwayMileposts";
+import { recreationPlaces, mergePlaces, isTripQuery } from "./recreationPlaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 export type { PlaceResult } from "./searchDomain";
 import {
@@ -17,9 +18,20 @@ export async function searchPlaces(
   signal?: AbortSignal,
 ): Promise<PlaceResult[]> {
   const q = canonicalPlaceQuery(query);
-  const curated = recreationPlaces(q);
   if (q.length < 3 || q.length > 160)
     throw Error("Enter 3–160 characters to search.");
+  if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
+  const mile = highwayMilepostSearch(q);
+  if (mile) {
+    if ("error" in mile) throw Error(mile.error);
+    if (!mile.results.length)
+      throw Error(
+        "No published reference was found for that milepost. Try another posted mile number or choose the actual spot on the map.",
+      );
+    return mile.results;
+  }
+  const curated = recreationPlaces(q, focus);
+  if (curated.length && isTripQuery(q)) return rankPlaces(curated, q);
   const bias = inAlaskaSearchRegion(focus[0], focus[1])
     ? focus
     : [-149.9, 61.2];
@@ -38,7 +50,9 @@ export async function searchPlaces(
         Array.isArray(data.results) &&
         data.results.every(
           (p: PlaceResult) =>
-            ["photon", "nominatim", "gnis"].includes(p.provider) &&
+            ["photon", "nominatim", "gnis", "akdot", "usfs"].includes(
+              p.provider,
+            ) &&
             Number.isFinite(p.latitude) &&
             Number.isFinite(p.longitude),
         )

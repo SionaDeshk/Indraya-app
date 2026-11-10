@@ -18,6 +18,9 @@ export type ReportLocation = {
   privateAddress?: boolean;
   /** Provider feature identity; never an access or safety boundary. */
   placeId?: string;
+  sourceUrl?: string;
+  coordinateMeaning?:
+    "route_reference" | "milepost_reference" | "site_reference";
 };
 export type Category = "Safety" | "Outdoors" | "Travel";
 export type Observation = PublicAssessment & {

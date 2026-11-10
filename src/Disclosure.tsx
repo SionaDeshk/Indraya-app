@@ -16,6 +16,7 @@ export default function Disclosure({
         accessibilityRole="button"
         accessibilityLabel={label}
         accessibilityState={{ expanded: open }}
+        aria-expanded={open}
         onPress={() => setOpen(!open)}
         style={{
           minHeight: 44,

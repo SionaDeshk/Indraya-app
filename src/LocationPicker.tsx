@@ -112,6 +112,12 @@ export default function LocationPicker({
         <Text style={styles.text}>
           {value ? `Selected: ${value.name}` : "No location selected yet"}
         </Text>
+        {value?.coordinateMeaning === "route_reference" && (
+          <Text style={styles.text}>
+            This pin is a route reference. Choose the actual spot you observed,
+            or search a trailhead, cabin or highway milepost.
+          </Text>
+        )}
         {value?.name === "Current location" && (
           <Text style={styles.text}>
             Use this only if you are at the place you observed.

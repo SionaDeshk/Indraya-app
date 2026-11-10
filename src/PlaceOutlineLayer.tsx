@@ -13,6 +13,7 @@ export default function PlaceOutlineLayer({
       <Layer
         id="selected-reference-fill"
         type="fill"
+        filter={["==", ["geometry-type"], "Polygon"]}
         paint={{ "fill-color": "#43a9ee", "fill-opacity": 0.07 }}
       />
       <Layer

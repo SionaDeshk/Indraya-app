@@ -28,3 +28,9 @@ service data refreshed October 2026. These source records remain public domain;
 ODbL applies to the OSM-derived geographic collection and its applicable database
 rights. GNIS summit points do not describe ski lines or access permissions.
 Source: https://carto.nationalmap.gov/arcgis/rest/services/geonames/MapServer
+
+The subsequent trip expansion is documented separately in
+TRIP-DATA-NOTICE.md. It adds independent USDA Forest Service/CC0 and Alaska
+DOT&PF-permitted records, public OSM overnight-site/trail references and finite
+provider geometries. Their source rights and limitations are retained; the
+app does not claim government endorsement or current access/availability.

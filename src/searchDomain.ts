@@ -1,6 +1,6 @@
 import type { ReportLocation, MapBounds } from "./domain";
 export type PlaceResult = ReportLocation & {
-  provider: "photon" | "nominatim" | "gnis";
+  provider: "photon" | "nominatim" | "gnis" | "akdot" | "usfs";
   retrievedAt?: string;
   state?: string;
   countryCode?: string;
@@ -20,8 +20,15 @@ export function canonicalPlaceQuery(value: string) {
     "hatchers pass area": "Hatcher Pass Public Use Area",
     "ekluta lake": "Eklutna Lake",
     "seattles ridge": "Seattle Ridge",
+    "bombers pass": "Bomber Pass",
+    "denali hwy": "Denali Highway",
+    "dalton hwy": "Dalton Highway",
+    "haul road": "Dalton Highway",
   };
-  return aliases[normalize(value)] ?? value.trim();
+  const fixed = normalize(value)
+    .replace(/\bressurection\b/g, "resurrection")
+    .replace(/\bmulti[ -]+day\b/g, "multiday");
+  return aliases[fixed] ?? (fixed !== normalize(value) ? fixed : value.trim());
 }
 const clean = (value: unknown) =>
   typeof value === "string"
@@ -205,7 +212,10 @@ export function rankPlaces(
       "peak",
       "mountain_pass",
     ].includes(p.featureType ?? "");
-    return (n === q ? 100 : n.startsWith(q) ? 50 : 0) + (geographic ? 10 : 0);
+    return (
+      (n === q ? 100 : n.startsWith(q) ? 50 : 0) +
+      (geographic && (n === q || n.startsWith(q)) ? 10 : 0)
+    );
   };
   return [...results].sort((a, b) => score(b) - score(a));
 }

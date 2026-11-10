@@ -1,7 +1,16 @@
+import Disclosure from "./Disclosure";
+import { placeSourceUrl } from "./placeSources";
 import * as Linking from "expo-linking";
 import { recreationReferences } from "./recreationPlaces";
 import { useEffect, useRef, useState } from "react";
-import { Keyboard, Text, TextInput, View, ScrollView } from "react-native";
+import {
+  Keyboard,
+  Text,
+  TextInput,
+  View,
+  ScrollView,
+  Pressable,
+} from "react-native";
 import { ReportLocation } from "./domain";
 import { PlaceResult, searchPlaces } from "./placeSearch";
 import { initialPlaceCount } from "./searchDomain";
@@ -10,10 +19,14 @@ export default function PlaceSearch({
   onChoose,
   focus = [-149.9, 61.218],
   label = "Search places",
+  inputRightInset = 0,
+  maxResultsHeight = 220,
 }: {
   onChoose: (place: ReportLocation) => void;
   focus?: [number, number];
   label?: string;
+  inputRightInset?: number;
+  maxResultsHeight?: number;
 }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PlaceResult[]>([]);
@@ -66,6 +79,21 @@ export default function PlaceSearch({
       if (id === request.current) setBusy(false);
     }
   }
+  const referenceLinks = recreationReferences(query).map((reference) => (
+    <View key={reference.url} style={{ gap: 4 }}>
+      <Button
+        label={reference.label}
+        onPress={() => {
+          void Linking.openURL(reference.url).catch(() =>
+            setMessage("Could not open the reference."),
+          );
+        }}
+      />
+      <Text style={[styles.text, { fontSize: 12 }]}>
+        External source · select a mapped place separately
+      </Text>
+    </View>
+  ));
   return (
     <View style={{ gap: 8 }}>
       <TextInput
@@ -74,7 +102,7 @@ export default function PlaceSearch({
         placeholderTextColor="#9ab3b7"
         value={query}
         onChangeText={change}
-        style={styles.input}
+        style={[styles.input, { marginRight: inputRightInset }]}
         returnKeyType="search"
         onSubmitEditing={() => {
           if (query.trim().length >= 3 && !busy) void search();
@@ -96,26 +124,18 @@ export default function PlaceSearch({
               Searching…
             </Text>
           )}
-          {recreationReferences(query).map((reference) => (
-            <View key={reference.url} style={{ gap: 4 }}>
-              <Button
-                label={reference.label}
-                onPress={() => {
-                  void Linking.openURL(reference.url).catch(() =>
-                    setMessage("Could not open the route reference."),
-                  );
-                }}
-              />
-              <Text style={[styles.text, { fontSize: 12 }]}>
-                External guide · exact route pin not verified in Indraya
-              </Text>
-            </View>
-          ))}
           <ScrollView
-            style={{ maxHeight: 220 }}
+            style={{ maxHeight: maxResultsHeight }}
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled
           >
+            {results.length > 0 && referenceLinks.length > 0 ? (
+              <Disclosure key={query} label="Guides & operator information">
+                {referenceLinks}
+              </Disclosure>
+            ) : (
+              referenceLinks
+            )}
             {(showAll
               ? results
               : results.slice(0, initialPlaceCount(results, query))
@@ -124,28 +144,55 @@ export default function PlaceSearch({
                 key={`${place.name}:${place.latitude}:${i}`}
                 style={{ gap: 4, marginBottom: 8 }}
               >
-                <Button
-                  label={place.name}
-                  onPress={() => {
-                    onChoose(place);
-                    change("");
-                    Keyboard.dismiss();
-                  }}
-                />
+                <View
+                  style={{ flexDirection: "row", gap: 6, alignItems: "center" }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Button
+                      label={place.name}
+                      onPress={() => {
+                        onChoose(place);
+                        change("");
+                        Keyboard.dismiss();
+                      }}
+                    />
+                  </View>
+                  {placeSourceUrl(place) && (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Source for ${place.name}`}
+                      style={{
+                        minWidth: 44,
+                        minHeight: 44,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                      onPress={() => {
+                        void Linking.openURL(placeSourceUrl(place)!).catch(() =>
+                          setMessage(
+                            "Could not open the source. Check your connection.",
+                          ),
+                        );
+                      }}
+                    >
+                      <Text style={{ color: "#9ce5d9", fontSize: 20 }}>ⓘ</Text>
+                    </Pressable>
+                  )}
+                </View>
                 <Text style={[styles.text, { fontSize: 12 }]}>
                   {place.featureType?.replace(/_/g, " ") || "Place"}
                   {place.context ? ` · ${place.context}` : ""}
                 </Text>
               </View>
             ))}
+            {!showAll && results.length > initialPlaceCount(results, query) && (
+              <Button
+                label={`More places (${results.length - initialPlaceCount(results, query)})`}
+                onPress={() => setShowAll(true)}
+              />
+            )}
           </ScrollView>
-          {!showAll && results.length > initialPlaceCount(results, query) && (
-            <Button
-              label={`More places (${results.length - initialPlaceCount(results, query)})`}
-              onPress={() => setShowAll(true)}
-            />
-          )}
-          {searched && results.length === 0 && (
+          {searched && results.length === 0 && referenceLinks.length === 0 && (
             <Text style={styles.text}>
               No places found in Alaska. Try a nearby town or a more specific
               name.
@@ -156,9 +203,9 @@ export default function PlaceSearch({
               {message}
             </Text>
           )}
-          <Text style={[styles.text, { fontSize: 12 }]}>
-            © OpenStreetMap contributors. Search uses your words and approximate
-            map area. Check the town or region before choosing.
+          <Text style={[styles.text, { fontSize: 11, lineHeight: 16 }]}>
+            © OpenStreetMap contributors · USGS · USDA Forest Service · Alaska
+            DOT&PF
           </Text>
         </View>
       )}

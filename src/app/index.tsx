@@ -1,4 +1,4 @@
-import { placeOutline } from "../placeOutlines";
+import { placeReferenceCaption } from "../placeOutlines";
 import { useEffect, useRef, useState } from "react";
 import {
   View,
@@ -221,12 +221,14 @@ export default function Home() {
           gap: 8,
         }}
       >
-        <View
-          pointerEvents="box-none"
-          style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}
-        >
-          <View style={{ flex: 1 }}>
+        <View pointerEvents="box-none" style={{ position: "relative" }}>
+          <View style={{ width: "100%" }}>
             <PlaceSearch
+              inputRightInset={58}
+              maxResultsHeight={Math.max(
+                72,
+                Math.min(220, height - insets.top - insets.bottom - 400),
+              )}
               focus={viewport.center}
               onChoose={(place) => {
                 setSelected(null);
@@ -246,6 +248,9 @@ export default function Home() {
             accessibilityLabel="Account"
             onPress={() => router.push("/account")}
             style={{
+              position: "absolute",
+              right: 0,
+              top: 0,
               width: 48,
               height: 50,
               borderRadius: 16,
@@ -325,9 +330,7 @@ export default function Home() {
                 numberOfLines={1}
                 style={{ color: "#9ab3b7", fontSize: 11 }}
               >
-                {placeOutline(searchPlace)
-                  ? "Mapped outline · © OpenStreetMap contributors"
-                  : "Place pin · mapped outline unavailable"}
+                {placeReferenceCaption(searchPlace)}
               </Text>
             </View>
             <Pressable

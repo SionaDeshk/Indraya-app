@@ -3,6 +3,14 @@
 Review branch: `feat/place-discovery`. No production database writes, migrations,
 function deployments or app publication performed for this update.
 
+## Traverses, huts, campsites and highway follow-up
+
+Added 119 trip/site references, 31 route/segment geometries and 459 source
+milepost positions. Includes summer/winter trail variants, hut/cabin operator
+links and source-only cabin references where exact positions remain unverified.
+See [trips-and-mileposts.md](trips-and-mileposts.md) and its source/license notice.
+No new migrations, native dependencies or production deployment.
+
 ## Expanded geography follow-up
 
 Now 21 verified mapped outlines and 33 saved OSM/GNIS geographic references.
@@ -51,7 +59,7 @@ counts below describe the initial implementation. Warning system recommendation:
 
 ## Validation
 
-Typecheck, lint, 60 unit tests; iOS/Android/web JavaScript exports. Existing demo
+Typecheck, lint, 67 unit tests; iOS/Android/web JavaScript exports. Existing demo
 home, phases and guided browser workflows; new compact-details/newest-first/edit
 workflow at 390×844 and 320×568; synthetic NWS panel; nine synthetic release
 reliability scenarios. Screenshots: `/workspace/outputs/indraya-discovery`.
