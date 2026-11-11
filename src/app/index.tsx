@@ -1,6 +1,6 @@
 import { useState } from "react";
 import NunaWelcome from "../NunaWelcome";
-import { View, Text, ScrollView, Modal } from "react-native";
+import { View, Text, ScrollView, Modal, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import * as Location from "expo-location";
@@ -213,12 +213,10 @@ export default function Home() {
           pointerEvents="box-none"
           style={{ flexDirection: "row", gap: 10, justifyContent: "flex-end" }}
         >
-          <Button
-            label="Locate me"
-            onPress={() => {
-              void locate();
-            }}
-          />
+          <Pressable accessibilityRole="button" accessibilityLabel="Locate me" onPress={() => { void locate(); }} style={{ backgroundColor: "#252448", borderWidth: 1, borderColor: "#8073c8", borderRadius: 28, paddingHorizontal: 16, paddingVertical: 12, alignItems: "center" }}>
+            <Text style={{ color: "#e5dcff", fontSize: 17, fontWeight: "800", letterSpacing: 2 }}>⌖ N</Text>
+            <Text style={{ color: "#c3b8ef", fontSize: 9 }}>LOCATE</Text>
+          </Pressable>
           <Button
             label="Layers & sources"
             onPress={() => router.push("/sources")}
@@ -323,6 +321,9 @@ export default function Home() {
             </>
           )}
         </View>
+        {!observationsExpanded && (
+          <Button label="＋ Share observation" onPress={() => router.push("/report")} />
+        )}
       </View>
       {showWelcome && (
         <NunaWelcome
