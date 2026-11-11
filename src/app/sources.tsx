@@ -18,12 +18,13 @@ export default function Sources() {
   }
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: "#071719" }}
+      style={{ flex: 1, backgroundColor: "#080d1a" }}
       contentContainerStyle={[
         styles.page,
         { flex: 0, flexGrow: 1, paddingBottom: 40 },
       ]}
     >
+      <Text style={{ color: "#a99bdf", letterSpacing: 4, fontWeight: "700", fontSize: 16 }}>N U N A</Text>
       <Button label="← Back to map" onPress={() => router.back()} />
       <Text style={styles.heading}>Layers & sources</Text>
       <Text style={styles.text}>
