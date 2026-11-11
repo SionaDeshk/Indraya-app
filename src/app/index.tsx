@@ -1,4 +1,5 @@
 import { useState } from "react";
+import NunaWelcome from "../NunaWelcome";
 import { View, Text, ScrollView, Modal } from "react-native";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +26,7 @@ import * as Linking from "expo-linking";
 import { useOfficialFeeds } from "../official/useOfficialFeeds";
 import { OfficialItem } from "../official/adapters";
 export default function Home() {
+  const [showWelcome, setShowWelcome] = useState(true);
   const [filters, setFilters] = useState<string[]>(categories);
   const [selected, setSelected] = useState<Observation | null>(null);
   const [center, setCenter] = useState<[number, number]>([-149.9, 61.218]);
@@ -136,10 +138,10 @@ export default function Home() {
                 fontWeight: "600",
               }}
             >
-              INDRAYA
+              NUNA
             </Text>
             <Text style={{ color: "#9bc9c6" }}>
-              Together, we see the world.
+              Alaska in real time.
             </Text>
           </View>
           <Button label="Account" onPress={() => router.push("/account")} />
@@ -311,6 +313,13 @@ export default function Home() {
           />
         </View>
       </View>
+      {showWelcome && (
+        <NunaWelcome
+          onOpenMap={() => setShowWelcome(false)}
+          onReport={() => { setShowWelcome(false); router.push("/report"); }}
+          onLayers={() => { setShowWelcome(false); router.push("/sources"); }}
+        />
+      )}
       <Modal
         visible={legend}
         transparent
