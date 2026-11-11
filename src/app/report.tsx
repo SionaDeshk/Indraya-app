@@ -172,7 +172,6 @@ export default function Report() {
             ))}
           </View>
           </View>
-          </View>
           <View style={{ backgroundColor: "#111b2d", borderRadius: 22, padding: 16, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
           <Text style={{ color: "#a99bdf", fontSize: 11, letterSpacing: 2 }}>02  /  WHAT HAPPENED</Text>
           <Text style={styles.text}>Choose a quick starting point or describe what you noticed.</Text>
