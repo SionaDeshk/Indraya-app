@@ -117,15 +117,17 @@ export default function Report() {
   }
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: "#071719" }}
+      style={{ flex: 1, backgroundColor: "#080d1a" }}
       contentContainerStyle={[
         styles.page,
         { flex: 0, flexGrow: 1, paddingBottom: 40 },
       ]}
       keyboardShouldPersistTaps="handled"
     >
+      <Text style={{ color: "#a99bdf", letterSpacing: 4, fontWeight: "700", fontSize: 16 }}>N U N A</Text>
       <Button label="← Back to map" onPress={() => router.back()} />
-      <Text style={styles.heading}>Share what you see.</Text>
+      <Text style={styles.heading}>Share an observation</Text>
+      <Text style={{ color: "#a99bdf", letterSpacing: 2, fontSize: 11 }}>ALASKA · COMMUNITY INTELLIGENCE</Text>
       <Text style={styles.text}>
         {supabase
           ? "Community observation"
@@ -152,9 +154,9 @@ export default function Report() {
         </View>
       ) : (
         <>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {categories.map((c) => (
-              <View key={c} style={{ flex: 1 }}>
+              <View key={c} style={{ minWidth: "30%", flexGrow: 1 }}>
                 <Button
                   label={`${c === category ? "● " : ""}${c}`}
                   onPress={() => {
