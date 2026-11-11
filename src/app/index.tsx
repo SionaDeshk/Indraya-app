@@ -1,5 +1,6 @@
 import { useState } from "react";
 import NunaWelcome from "../NunaWelcome";
+import NunaMark from "../NunaMark";
 import { View, Text, ScrollView, Modal, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -27,7 +28,7 @@ import { useOfficialFeeds } from "../official/useOfficialFeeds";
 import { OfficialItem } from "../official/adapters";
 export default function Home() {
   const [showWelcome, setShowWelcome] = useState(true);
-  const [filters, setFilters] = useState<string[]>(categories);
+  const [filters, setFilters] = useState<string[]>([...categories, "Wildlife"]);
   const [selected, setSelected] = useState<Observation | null>(null);
   const [center, setCenter] = useState<[number, number]>([-149.9, 61.218]);
   const [message, setMessage] = useState("");
@@ -68,11 +69,11 @@ export default function Home() {
       ]),
     ).values(),
   ];
-  const visible = loadedReports.filter((o) => filters.includes(o.category));
+  const visible = loadedReports.filter((o) => (o.kind === "wildlife" ? filters.includes("Wildlife") : filters.includes(o.category)));
   const nearbyReports = (
     supabase && viewport.bounds
       ? (spatial.data ?? []).filter((report) =>
-          filters.includes(report.category),
+          (report.kind === "wildlife" ? filters.includes("Wildlife") : filters.includes(report.category)),
         )
       : visible
   )
@@ -157,11 +158,11 @@ export default function Home() {
             });
           }}
         />
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          {categories.map((c) => (
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+          {[...categories, "Wildlife"].map((c) => (
             <Button
               key={c}
-              label={`${filters.includes(c) ? "●" : "○"} ${c}`}
+              label={`${filters.includes(c) ? "●" : "○"} ${c === "Safety" ? "Incidents" : c}`}
               onPress={() =>
                 setFilters(
                   filters.includes(c)
@@ -211,11 +212,15 @@ export default function Home() {
       >
         <View
           pointerEvents="box-none"
-          style={{ flexDirection: "row", gap: 10, justifyContent: "flex-end" }}
+          style={{ flexDirection: "row", gap: 10, justifyContent: "flex-end", alignItems: "center" }}
         >
-          <Pressable accessibilityRole="button" accessibilityLabel="Locate me" onPress={() => { void locate(); }} style={{ backgroundColor: "#252448", borderWidth: 1, borderColor: "#8073c8", borderRadius: 28, paddingHorizontal: 16, paddingVertical: 12, alignItems: "center" }}>
-            <Text style={{ color: "#e5dcff", fontSize: 17, fontWeight: "800", letterSpacing: 2 }}>⌖ N</Text>
-            <Text style={{ color: "#c3b8ef", fontSize: 9 }}>LOCATE</Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Locate me"
+            onPress={() => { void locate(); }}
+            style={{ width: 54, height: 54, borderRadius: 27, backgroundColor: "#05090e", borderWidth: 1, borderColor: "#627080", alignItems: "center", justifyContent: "center" }}
+          >
+            <NunaMark size={49} />
           </Pressable>
           <Button
             label="Layers & sources"
