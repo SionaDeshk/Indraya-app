@@ -72,7 +72,8 @@ export default function Account() {
       keyboardShouldPersistTaps="handled"
     >
       <Button label="← Back" onPress={() => router.back()} />
-      <Text style={styles.heading}>Your point of awareness.</Text>
+      <Text style={styles.heading}>INDRAYA</Text>
+      <Text style={styles.text}>Together, we see the world.</Text>
       {!supabase ? (
         <Text style={styles.text}>
           Accounts are not available in this demo build. Your demo reports stay
@@ -140,6 +141,7 @@ export default function Account() {
           />
         </>
       )}
+      <Button label="My reports" onPress={() => router.push("/my-reports")} />
       <Button
         label="Moderator review"
         onPress={() => router.push("/moderation")}

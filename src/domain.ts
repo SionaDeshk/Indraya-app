@@ -1,10 +1,24 @@
+import {
+  Answers,
+  PrivacyClass,
+  DomainId,
+  typeById,
+  legacyPath,
+} from "./taxonomy";
+import { PublicAssessment } from "./assessment";
 export type ReportLocation = {
   name: string;
   latitude: number;
   longitude: number;
+  bounds?: MapBounds;
+  focusZoom?: number;
+  featureType?: string;
+  context?: string;
+  reference_name?: string;
+  privateAddress?: boolean;
 };
 export type Category = "Safety" | "Outdoors" | "Travel";
-export type Observation = {
+export type Observation = PublicAssessment & {
   id: string;
   category: Category;
   title: string;
@@ -20,10 +34,18 @@ export type Observation = {
   details?: ReportDetails;
   photo_uri?: string;
   demo?: boolean;
+  taxonomy_version?: number;
+  domain_id?: DomainId;
+  topic_id?: string;
+  event_type_id?: string;
+  related_type_ids?: string[];
+  answers?: Answers;
+  privacy_class?: PrivacyClass;
+  status?: "published" | "review" | "hidden";
 };
 export const categories: Category[] = ["Safety", "Outdoors", "Travel"];
 export const reportKinds = {
-  hazard: { label: "Hazard", color: "#f36c77", category: "Safety" },
+  hazard: { label: "Safety observation", color: "#bda9dc", category: "Safety" },
   smoke: { label: "Smoke / fire", color: "#ff9b55", category: "Safety" },
   flooding: { label: "Flooding", color: "#55cdea", category: "Safety" },
   wildlife: { label: "Wildlife", color: "#76d99e", category: "Outdoors" },
@@ -72,9 +94,14 @@ export const reportTitles: Record<Category, readonly string[]> = {
   Travel: reportPresets.Travel.map((p) => p.title),
 };
 export function reportAppearance(
-  report: Pick<Observation, "kind" | "category">,
+  report: Pick<Observation, "kind" | "category" | "event_type_id">,
 ) {
-  return reportKinds[report.kind ?? defaultKind[report.category]];
+  const event = typeById(
+    "event_type_id" in report ? String(report.event_type_id ?? "") : undefined,
+  );
+  return event
+    ? { label: event.label, color: event.color, category: report.category }
+    : reportKinds[report.kind ?? defaultKind[report.category]];
 }
 export function validateDetails(
   category: Category,
@@ -147,16 +174,19 @@ export function distanceKm(
       Math.sin(lon / 2) ** 2;
   return 6371 * 2 * Math.atan2(Math.sqrt(v), Math.sqrt(Math.max(0, 1 - v)));
 }
+export function validateReportText(title: string, description: string) {
+  if (title.trim().length < 5 || title.length > 100)
+    throw new Error("Use a title between 5 and 100 characters.");
+  if (description.trim().length < 10 || description.length > 2000)
+    throw new Error("Describe what you observed in 10–2000 characters.");
+}
 export function validateReport(
   title: string,
   description: string,
   latitude: number,
   longitude: number,
 ) {
-  if (title.trim().length < 5 || title.length > 100)
-    throw new Error("Use a title between 5 and 100 characters.");
-  if (description.trim().length < 10 || description.length > 2000)
-    throw new Error("Describe what you observed in 10–2000 characters.");
+  validateReportText(title, description);
   if (
     !Number.isFinite(latitude) ||
     !Number.isFinite(longitude) ||
@@ -222,29 +252,14 @@ export const demo: Observation[] = [
     demo: true,
   },
 ];
-export const places: ReportLocation[] = [
-  { name: "Girdwood", latitude: 60.9425, longitude: -149.1664 },
-  { name: "Wasilla", latitude: 61.5814, longitude: -149.4394 },
-  { name: "Knik River", latitude: 61.464, longitude: -148.854 },
-  { name: "Knik Glacier", latitude: 61.376, longitude: -148.493 },
-  { name: "Palmer", latitude: 61.5994, longitude: -149.1146 },
-  { name: "Eagle River", latitude: 61.3214, longitude: -149.5678 },
-  { name: "Homer", latitude: 59.6425, longitude: -151.5483 },
-  { name: "Seward", latitude: 60.1042, longitude: -149.4422 },
-  { name: "Fairbanks", latitude: 64.8378, longitude: -147.7164 },
-  { name: "Juneau", latitude: 58.3019, longitude: -134.4197 },
-  { name: "Beluga Point", latitude: 60.977, longitude: -149.644 },
-  { name: "Anchorage", latitude: 61.2181, longitude: -149.9003 },
-  { name: "Denali mountain", latitude: 63.0695, longitude: -151.0074 },
-  { name: "Mendenhall Lake", latitude: 58.417, longitude: -134.548 },
-  { name: "Kenai River", latitude: 60.55, longitude: -151.25 },
-  { name: "Flattop Mountain Trail", latitude: 61.09, longitude: -149.665 },
-  { name: "Seward Highway", latitude: 60.95, longitude: -149.42 },
-];
 
 export function normalizeBounds(bounds: MapBounds): MapBounds {
   const [w, s, e, n] = bounds;
   if (e - w >= 360) return [-180, Math.max(-90, s), 180, Math.min(90, n)];
   const wrap = (lon: number) => ((((lon + 180) % 360) + 360) % 360) - 180;
   return [wrap(w), Math.max(-90, s), wrap(e), Math.min(90, n)];
+}
+
+export function observationDomain(report: Observation): DomainId {
+  return report.domain_id ?? legacyPath(report.category, report.kind).domainId!;
 }

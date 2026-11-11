@@ -1,7 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-export { savedPlaces } from "./searchDomain";
 export type { PlaceResult } from "./searchDomain";
-import { normalize, parsePhoton, PlaceResult } from "./searchDomain";
+import {
+  normalize,
+  parsePhoton,
+  PlaceResult,
+  alaskaPlaces,
+  inAlaskaSearchRegion,
+} from "./searchDomain";
 let lastRequest = 0;
 export async function searchPlaces(
   query: string,
@@ -11,18 +16,33 @@ export async function searchPlaces(
   const q = query.trim();
   if (q.length < 3 || q.length > 160)
     throw Error("Enter 3–160 characters to search.");
-  const lon = Math.round(focus[0] * 10) / 10,
-    lat = Math.round(focus[1] * 10) / 10;
-  const key = `indraya.search.v1:${normalize(q)}:${lon}:${lat}`;
-  const cached = await AsyncStorage.getItem(key);
-  if (cached) {
-    try {
+  const bias = inAlaskaSearchRegion(focus[0], focus[1])
+    ? focus
+    : [-149.9, 61.2];
+  const lon = Math.round(bias[0] * 10) / 10,
+    lat = Math.round(bias[1] * 10) / 10;
+  const key = `indraya.search.v3.alaska:${normalize(q)}:${lon}:${lat}`;
+  if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
+  try {
+    const cached = await AsyncStorage.getItem(key);
+    if (cached) {
       const data = JSON.parse(cached);
-      if (Date.now() - data.time < 86400000 && Array.isArray(data.results))
-        return data.results;
-    } catch {
-      /* Ignore a damaged local search cache. */
+      const age = Date.now() - data.time;
+      if (
+        age >= 0 &&
+        age < 86400000 &&
+        Array.isArray(data.results) &&
+        data.results.every(
+          (p: PlaceResult) =>
+            p.provider === "photon" &&
+            Number.isFinite(p.latitude) &&
+            Number.isFinite(p.longitude),
+        )
+      )
+        return alaskaPlaces(data.results);
     }
+  } catch {
+    /* Cache is optional and never substitutes an invented result. */
   }
   if (Date.now() - lastRequest < 1100)
     throw Error("Please wait a moment before searching again.");
@@ -39,20 +59,47 @@ export async function searchPlaces(
       lat: String(lat),
       lon: String(lon),
       lang: "en",
+      countrycode: "US",
+      // US places north of 51° are Alaska; full longitude covers the Aleutians across 180°.
+      bbox: "-180,51,180,72",
     });
     const response = await fetch(`https://photon.komoot.io/api/?${params}`, {
       signal: controller.signal,
     });
+    if (response.status === 429)
+      throw Error("Search is busy. Wait a moment and try again.");
     if (!response.ok)
       throw Error(
-        `Online place search is unavailable (${response.status}). Saved places still work.`,
+        "Unable to search right now. Check your connection and try again.",
       );
-    const results = parsePhoton(await response.json());
-    await AsyncStorage.setItem(
-      key,
-      JSON.stringify({ time: Date.now(), results }),
+    const results = alaskaPlaces(parsePhoton(await response.json())).map(
+      (p) => ({
+        ...p,
+        retrievedAt: new Date().toISOString(),
+      }),
     );
+    if (controller.signal.aborted)
+      throw new DOMException("Cancelled", "AbortError");
+    try {
+      await AsyncStorage.setItem(
+        key,
+        JSON.stringify({ time: Date.now(), results }),
+      );
+    } catch {
+      /* A full cache must not discard a successful search. */
+    }
     return results;
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError")
+      throw Error("Search took too long. Please try again.");
+    throw error instanceof Error && error.message.startsWith("Search is busy")
+      ? error
+      : error instanceof Error &&
+          /place|locations|results|search/i.test(error.message)
+        ? error
+        : Error(
+            "Unable to search right now. Check your connection and try again.",
+          );
   } finally {
     clearTimeout(timeout);
     signal?.removeEventListener("abort", abort);

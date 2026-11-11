@@ -1,5 +1,13 @@
 import "react-native-url-polyfill/auto";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  Selection,
+  Answers,
+  normalizeAnswers,
+  typeById,
+  catalog,
+  publicLocation,
+} from "./taxonomy";
 import { createClient } from "@supabase/supabase-js";
 import {
   demo,
@@ -28,12 +36,12 @@ export async function observations(): Promise<Observation[]> {
     return [
       ...demo,
       ...JSON.parse((await AsyncStorage.getItem(localKey)) || "[]"),
-    ];
+    ].filter(
+      (report: Observation) => !report.status || report.status === "published",
+    );
   const { data, error } = await supabase
-    .from("observations")
-    .select(
-      "id,category,kind,title,description,latitude,longitude,place_name,observed_at,details,created_at,verification",
-    )
+    .from("observation_feed")
+    .select("*")
     .eq("status", "published")
     .order("created_at", { ascending: false })
     .limit(300);
@@ -138,6 +146,121 @@ export async function submit(
     }
   }
   return { id: data.id };
+}
+export type GuidedReportInput = {
+  selection: Selection;
+  answers: Answers;
+  title: string;
+  description: string;
+  location: import("./domain").ReportLocation;
+  observed_at: string;
+};
+export async function submitGuided(
+  input: GuidedReportInput,
+  photo?: { base64: string; uri: string },
+): Promise<{ id: string; held: boolean; photoError?: string }> {
+  const answers = normalizeAnswers(input.selection, input.answers),
+    type = typeById(input.selection.typeId)!;
+  validateReport(
+    input.title,
+    input.description,
+    input.location.latitude,
+    input.location.longitude,
+  );
+  validateDetails(type.legacyCategory, type.legacyKind, {}, input.observed_at);
+  const location = publicLocation(input.selection, answers, input.location);
+  const payload = {
+    category: type.legacyCategory,
+    kind: type.legacyKind,
+    title: input.title.trim(),
+    description: input.description.trim(),
+    latitude: location.latitude,
+    longitude: location.longitude,
+    place_name:
+      input.location.privateAddress && location.privacy === "approximate"
+        ? "Approximate map area"
+        : location.name,
+    observed_at: input.observed_at,
+    details: {},
+    taxonomy_version: catalog.version,
+    domain_id: input.selection.domainId,
+    topic_id: input.selection.topicId,
+    event_type_id: input.selection.typeId,
+    related_type_ids: input.selection.relatedIds,
+    answers,
+  };
+  if (!supabase) {
+    const previous: Observation[] = JSON.parse(
+      (await AsyncStorage.getItem(localKey)) || "[]",
+    );
+    if (
+      photo &&
+      previous.reduce(
+        (total, r) => total + (r.photo_uri?.length ?? 0),
+        photo.uri.length,
+      ) >
+        4 * 1024 * 1024
+    )
+      throw Error(
+        "Demo photo storage is full. Remove the attachment to submit without a photo.",
+      );
+    const id = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      held = location.privacy === "restricted";
+    const report = {
+      ...payload,
+      id,
+      privacy_class: location.privacy,
+      status: held ? "review" : "published",
+      created_at: new Date().toISOString(),
+      verification: "unverified",
+      source: "DEMO · this device",
+      demo: true,
+      ...(photo ? { photo_uri: photo.uri } : {}),
+    };
+    await AsyncStorage.setItem(localKey, JSON.stringify([...previous, report]));
+    return { id, held };
+  }
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user)
+    throw Error("Sign in before publishing a community observation.");
+  const { data, error } = await supabase
+    .from("observations")
+    .insert({ ...payload, author_id: user.id })
+    .select("id,status")
+    .single();
+  if (error)
+    throw Error(
+      "Unable to save your report. Check your connection and account, then try again.",
+    );
+  const result = { id: data.id as string, held: data.status !== "published" };
+  if (photo) {
+    try {
+      await attachPhoto(result.id, photo.base64);
+    } catch (error) {
+      return {
+        ...result,
+        photoError:
+          error instanceof Error
+            ? error.message
+            : "The photo could not be attached. Your report is saved.",
+      };
+    }
+  }
+  return result;
+}
+export async function myObservations(): Promise<Observation[]> {
+  if (!supabase)
+    return JSON.parse((await AsyncStorage.getItem(localKey)) || "[]");
+  const { data, error } = await supabase.rpc("my_observations");
+  if (error)
+    throw Error("Sign in to view your reports, or try again when connected.");
+  return (data ?? []).map((report: Observation) => ({
+    ...report,
+    source: "Community",
+  }));
 }
 export async function flag(id: string, reason: string) {
   if (!supabase)

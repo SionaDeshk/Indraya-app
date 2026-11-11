@@ -1,27 +1,46 @@
 import { useRef, useEffect, useState } from "react";
 import {
   Map,
+  Images,
   MapRef,
   Camera,
   GeoJSONSource,
   Layer,
   CameraRef,
-  GeoJSONSourceRef,
 } from "@maplibre/maplibre-react-native";
-import { View } from "react-native";
+import { View, Text } from "react-native";
+import { Button, styles } from "./ui";
+import { useNow } from "./Clock";
+import { effectiveAssessment, riskPresentation } from "./assessment";
+import useTileHealth from "./useTileHealth";
+import { mapSymbols } from "./mapSymbols";
+import { markerFamily } from "./markerFamily";
 import ZoomControls from "./ZoomControls";
 import { topographicStyle } from "./mapStyle";
 import { OfficialItem } from "./official/adapters";
-import { Observation, MapBounds, reportAppearance } from "./domain";
+import {
+  Observation,
+  MapBounds,
+  ReportLocation,
+  reportAppearance,
+} from "./domain";
 export default function NativeMap({
+  controlsHidden = false,
+  attributionBottom = 162,
   center,
+  selectedPlace,
+  selectedId,
   observations,
   onSelect,
   officialItems = [],
   onOfficialSelect,
   onViewportChange,
 }: {
+  controlsHidden?: boolean;
+  attributionBottom?: number;
   center: [number, number];
+  selectedPlace?: ReportLocation | null;
+  selectedId?: string;
   observations: Observation[];
   onSelect: (o: Observation) => void;
   officialItems?: OfficialItem[];
@@ -36,14 +55,28 @@ export default function NativeMap({
   const map = useRef<MapRef>(null);
   const initial = useRef({ center, zoom: 9 });
   const first = useRef(true);
+  const now = useNow();
+  const [failed, setFailed] = useTileHealth(),
+    [retry, setRetry] = useState(0);
+  const lastRetry = useRef(0);
   const [zoom, setZoom] = useState(9);
   useEffect(() => {
     if (first.current) {
       first.current = false;
       return;
     }
-    camera.current?.flyTo({ center, zoom: 12, duration: 600 });
-  }, [center]);
+    if (selectedPlace?.bounds)
+      camera.current?.fitBounds(selectedPlace.bounds, {
+        duration: 600,
+        padding: { top: 160, bottom: 180, left: 40, right: 40 },
+      });
+    else
+      camera.current?.flyTo({
+        center,
+        zoom: selectedPlace?.focusZoom ?? 12,
+        duration: 600,
+      });
+  }, [center, selectedPlace]);
   async function zoomBy(delta: number) {
     try {
       const current = (await map.current?.getZoom()) ?? zoom;
@@ -55,40 +88,86 @@ export default function NativeMap({
     }
   }
 
-  const source = useRef<GeoJSONSourceRef>(null);
   const shape: GeoJSON.FeatureCollection = {
     type: "FeatureCollection",
-    features: observations.map((o) => ({
-      type: "Feature",
-      id: o.id,
-      properties: {
+    features: observations
+      .filter((o) => o.privacy_class !== "restricted")
+      .map((o) => ({
+        type: "Feature",
         id: o.id,
-        category: o.category,
-        color: reportAppearance(o).color,
-      },
-      geometry: { type: "Point", coordinates: [o.longitude, o.latitude] },
-    })),
+        properties: {
+          id: o.id,
+          category: o.category,
+          icon: markerFamily(o),
+          selected: o.id === selectedId,
+          color: reportAppearance(o).color,
+          risk:
+            effectiveAssessment(o, now).level === "none"
+              ? "#10282c"
+              : riskPresentation[effectiveAssessment(o, now).level].color,
+        },
+        geometry: { type: "Point", coordinates: [o.longitude, o.latitude] },
+      })),
   };
   return (
     <View style={{ flex: 1 }}>
       <Map
+        key={retry}
         ref={map}
+        onDidFailLoadingMap={() => setFailed(true)}
+        onDidFinishRenderingMapFully={() => setFailed(false)}
         style={{ flex: 1 }}
         onRegionDidChange={(event) => {
+          initial.current = {
+            center: event.nativeEvent.center,
+            zoom: event.nativeEvent.zoom,
+          };
           setZoom(event.nativeEvent.zoom);
           onViewportChange?.(event.nativeEvent);
         }}
         mapStyle={topographicStyle}
         attribution
-        attributionPosition={{ bottom: 12, right: 10 }}
+        attributionPosition={{ bottom: attributionBottom, right: 10 }}
         logo
       >
+        <Images
+          images={Object.fromEntries(
+            Object.entries(mapSymbols).map(([key, value]) => [
+              key,
+              value.image,
+            ]),
+          )}
+        />
         <Camera
           ref={camera}
           initialViewState={initial.current}
           minZoom={1}
           maxZoom={17}
         />
+        {selectedPlace && (
+          <GeoJSONSource
+            id="selected-place"
+            data={{
+              type: "Feature",
+              properties: { name: selectedPlace.name },
+              geometry: {
+                type: "Point",
+                coordinates: [selectedPlace.longitude, selectedPlace.latitude],
+              },
+            }}
+          >
+            <Layer
+              id="selected-place-marker"
+              type="circle"
+              paint={{
+                "circle-color": "#ffffff",
+                "circle-radius": 11,
+                "circle-stroke-color": "#43a9ee",
+                "circle-stroke-width": 4,
+              }}
+            />
+          </GeoJSONSource>
+        )}
         <GeoJSONSource
           id="official-reports"
           data={{
@@ -139,32 +218,11 @@ export default function NativeMap({
           />
         </GeoJSONSource>
         <GeoJSONSource
-          ref={source}
           id="observations"
           data={shape}
-          cluster
-          clusterRadius={45}
-          onPress={async (e) => {
+          onPress={(e) => {
             const feature = e.nativeEvent.features[0];
             if (!feature) return;
-            if (
-              feature.properties?.cluster &&
-              feature.geometry.type === "Point"
-            ) {
-              try {
-                const zoom = await source.current?.getClusterExpansionZoom(
-                  Number(feature.properties.cluster_id),
-                );
-                camera.current?.easeTo({
-                  center: feature.geometry.coordinates as [number, number],
-                  zoom: zoom ?? 12,
-                  duration: 500,
-                });
-              } catch {
-                camera.current?.zoomTo(12);
-              }
-              return;
-            }
             const item = observations.find(
               (o) => o.id === feature.properties?.id,
             );
@@ -173,34 +231,66 @@ export default function NativeMap({
         >
           <Layer
             type="circle"
-            id="clusters"
-            filter={["has", "point_count"]}
+            id="selected-observation-halo"
+            filter={["==", ["get", "selected"], true]}
             paint={{
-              "circle-color": "#52666c",
-              "circle-radius": 22,
-              "circle-stroke-width": 2,
-              "circle-stroke-color": "#fff",
+              "circle-color": "#ffffff",
+              "circle-radius": 23,
+              "circle-opacity": 0.3,
             }}
           />
           <Layer
             type="circle"
             id="points"
-            filter={["!", ["has", "point_count"]]}
             paint={{
               "circle-color": ["get", "color"],
-              "circle-radius": 9,
+              "circle-radius": 15,
               "circle-stroke-width": 3,
-              "circle-stroke-color": "#10282c",
+              "circle-stroke-color": ["get", "risk"],
+            }}
+          />
+          <Layer
+            id="observation-symbols"
+            type="symbol"
+            layout={{
+              "icon-image": ["get", "icon"],
+              "icon-size": 0.3,
+              "icon-allow-overlap": true,
+              "icon-ignore-placement": true,
             }}
           />
         </GeoJSONSource>
       </Map>
-      <ZoomControls
-        zoom={zoom}
-        onZoom={(delta) => {
-          void zoomBy(delta);
-        }}
-      />
+      {failed && (
+        <View
+          style={[
+            styles.card,
+            { position: "absolute", left: 12, right: 12, top: "45%" },
+          ]}
+        >
+          <Text style={styles.text}>
+            Map tiles could not load. Observations remain available in the
+            cards.
+          </Text>
+          <Button
+            label="Retry map"
+            onPress={() => {
+              if (Date.now() - lastRetry.current < 5000) return;
+              lastRetry.current = Date.now();
+              setFailed(false);
+              setRetry((n) => n + 1);
+            }}
+          />
+        </View>
+      )}
+      {!controlsHidden && (
+        <ZoomControls
+          zoom={zoom}
+          onZoom={(delta) => {
+            void zoomBy(delta);
+          }}
+        />
+      )}
     </View>
   );
 }

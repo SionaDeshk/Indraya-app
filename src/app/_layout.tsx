@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { AppState, Platform } from "react-native";
 import { supabase } from "../api";
+import { ClockProvider } from "../Clock";
 import { Stack } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const client = new QueryClient({
@@ -13,6 +14,9 @@ export default function Layout() {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
         setTimeout(() => {
           void client.resetQueries({ queryKey: ["report-photo"] });
+          void client.resetQueries({ queryKey: ["private"] });
+          void client.resetQueries({ queryKey: ["staff"] });
+          void client.resetQueries({ queryKey: ["review-queue"] });
           void client.invalidateQueries({ queryKey: ["observations"] });
           void client.invalidateQueries({ queryKey: ["nearby-observations"] });
         }, 0);
@@ -35,12 +39,14 @@ export default function Layout() {
   }, []);
   return (
     <QueryClientProvider client={client}>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: "#071719" },
-        }}
-      />
+      <ClockProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: "#071719" },
+          }}
+        />
+      </ClockProvider>
     </QueryClientProvider>
   );
 }

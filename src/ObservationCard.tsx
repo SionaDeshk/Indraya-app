@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import { age, Observation, observedTime, reportAppearance } from "./domain";
+import AssessmentBadge from "./AssessmentBadge";
 import { styles } from "./ui";
 export default function ObservationCard({
   report,
@@ -57,6 +58,7 @@ export default function ObservationCard({
           ? ` · ${distance < 1 ? "<1" : distance.toFixed(0)} km from map center`
           : ""}
       </Text>
+      <AssessmentBadge report={report} />
       <Text
         numberOfLines={1}
         style={[styles.text, { fontSize: 11, lineHeight: 16 }]}

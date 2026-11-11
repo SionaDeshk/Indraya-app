@@ -1,0 +1,2789 @@
+{
+  "version": 1,
+  "domains": [
+    {
+      "id": "travel",
+      "label": "Travel & Transportation",
+      "description": "Roads, vehicles and access",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "color": "#7fb0fc"
+    },
+    {
+      "id": "wildlife",
+      "label": "Wildlife & Animals",
+      "description": "Sightings, encounters and welfare",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "color": "#79d5a5"
+    },
+    {
+      "id": "outdoors",
+      "label": "Trails & Recreation",
+      "description": "Trails, parks and public access",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "color": "#55c9bd"
+    },
+    {
+      "id": "weather",
+      "label": "Weather & Natural Conditions",
+      "description": "Water, snow, terrain and sky",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "color": "#8ccce8"
+    },
+    {
+      "id": "environment",
+      "label": "Fire & Environment",
+      "description": "Fire, smoke and environmental observations",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "color": "#e7af79"
+    },
+    {
+      "id": "community",
+      "label": "Community & Infrastructure",
+      "description": "Utilities, public facilities and services",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "color": "#bbc3d1"
+    },
+    {
+      "id": "safety",
+      "label": "Safety & Assistance",
+      "description": "Public safety and assistance concerns",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "color": "#bda9dc",
+      "privacyFloor": "restricted"
+    },
+    {
+      "id": "discoveries",
+      "label": "Discoveries & Other",
+      "description": "Useful local discoveries and other observations",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "color": "#d5ca8d"
+    }
+  ],
+  "topics": [
+    {
+      "id": "travel.surface",
+      "domainId": "travel",
+      "label": "Road conditions",
+      "typeIds": [
+        "road_condition",
+        "black_ice",
+        "snow_slush",
+        "pothole",
+        "washout",
+        "flooding",
+        "debris",
+        "rockfall",
+        "fallen_tree",
+        "other"
+      ]
+    },
+    {
+      "id": "travel.visibility",
+      "domainId": "travel",
+      "label": "Visibility & weather",
+      "typeIds": [
+        "whiteout",
+        "fog",
+        "blowing_snow",
+        "poor_visibility",
+        "smoke",
+        "other"
+      ]
+    },
+    {
+      "id": "travel.vehicle",
+      "domainId": "travel",
+      "label": "Vehicle incident",
+      "typeIds": [
+        "collision",
+        "vehicle_off_road",
+        "disabled_vehicle",
+        "vehicle_obstruction",
+        "other"
+      ]
+    },
+    {
+      "id": "travel.disruption",
+      "domainId": "travel",
+      "label": "Access & disruption",
+      "typeIds": [
+        "traffic_delay",
+        "closure",
+        "blocked_access",
+        "damaged_bridge",
+        "construction",
+        "other"
+      ]
+    },
+    {
+      "id": "travel.transport",
+      "domainId": "travel",
+      "label": "Other transportation",
+      "typeIds": [
+        "transit_delay",
+        "ferry_disruption",
+        "airport_disruption",
+        "parking_issue",
+        "other"
+      ]
+    },
+    {
+      "id": "wildlife.sighting",
+      "domainId": "wildlife",
+      "label": "Animal sighting",
+      "typeIds": [
+        "animal_sighting",
+        "other"
+      ]
+    },
+    {
+      "id": "wildlife.encounter",
+      "domainId": "wildlife",
+      "label": "Wildlife encounter",
+      "typeIds": [
+        "animal_encounter",
+        "other"
+      ]
+    },
+    {
+      "id": "wildlife.welfare",
+      "domainId": "wildlife",
+      "label": "Animal welfare",
+      "typeIds": [
+        "animal_welfare",
+        "other"
+      ],
+      "privacyFloor": "coarse"
+    },
+    {
+      "id": "wildlife.domestic",
+      "domainId": "wildlife",
+      "label": "Domestic animals",
+      "typeIds": [
+        "loose_animal",
+        "lost_pet",
+        "found_pet",
+        "livestock",
+        "other"
+      ],
+      "privacyFloor": "coarse"
+    },
+    {
+      "id": "outdoors.trail",
+      "domainId": "outdoors",
+      "label": "Trail conditions",
+      "typeIds": [
+        "trail_condition",
+        "fallen_tree",
+        "trail_erosion",
+        "damaged_trail",
+        "difficult_crossing",
+        "debris",
+        "other"
+      ]
+    },
+    {
+      "id": "outdoors.access",
+      "domainId": "outdoors",
+      "label": "Access & facilities",
+      "typeIds": [
+        "blocked_access",
+        "parking_issue",
+        "campsite",
+        "damaged_sign",
+        "public_facility",
+        "accessibility_issue",
+        "other"
+      ]
+    },
+    {
+      "id": "outdoors.recreation",
+      "domainId": "outdoors",
+      "label": "Recreation conditions",
+      "typeIds": [
+        "recreation_condition",
+        "river_ice",
+        "hazardous_surf",
+        "avalanche",
+        "other"
+      ]
+    },
+    {
+      "id": "outdoors.useful",
+      "domainId": "outdoors",
+      "label": "Useful outdoor observations",
+      "typeIds": [
+        "accessible_route",
+        "clear_trail",
+        "facility_available",
+        "other"
+      ]
+    },
+    {
+      "id": "weather.weather",
+      "domainId": "weather",
+      "label": "Weather observations",
+      "typeIds": [
+        "strong_wind",
+        "heavy_rain",
+        "snowfall",
+        "hail",
+        "lightning",
+        "temperature",
+        "other"
+      ]
+    },
+    {
+      "id": "weather.visibility",
+      "domainId": "weather",
+      "label": "Wind & visibility",
+      "typeIds": [
+        "whiteout",
+        "fog",
+        "blowing_snow",
+        "poor_visibility",
+        "smoke",
+        "other"
+      ]
+    },
+    {
+      "id": "weather.water",
+      "domainId": "weather",
+      "label": "Water & ice",
+      "typeIds": [
+        "flooding",
+        "high_water",
+        "unusual_water",
+        "unsafe_ice",
+        "river_ice",
+        "coastal_flooding",
+        "hazardous_surf",
+        "other"
+      ]
+    },
+    {
+      "id": "weather.terrain",
+      "domainId": "weather",
+      "label": "Terrain, snow & slides",
+      "typeIds": [
+        "avalanche",
+        "slide_debris",
+        "rockfall",
+        "landslide",
+        "erosion",
+        "ground_movement",
+        "other"
+      ]
+    },
+    {
+      "id": "weather.sky",
+      "domainId": "weather",
+      "label": "Sky & seasonal observations",
+      "typeIds": [
+        "aurora",
+        "sky_observation",
+        "seasonal_observation",
+        "other"
+      ]
+    },
+    {
+      "id": "environment.fire",
+      "domainId": "environment",
+      "label": "Fire & smoke",
+      "typeIds": [
+        "smoke",
+        "flames",
+        "unattended_campfire",
+        "prescribed_burn",
+        "other"
+      ]
+    },
+    {
+      "id": "environment.air",
+      "domainId": "environment",
+      "label": "Air observations",
+      "typeIds": [
+        "poor_air",
+        "odor",
+        "smoke",
+        "other"
+      ]
+    },
+    {
+      "id": "environment.water",
+      "domainId": "environment",
+      "label": "Water & environment",
+      "typeIds": [
+        "spill",
+        "pollution",
+        "water_discoloration",
+        "dumping",
+        "habitat_damage",
+        "other"
+      ]
+    },
+    {
+      "id": "community.utilities",
+      "domainId": "community",
+      "label": "Utilities",
+      "typeIds": [
+        "power_outage",
+        "fallen_line",
+        "damaged_pole",
+        "water_service",
+        "communications",
+        "other"
+      ]
+    },
+    {
+      "id": "community.infrastructure",
+      "domainId": "community",
+      "label": "Public infrastructure",
+      "typeIds": [
+        "traffic_signal",
+        "sidewalk",
+        "drainage",
+        "public_structure",
+        "other"
+      ]
+    },
+    {
+      "id": "community.amenities",
+      "domainId": "community",
+      "label": "Access & amenities",
+      "typeIds": [
+        "public_amenity",
+        "public_facility",
+        "accessibility_issue",
+        "blocked_access",
+        "other"
+      ]
+    },
+    {
+      "id": "community.services",
+      "domainId": "community",
+      "label": "Community services",
+      "typeIds": [
+        "service_interruption",
+        "resource_information",
+        "facility_available",
+        "useful_update",
+        "other"
+      ]
+    },
+    {
+      "id": "safety.public",
+      "domainId": "safety",
+      "label": "Public-safety observations",
+      "typeIds": [
+        "gunfire_heard",
+        "shooting_witnessed",
+        "police_presence",
+        "emergency_response",
+        "disturbance",
+        "other"
+      ]
+    },
+    {
+      "id": "safety.assistance",
+      "domainId": "safety",
+      "label": "Assistance concerns",
+      "typeIds": [
+        "injury_assistance",
+        "stranded_traveler",
+        "other"
+      ]
+    },
+    {
+      "id": "safety.restricted",
+      "domainId": "safety",
+      "label": "Missing or vulnerable person",
+      "typeIds": [
+        "missing_person",
+        "vulnerable_person",
+        "other"
+      ]
+    },
+    {
+      "id": "discoveries.local",
+      "domainId": "discoveries",
+      "label": "Local discoveries",
+      "typeIds": [
+        "scenic_discovery",
+        "seasonal_observation",
+        "local_activity",
+        "useful_update",
+        "other"
+      ]
+    },
+    {
+      "id": "travel.other",
+      "domainId": "travel",
+      "label": "Other observation",
+      "typeIds": [
+        "other"
+      ]
+    },
+    {
+      "id": "wildlife.other",
+      "domainId": "wildlife",
+      "label": "Other observation",
+      "typeIds": [
+        "other"
+      ]
+    },
+    {
+      "id": "outdoors.other",
+      "domainId": "outdoors",
+      "label": "Other observation",
+      "typeIds": [
+        "other"
+      ]
+    },
+    {
+      "id": "weather.other",
+      "domainId": "weather",
+      "label": "Other observation",
+      "typeIds": [
+        "other"
+      ]
+    },
+    {
+      "id": "environment.other",
+      "domainId": "environment",
+      "label": "Other observation",
+      "typeIds": [
+        "other"
+      ]
+    },
+    {
+      "id": "community.other",
+      "domainId": "community",
+      "label": "Other observation",
+      "typeIds": [
+        "other"
+      ]
+    },
+    {
+      "id": "safety.other",
+      "domainId": "safety",
+      "label": "Other observation",
+      "typeIds": [
+        "other"
+      ]
+    },
+    {
+      "id": "discoveries.other",
+      "domainId": "discoveries",
+      "label": "Other observation",
+      "typeIds": [
+        "other"
+      ]
+    }
+  ],
+  "types": {
+    "road_condition": {
+      "id": "road_condition",
+      "label": "Road condition",
+      "title": "Road condition observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "surface",
+        "visibility",
+        "direction",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "black_ice": {
+      "id": "black_ice",
+      "label": "Black ice",
+      "title": "Black ice observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "visibility",
+        "direction",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "snow_slush": {
+      "id": "snow_slush",
+      "label": "Snow or slush",
+      "title": "Snow or slush observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "visibility",
+        "direction",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "pothole": {
+      "id": "pothole",
+      "label": "Pothole",
+      "title": "Pothole observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "visibility",
+        "direction",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "washout": {
+      "id": "washout",
+      "label": "Road washout",
+      "title": "Road washout observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "visibility",
+        "direction",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "flooding": {
+      "id": "flooding",
+      "label": "Flooding",
+      "title": "Flooding",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "flooding",
+      "questions": [
+        "access_impact",
+        "location_context",
+        "direction"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "debris": {
+      "id": "debris",
+      "label": "Debris or obstruction",
+      "title": "Debris or obstruction",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "location_context",
+        "direction"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "rockfall": {
+      "id": "rockfall",
+      "label": "Rockfall",
+      "title": "Rockfall",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "access_impact",
+        "location_context",
+        "direction"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "fallen_tree": {
+      "id": "fallen_tree",
+      "label": "Fallen tree",
+      "title": "Fallen tree",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "access_impact",
+        "location_context",
+        "direction"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "whiteout": {
+      "id": "whiteout",
+      "label": "Whiteout",
+      "title": "Whiteout",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "visibility",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "visibility",
+        "weather",
+        "travel"
+      ]
+    },
+    "fog": {
+      "id": "fog",
+      "label": "Fog",
+      "title": "Fog",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "visibility",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "visibility",
+        "weather",
+        "travel"
+      ]
+    },
+    "blowing_snow": {
+      "id": "blowing_snow",
+      "label": "Blowing snow",
+      "title": "Blowing snow",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "visibility",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "visibility",
+        "weather",
+        "travel"
+      ]
+    },
+    "poor_visibility": {
+      "id": "poor_visibility",
+      "label": "Poor visibility",
+      "title": "Poor visibility",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "visibility",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "visibility",
+        "weather",
+        "travel"
+      ]
+    },
+    "smoke": {
+      "id": "smoke",
+      "label": "Smoke observed",
+      "title": "Smoke observed",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "visibility",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "fire",
+        "smoke affecting travel"
+      ]
+    },
+    "collision": {
+      "id": "collision",
+      "label": "Collision observed",
+      "title": "Collision observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "injury"
+      ],
+      "privacy": "approximate",
+      "priority": true,
+      "positive": false,
+      "aliases": [
+        "wreck",
+        "crash"
+      ]
+    },
+    "vehicle_off_road": {
+      "id": "vehicle_off_road",
+      "label": "Vehicle off road",
+      "title": "Vehicle off road",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "injury"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "disabled_vehicle": {
+      "id": "disabled_vehicle",
+      "label": "Disabled or stuck vehicle",
+      "title": "Disabled or stuck vehicle",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "injury"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "vehicle_obstruction": {
+      "id": "vehicle_obstruction",
+      "label": "Vehicle obstructing traffic",
+      "title": "Vehicle obstructing traffic",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "injury"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "traffic_delay": {
+      "id": "traffic_delay",
+      "label": "Traffic delay",
+      "title": "Traffic delay",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "closure": {
+      "id": "closure",
+      "label": "Closure reported",
+      "title": "Closure reported",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "blocked_access": {
+      "id": "blocked_access",
+      "label": "Blocked access",
+      "title": "Blocked access",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "damaged_bridge": {
+      "id": "damaged_bridge",
+      "label": "Damaged bridge",
+      "title": "Damaged bridge",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "construction": {
+      "id": "construction",
+      "label": "Construction or detour observed",
+      "title": "Construction or detour observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "transit_delay": {
+      "id": "transit_delay",
+      "label": "Transit delay observed",
+      "title": "Transit delay observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "ferry_disruption": {
+      "id": "ferry_disruption",
+      "label": "Ferry disruption observed",
+      "title": "Ferry disruption observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "airport_disruption": {
+      "id": "airport_disruption",
+      "label": "Airport disruption observed",
+      "title": "Airport disruption observed",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "parking_issue": {
+      "id": "parking_issue",
+      "label": "Parking or access issue",
+      "title": "Parking or access issue",
+      "family": "travel",
+      "color": "#7fb0fc",
+      "legacyCategory": "Travel",
+      "legacyKind": "road",
+      "questions": [
+        "access_impact",
+        "direction",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "animal_sighting": {
+      "id": "animal_sighting",
+      "label": "Animal sighting",
+      "title": "Animal sighting",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": [
+        "animal",
+        "other_animal",
+        "count",
+        "sighting_behavior"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "bear",
+        "moose",
+        "beluga",
+        "whale",
+        "seal",
+        "bird",
+        "caribou",
+        "fox",
+        "wolf"
+      ]
+    },
+    "animal_encounter": {
+      "id": "animal_encounter",
+      "label": "Wildlife encounter",
+      "title": "Wildlife encounter",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": [
+        "animal",
+        "other_animal",
+        "count",
+        "encounter_behavior",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "coarse",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "bear encounter",
+        "attack",
+        "aggressive animal"
+      ]
+    },
+    "animal_welfare": {
+      "id": "animal_welfare",
+      "label": "Animal welfare concern",
+      "title": "Animal welfare concern",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": [
+        "animal",
+        "other_animal",
+        "count",
+        "animal_condition",
+        "location_context"
+      ],
+      "privacy": "coarse",
+      "priority": false,
+      "positive": false,
+      "aliases": [
+        "stranded whale",
+        "injured animal",
+        "entanglement"
+      ]
+    },
+    "loose_animal": {
+      "id": "loose_animal",
+      "label": "Loose domestic animal",
+      "title": "Loose domestic animal",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": [
+        "animal",
+        "other_animal",
+        "count",
+        "location_context"
+      ],
+      "privacy": "coarse",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "lost_pet": {
+      "id": "lost_pet",
+      "label": "Lost pet information",
+      "title": "Lost pet information",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": [
+        "animal",
+        "other_animal",
+        "count",
+        "location_context"
+      ],
+      "privacy": "coarse",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "found_pet": {
+      "id": "found_pet",
+      "label": "Found pet information",
+      "title": "Found pet information",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": [
+        "animal",
+        "other_animal",
+        "count",
+        "location_context"
+      ],
+      "privacy": "coarse",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "livestock": {
+      "id": "livestock",
+      "label": "Livestock near road",
+      "title": "Livestock near road",
+      "family": "wildlife",
+      "color": "#79d5a5",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "wildlife",
+      "questions": [
+        "animal",
+        "other_animal",
+        "count",
+        "location_context"
+      ],
+      "privacy": "coarse",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "trail_condition": {
+      "id": "trail_condition",
+      "label": "Trail condition",
+      "title": "Trail condition",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "outdoor_condition",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "trail_erosion": {
+      "id": "trail_erosion",
+      "label": "Trail erosion",
+      "title": "Trail erosion",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "outdoor_condition",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "damaged_trail": {
+      "id": "damaged_trail",
+      "label": "Damaged trail",
+      "title": "Damaged trail",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "outdoor_condition",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "difficult_crossing": {
+      "id": "difficult_crossing",
+      "label": "Difficult crossing",
+      "title": "Difficult crossing",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "outdoor_condition",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "damaged_sign": {
+      "id": "damaged_sign",
+      "label": "Damaged sign",
+      "title": "Damaged sign",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "outdoor_condition",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "recreation_condition": {
+      "id": "recreation_condition",
+      "label": "Recreation condition",
+      "title": "Recreation condition",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "outdoor_condition",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "campsite": {
+      "id": "campsite",
+      "label": "Campsite condition",
+      "title": "Campsite condition",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "outdoor_condition",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "public_facility": {
+      "id": "public_facility",
+      "label": "Public facility issue",
+      "title": "Public facility issue",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "outdoor_condition",
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "accessible_route": {
+      "id": "accessible_route",
+      "label": "Accessible route segment observed",
+      "title": "Accessible route segment observed",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "accessibility",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "clear_trail": {
+      "id": "clear_trail",
+      "label": "Clear trail segment observed",
+      "title": "Clear trail segment observed",
+      "family": "outdoors",
+      "color": "#55c9bd",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "facility_available": {
+      "id": "facility_available",
+      "label": "Public facility available observed",
+      "title": "Public facility available observed",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "accessibility"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "strong_wind": {
+      "id": "strong_wind",
+      "label": "Strong wind observed",
+      "title": "Strong wind observed",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "heavy_rain": {
+      "id": "heavy_rain",
+      "label": "Heavy rain",
+      "title": "Heavy rain",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "snowfall": {
+      "id": "snowfall",
+      "label": "Snowfall",
+      "title": "Snowfall",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "hail": {
+      "id": "hail",
+      "label": "Hail",
+      "title": "Hail",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "lightning": {
+      "id": "lightning",
+      "label": "Lightning observed",
+      "title": "Lightning observed",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "temperature": {
+      "id": "temperature",
+      "label": "Temperature-related condition",
+      "title": "Temperature-related condition",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "high_water": {
+      "id": "high_water",
+      "label": "High water",
+      "title": "High water",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "unusual_water": {
+      "id": "unusual_water",
+      "label": "Unusual water level",
+      "title": "Unusual water level",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "unsafe_ice": {
+      "id": "unsafe_ice",
+      "label": "Unsafe ice observed",
+      "title": "Unsafe ice observed",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "river_ice": {
+      "id": "river_ice",
+      "label": "River or lake ice condition",
+      "title": "River or lake ice condition",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "coastal_flooding": {
+      "id": "coastal_flooding",
+      "label": "Coastal flooding",
+      "title": "Coastal flooding",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "hazardous_surf": {
+      "id": "hazardous_surf",
+      "label": "Hazardous surf observed",
+      "title": "Hazardous surf observed",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "avalanche": {
+      "id": "avalanche",
+      "label": "Avalanche observed",
+      "title": "Avalanche observed",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": true,
+      "positive": false,
+      "aliases": [
+        "snow slide"
+      ]
+    },
+    "slide_debris": {
+      "id": "slide_debris",
+      "label": "Snow-slide debris",
+      "title": "Snow-slide debris",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "landslide": {
+      "id": "landslide",
+      "label": "Landslide",
+      "title": "Landslide",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "erosion": {
+      "id": "erosion",
+      "label": "Erosion",
+      "title": "Erosion",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "ground_movement": {
+      "id": "ground_movement",
+      "label": "Ground movement",
+      "title": "Ground movement",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "location_context",
+        "access_impact"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "aurora": {
+      "id": "aurora",
+      "label": "Aurora sighting",
+      "title": "Aurora sighting",
+      "family": "weather",
+      "color": "#8ccce8",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "aurora",
+      "questions": [],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "sky_observation": {
+      "id": "sky_observation",
+      "label": "Sky or seasonal observation",
+      "title": "Sky or seasonal observation",
+      "family": "discoveries",
+      "color": "#d5ca8d",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "context_note"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "flames": {
+      "id": "flames",
+      "label": "Flames observed",
+      "title": "Flames observed",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "access_impact",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": true,
+      "positive": false,
+      "aliases": []
+    },
+    "unattended_campfire": {
+      "id": "unattended_campfire",
+      "label": "Unattended campfire observed",
+      "title": "Unattended campfire observed",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "fire_signs",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "prescribed_burn": {
+      "id": "prescribed_burn",
+      "label": "Reported prescribed-burn activity",
+      "title": "Reported prescribed-burn activity",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "fire_signs",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "poor_air": {
+      "id": "poor_air",
+      "label": "Poor air clarity",
+      "title": "Poor air clarity",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "location_context",
+        "observation_basis",
+        "context_note"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "odor": {
+      "id": "odor",
+      "label": "Unusual odor",
+      "title": "Unusual odor",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "location_context",
+        "observation_basis",
+        "context_note"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "spill": {
+      "id": "spill",
+      "label": "Visible spill",
+      "title": "Visible spill",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "location_context",
+        "observation_basis",
+        "context_note"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "pollution": {
+      "id": "pollution",
+      "label": "Suspected pollution",
+      "title": "Suspected pollution",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "location_context",
+        "observation_basis",
+        "context_note"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "water_discoloration": {
+      "id": "water_discoloration",
+      "label": "Water discoloration",
+      "title": "Water discoloration",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "location_context",
+        "observation_basis",
+        "context_note"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "dumping": {
+      "id": "dumping",
+      "label": "Dumping or litter",
+      "title": "Dumping or litter",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "location_context",
+        "observation_basis",
+        "context_note"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "habitat_damage": {
+      "id": "habitat_damage",
+      "label": "Damaged habitat",
+      "title": "Damaged habitat",
+      "family": "environment",
+      "color": "#e7af79",
+      "legacyCategory": "Safety",
+      "legacyKind": "smoke",
+      "questions": [
+        "location_context",
+        "observation_basis",
+        "context_note"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "power_outage": {
+      "id": "power_outage",
+      "label": "Power outage reported",
+      "title": "Power outage reported",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "fallen_line": {
+      "id": "fallen_line",
+      "label": "Fallen utility line",
+      "title": "Fallen utility line",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": true,
+      "positive": false,
+      "aliases": []
+    },
+    "damaged_pole": {
+      "id": "damaged_pole",
+      "label": "Damaged utility pole",
+      "title": "Damaged utility pole",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "water_service": {
+      "id": "water_service",
+      "label": "Water-service issue",
+      "title": "Water-service issue",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "communications": {
+      "id": "communications",
+      "label": "Communications disruption",
+      "title": "Communications disruption",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "traffic_signal": {
+      "id": "traffic_signal",
+      "label": "Traffic signal or streetlight issue",
+      "title": "Traffic signal or streetlight issue",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "sidewalk": {
+      "id": "sidewalk",
+      "label": "Sidewalk damage or blockage",
+      "title": "Sidewalk damage or blockage",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "drainage": {
+      "id": "drainage",
+      "label": "Drainage issue",
+      "title": "Drainage issue",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "public_structure": {
+      "id": "public_structure",
+      "label": "Damaged public structure",
+      "title": "Damaged public structure",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "public_amenity": {
+      "id": "public_amenity",
+      "label": "Public amenity issue",
+      "title": "Public amenity issue",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "service_interruption": {
+      "id": "service_interruption",
+      "label": "Community service interruption",
+      "title": "Community service interruption",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "resource_information": {
+      "id": "resource_information",
+      "label": "Community resource information",
+      "title": "Community resource information",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "service_state",
+        "location_context",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "accessibility_issue": {
+      "id": "accessibility_issue",
+      "label": "Accessibility or entrance issue",
+      "title": "Accessibility or entrance issue",
+      "family": "community",
+      "color": "#bbc3d1",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "accessibility",
+        "location_context"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "gunfire_heard": {
+      "id": "gunfire_heard",
+      "label": "Possible gunfire heard",
+      "title": "Possible gunfire heard",
+      "family": "safety",
+      "color": "#bda9dc",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "observation_basis",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "restricted",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "shooting_witnessed": {
+      "id": "shooting_witnessed",
+      "label": "Shooting witnessed",
+      "title": "Shooting witnessed",
+      "family": "safety",
+      "color": "#bda9dc",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "observation_basis",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "restricted",
+      "priority": true,
+      "positive": false,
+      "aliases": [
+        "shooting",
+        "injuries"
+      ]
+    },
+    "police_presence": {
+      "id": "police_presence",
+      "label": "Police presence",
+      "title": "Police presence",
+      "family": "safety",
+      "color": "#bda9dc",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "observation_basis",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "restricted",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "emergency_response": {
+      "id": "emergency_response",
+      "label": "Emergency response observed",
+      "title": "Emergency response observed",
+      "family": "safety",
+      "color": "#bda9dc",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "observation_basis",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "restricted",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "disturbance": {
+      "id": "disturbance",
+      "label": "Disturbance observed",
+      "title": "Disturbance observed",
+      "family": "safety",
+      "color": "#bda9dc",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "observation_basis",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "restricted",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "injury_assistance": {
+      "id": "injury_assistance",
+      "label": "Injury or assistance concern",
+      "title": "Injury or assistance concern",
+      "family": "safety",
+      "color": "#bda9dc",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "observation_basis",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "restricted",
+      "priority": true,
+      "positive": false,
+      "aliases": []
+    },
+    "stranded_traveler": {
+      "id": "stranded_traveler",
+      "label": "Stranded traveler",
+      "title": "Stranded traveler",
+      "family": "safety",
+      "color": "#bda9dc",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "observation_basis",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "restricted",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    },
+    "missing_person": {
+      "id": "missing_person",
+      "label": "Missing-person information",
+      "title": "Missing-person information",
+      "family": "safety",
+      "color": "#bda9dc",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "observation_basis",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "restricted",
+      "priority": true,
+      "positive": false,
+      "aliases": []
+    },
+    "vulnerable_person": {
+      "id": "vulnerable_person",
+      "label": "Vulnerable-person concern",
+      "title": "Vulnerable-person concern",
+      "family": "safety",
+      "color": "#bda9dc",
+      "legacyCategory": "Safety",
+      "legacyKind": "hazard",
+      "questions": [
+        "observation_basis",
+        "injury",
+        "location_context"
+      ],
+      "privacy": "restricted",
+      "priority": true,
+      "positive": false,
+      "aliases": []
+    },
+    "scenic_discovery": {
+      "id": "scenic_discovery",
+      "label": "Scenic or natural discovery",
+      "title": "Scenic or natural discovery",
+      "family": "discoveries",
+      "color": "#d5ca8d",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "context_note",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "seasonal_observation": {
+      "id": "seasonal_observation",
+      "label": "Seasonal observation",
+      "title": "Seasonal observation",
+      "family": "discoveries",
+      "color": "#d5ca8d",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "context_note",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "local_activity": {
+      "id": "local_activity",
+      "label": "Local event or activity observed",
+      "title": "Local event or activity observed",
+      "family": "discoveries",
+      "color": "#d5ca8d",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "context_note",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "useful_update": {
+      "id": "useful_update",
+      "label": "Useful public-place update",
+      "title": "Useful public-place update",
+      "family": "discoveries",
+      "color": "#d5ca8d",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "context_note",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": true,
+      "aliases": []
+    },
+    "other": {
+      "id": "other",
+      "label": "Other observation",
+      "title": "Other observation",
+      "family": "discoveries",
+      "color": "#d5ca8d",
+      "legacyCategory": "Outdoors",
+      "legacyKind": "trail",
+      "questions": [
+        "context_note",
+        "observation_basis"
+      ],
+      "privacy": "approximate",
+      "priority": false,
+      "positive": false,
+      "aliases": []
+    }
+  },
+  "questions": {
+    "animal": {
+      "id": "animal",
+      "label": "What animal?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "bear",
+          "label": "Bear"
+        },
+        {
+          "value": "moose",
+          "label": "Moose"
+        },
+        {
+          "value": "caribou",
+          "label": "Caribou / reindeer"
+        },
+        {
+          "value": "wolf_coyote",
+          "label": "Wolf / coyote"
+        },
+        {
+          "value": "fox",
+          "label": "Fox"
+        },
+        {
+          "value": "beluga",
+          "label": "Beluga"
+        },
+        {
+          "value": "whale",
+          "label": "Other whale"
+        },
+        {
+          "value": "seal_sea_lion",
+          "label": "Seal / sea lion"
+        },
+        {
+          "value": "bird",
+          "label": "Bird"
+        },
+        {
+          "value": "other",
+          "label": "Other animal"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "other_animal": {
+      "id": "other_animal",
+      "label": "Other animal",
+      "type": "text",
+      "options": [],
+      "maxLength": 80,
+      "showWhen": {
+        "field": "animal",
+        "values": [
+          "other"
+        ]
+      }
+    },
+    "count": {
+      "id": "count",
+      "label": "Roughly how many?",
+      "type": "number",
+      "options": [],
+      "min": 1,
+      "max": 10000
+    },
+    "sighting_behavior": {
+      "id": "sighting_behavior",
+      "label": "What was the animal doing?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "passing",
+          "label": "Passing"
+        },
+        {
+          "value": "feeding",
+          "label": "Feeding"
+        },
+        {
+          "value": "crossing_road",
+          "label": "Crossing road"
+        },
+        {
+          "value": "near_trail",
+          "label": "Near trail"
+        },
+        {
+          "value": "nesting",
+          "label": "Nesting"
+        },
+        {
+          "value": "denning",
+          "label": "Denning"
+        },
+        {
+          "value": "unknown",
+          "label": "Unknown"
+        }
+      ],
+      "coarseValues": [
+        "nesting",
+        "denning"
+      ]
+    },
+    "encounter_behavior": {
+      "id": "encounter_behavior",
+      "label": "What did you observe?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "near_people",
+          "label": "Near people"
+        },
+        {
+          "value": "defensive",
+          "label": "Defensive behavior"
+        },
+        {
+          "value": "aggressive",
+          "label": "Aggressive behavior"
+        },
+        {
+          "value": "attack",
+          "label": "Attack reported"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ],
+      "reviewValues": [
+        "attack"
+      ],
+      "priorityValues": [
+        "attack"
+      ]
+    },
+    "animal_condition": {
+      "id": "animal_condition",
+      "label": "What condition did you observe?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "injured",
+          "label": "Injured"
+        },
+        {
+          "value": "stranded",
+          "label": "Stranded"
+        },
+        {
+          "value": "dead",
+          "label": "Dead"
+        },
+        {
+          "value": "entangled",
+          "label": "Entangled"
+        },
+        {
+          "value": "unknown",
+          "label": "Unknown"
+        }
+      ],
+      "coarseValues": [
+        "injured",
+        "stranded",
+        "entangled"
+      ]
+    },
+    "surface": {
+      "id": "surface",
+      "label": "Road surface",
+      "type": "choice",
+      "options": [
+        {
+          "value": "dry",
+          "label": "Dry"
+        },
+        {
+          "value": "wet",
+          "label": "Wet"
+        },
+        {
+          "value": "snow",
+          "label": "Snow"
+        },
+        {
+          "value": "slush",
+          "label": "Slush"
+        },
+        {
+          "value": "ice",
+          "label": "Ice"
+        },
+        {
+          "value": "black_ice",
+          "label": "Black ice"
+        },
+        {
+          "value": "unknown",
+          "label": "Unknown"
+        }
+      ]
+    },
+    "visibility": {
+      "id": "visibility",
+      "label": "Visibility",
+      "type": "choice",
+      "options": [
+        {
+          "value": "good",
+          "label": "Good"
+        },
+        {
+          "value": "reduced",
+          "label": "Reduced"
+        },
+        {
+          "value": "very_poor",
+          "label": "Very poor"
+        },
+        {
+          "value": "unknown",
+          "label": "Unknown"
+        }
+      ]
+    },
+    "direction": {
+      "id": "direction",
+      "label": "Which direction or area?",
+      "type": "text",
+      "options": [],
+      "maxLength": 100
+    },
+    "access_impact": {
+      "id": "access_impact",
+      "label": "Effect on access",
+      "type": "choice",
+      "options": [
+        {
+          "value": "passable",
+          "label": "Passable"
+        },
+        {
+          "value": "partly_blocked",
+          "label": "Partly blocked"
+        },
+        {
+          "value": "blocked",
+          "label": "Blocked"
+        },
+        {
+          "value": "unknown",
+          "label": "Unknown"
+        }
+      ]
+    },
+    "injury": {
+      "id": "injury",
+      "label": "Did you directly observe an injury to a person?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "observed",
+          "label": "Injury observed"
+        },
+        {
+          "value": "not_observed",
+          "label": "No injury observed"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ],
+      "reviewValues": [
+        "observed"
+      ],
+      "priorityValues": [
+        "observed"
+      ]
+    },
+    "fire_signs": {
+      "id": "fire_signs",
+      "label": "What could you see?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "smoke",
+          "label": "Smoke"
+        },
+        {
+          "value": "flames",
+          "label": "Flames"
+        },
+        {
+          "value": "both",
+          "label": "Both"
+        },
+        {
+          "value": "unknown",
+          "label": "Unknown"
+        }
+      ]
+    },
+    "location_context": {
+      "id": "location_context",
+      "label": "General setting",
+      "type": "choice",
+      "options": [
+        {
+          "value": "public_road",
+          "label": "Public road"
+        },
+        {
+          "value": "trail",
+          "label": "Trail"
+        },
+        {
+          "value": "park",
+          "label": "Park"
+        },
+        {
+          "value": "public_facility",
+          "label": "Public facility"
+        },
+        {
+          "value": "shoreline",
+          "label": "Shoreline"
+        },
+        {
+          "value": "other",
+          "label": "Other"
+        },
+        {
+          "value": "unknown",
+          "label": "Unknown"
+        }
+      ]
+    },
+    "outdoor_condition": {
+      "id": "outdoor_condition",
+      "label": "What condition did you observe?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "ice",
+          "label": "Ice"
+        },
+        {
+          "value": "deep_snow",
+          "label": "Deep snow"
+        },
+        {
+          "value": "mud",
+          "label": "Mud"
+        },
+        {
+          "value": "damaged_surface",
+          "label": "Damaged surface"
+        },
+        {
+          "value": "other",
+          "label": "Other"
+        },
+        {
+          "value": "unknown",
+          "label": "Unknown"
+        }
+      ]
+    },
+    "service_state": {
+      "id": "service_state",
+      "label": "What did you observe?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "interrupted",
+          "label": "Interrupted"
+        },
+        {
+          "value": "partly_available",
+          "label": "Partly available"
+        },
+        {
+          "value": "available",
+          "label": "Available"
+        },
+        {
+          "value": "unknown",
+          "label": "Unknown"
+        }
+      ]
+    },
+    "accessibility": {
+      "id": "accessibility",
+      "label": "What did you observe?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "blocked",
+          "label": "Access blocked"
+        },
+        {
+          "value": "barrier",
+          "label": "A barrier"
+        },
+        {
+          "value": "accessible_segment",
+          "label": "Accessible segment observed"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "observation_basis": {
+      "id": "observation_basis",
+      "label": "How do you know?",
+      "type": "choice",
+      "options": [
+        {
+          "value": "firsthand",
+          "label": "I observed it"
+        },
+        {
+          "value": "secondhand",
+          "label": "Someone told me"
+        },
+        {
+          "value": "source",
+          "label": "A published source"
+        },
+        {
+          "value": "unknown",
+          "label": "Not sure"
+        }
+      ]
+    },
+    "context_note": {
+      "id": "context_note",
+      "label": "Additional observation details",
+      "type": "text",
+      "options": [],
+      "maxLength": 240
+    }
+  }
+}

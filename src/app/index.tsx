@@ -1,10 +1,26 @@
 import { useState } from "react";
-import { View, Text, ScrollView, Modal } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Modal,
+  Pressable,
+  Image,
+  useWindowDimensions,
+} from "react-native";
+import {
+  useSafeAreaInsets,
+  SafeAreaView,
+} from "react-native-safe-area-context";
+import ObservationPreview from "../ObservationPreview";
+import { mapSymbols } from "../mapSymbols";
+import ActivitySheet from "../ActivitySheet";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import * as Location from "expo-location";
 import {
-  categories,
+  observationDomain,
+  ReportLocation,
   Observation,
   age,
   MapBounds,
@@ -12,20 +28,23 @@ import {
   withinBounds,
   distanceKm,
   observedTime,
-  reportKinds,
-  reportAppearance,
 } from "../domain";
 import { observations, flag, supabase } from "../api";
 import { Button, styles } from "../ui";
 import PlaceSearch from "../PlaceSearch";
-import ObservationPhoto from "../ObservationPhoto";
+import ObservationDetails from "../ObservationDetails";
+import ChoiceSheet from "../ChoiceSheet";
+import { catalog } from "../taxonomy";
+import { riskPresentation } from "../assessment";
 import ObservationCard from "../ObservationCard";
 import NativeMap from "../NativeMap";
 import * as Linking from "expo-linking";
 import { useOfficialFeeds } from "../official/useOfficialFeeds";
 import { OfficialItem } from "../official/adapters";
 export default function Home() {
-  const [filters, setFilters] = useState<string[]>(categories);
+  const [filters, setFilters] = useState("all");
+  const [searchPlace, setSearchPlace] = useState<ReportLocation | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [selected, setSelected] = useState<Observation | null>(null);
   const [center, setCenter] = useState<[number, number]>([-149.9, 61.218]);
   const [message, setMessage] = useState("");
@@ -33,8 +52,11 @@ export default function Home() {
     center: [number, number];
     bounds: MapBounds | null;
   }>({ center: [-149.9, 61.218], bounds: null });
-  const [nearby, setNearby] = useState(false);
-  const [legend, setLegend] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
+  const [layersOpen, setLayersOpen] = useState(false);
+  const [demoInfo, setDemoInfo] = useState(false);
+  const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
   const [officialDetail, setOfficialDetail] = useState<OfficialItem | null>(
     null,
   );
@@ -65,11 +87,14 @@ export default function Home() {
       ]),
     ).values(),
   ];
-  const visible = loadedReports.filter((o) => filters.includes(o.category));
+  const visible = loadedReports.filter(
+    (o) => filters === "all" || filters === observationDomain(o),
+  );
   const nearbyReports = (
     supabase && viewport.bounds
-      ? (spatial.data ?? []).filter((report) =>
-          filters.includes(report.category),
+      ? (spatial.data ?? []).filter(
+          (report) =>
+            filters === "all" || filters === observationDomain(report),
         )
       : visible
   )
@@ -83,7 +108,11 @@ export default function Home() {
     )
     .sort((a, b) => Date.parse(observedTime(b)) - Date.parse(observedTime(a)));
   function selectReport(report: Observation) {
-    setCenter([report.longitude, report.latitude]);
+    setSearchPlace(null);
+    if (report.privacy_class !== "restricted")
+      setCenter([report.longitude, report.latitude]);
+    setActivityOpen(false);
+    setDetailsOpen(false);
     setSelected(report);
   }
   async function locate() {
@@ -96,6 +125,7 @@ export default function Home() {
       const p = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
+      setSearchPlace(null);
       setCenter([p.coords.longitude, p.coords.latitude]);
     } catch (e) {
       setMessage(String(e));
@@ -104,7 +134,13 @@ export default function Home() {
   return (
     <View style={{ flex: 1, backgroundColor: "#071719" }}>
       <NativeMap
+        attributionBottom={
+          Math.max(insets.bottom, 12) + (selected ? height * 0.38 + 12 : 150)
+        }
+        controlsHidden={activityOpen || !!selected}
         center={center}
+        selectedPlace={searchPlace}
+        selectedId={selected?.id}
         observations={visible}
         onSelect={selectReport}
         onViewportChange={(view) =>
@@ -118,236 +154,398 @@ export default function Home() {
       />
       <View
         pointerEvents="box-none"
-        style={{ position: "absolute", top: 60, left: 20, right: 20, gap: 12 }}
+        style={{
+          position: "absolute",
+          top: insets.top + 12,
+          left: 16,
+          right: 16,
+          gap: 8,
+        }}
       >
         <View
+          pointerEvents="box-none"
+          style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}
+        >
+          <View style={{ flex: 1 }}>
+            <PlaceSearch
+              focus={viewport.center}
+              onChoose={(place) => {
+                setSelected(null);
+                setDetailsOpen(false);
+                setSearchPlace(place);
+                setCenter([place.longitude, place.latitude]);
+                setViewport({
+                  center: [place.longitude, place.latitude],
+                  bounds: null,
+                });
+                setActivityOpen(false);
+              }}
+            />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Account"
+            onPress={() => router.push("/account")}
+            style={{
+              width: 48,
+              height: 50,
+              borderRadius: 16,
+              backgroundColor: "#10282c",
+              borderWidth: 1,
+              borderColor: "#345056",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: "#d0e8e3", fontSize: 25 }}>◎</Text>
+          </Pressable>
+        </View>
+        {!supabase && (
+          <View style={{ alignItems: "flex-start" }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="About demo mode"
+              onPress={() => setDemoInfo(true)}
+              style={{
+                backgroundColor: "#10282c",
+                paddingHorizontal: 11,
+                paddingVertical: 6,
+                borderRadius: 12,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#edc88e",
+                  fontSize: 11,
+                  fontWeight: "700",
+                  letterSpacing: 1,
+                }}
+              >
+                DEMO
+              </Text>
+            </Pressable>
+          </View>
+        )}
+        {searchPlace && (
+          <View
+            style={{
+              backgroundColor: "#10282c",
+              borderRadius: 14,
+              padding: 12,
+              flexDirection: "row",
+              gap: 8,
+              alignItems: "center",
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
+                numberOfLines={1}
+                style={{ color: "#e6f4ef", fontWeight: "600" }}
+              >
+                {searchPlace.name}
+              </Text>
+              <Text
+                numberOfLines={1}
+                style={{ color: "#9ab3b7", fontSize: 11 }}
+              >
+                Place reference only · no observation created
+              </Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Clear selected place"
+              onPress={() => setSearchPlace(null)}
+              style={{
+                minWidth: 44,
+                minHeight: 44,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ color: "#c8e1dc", fontSize: 22 }}>×</Text>
+            </Pressable>
+          </View>
+        )}
+        {!!message && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss message"
+            onPress={() => setMessage("")}
+            style={{
+              backgroundColor: "#10282c",
+              padding: 12,
+              borderRadius: 12,
+            }}
+          >
+            <Text accessibilityRole="alert" style={styles.text}>
+              {message}
+            </Text>
+          </Pressable>
+        )}
+      </View>
+      {!activityOpen && !selected && (
+        <View
+          style={{ position: "absolute", right: 16, top: height * 0.43 + 108 }}
+        >
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Locate me"
+            onPress={() => void locate()}
+            style={{
+              width: 46,
+              height: 46,
+              borderRadius: 14,
+              backgroundColor: "#10282c",
+              borderWidth: 1,
+              borderColor: "#79b8b0",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: "#e6f5f0", fontSize: 25 }}>⌖</Text>
+          </Pressable>
+        </View>
+      )}
+      {!activityOpen && !selected && (
+        <View
+          pointerEvents="box-none"
           style={{
+            position: "absolute",
+            bottom: Math.max(insets.bottom, 12) + 84,
+            left: 16,
+            right: 16,
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
           }}
         >
-          <View>
-            <Text
-              style={{
-                color: "#e5f5ef",
-                fontSize: 30,
-                letterSpacing: 5,
-                fontWeight: "600",
-              }}
-            >
-              INDRAYA
-            </Text>
-            <Text style={{ color: "#9bc9c6" }}>
-              Together, we see the world.
-            </Text>
-          </View>
-          <Button label="Account" onPress={() => router.push("/account")} />
-        </View>
-        <PlaceSearch
-          focus={viewport.center}
-          onChoose={(place) => {
-            setCenter([place.longitude, place.latitude]);
-            setViewport({
-              center: [place.longitude, place.latitude],
-              bounds: null,
-            });
-          }}
-        />
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          {categories.map((c) => (
-            <Button
-              key={c}
-              label={`${filters.includes(c) ? "●" : "○"} ${c}`}
-              onPress={() =>
-                setFilters(
-                  filters.includes(c)
-                    ? filters.filter((x) => x !== c)
-                    : [...filters, c],
-                )
-              }
-            />
-          ))}
-        </View>
-        <Text
-          style={{
-            color: "#edc88e",
-            backgroundColor: "#10282c",
-            padding: 10,
-            borderRadius: 10,
-          }}
-        >
-          {supabase
-            ? "COMMUNITY · Not emergency dispatch"
-            : "DEMO EXPLORER · Fictional observations"}
-        </Text>
-        {q.isLoading && <Text style={styles.text}>Loading observations…</Text>}
-        {q.error && (
-          <Button
-            label="Unable to load · Retry"
-            onPress={() => {
-              void q.refetch();
-            }}
-          />
-        )}
-        {message.length > 0 && (
-          <Text accessibilityRole="alert" style={styles.text}>
-            {message}
-          </Text>
-        )}
-      </View>
-      <View
-        pointerEvents="box-none"
-        style={{
-          position: "absolute",
-          bottom: 35,
-          left: 20,
-          right: 20,
-          gap: 10,
-        }}
-      >
-        <View
-          pointerEvents="box-none"
-          style={{ flexDirection: "row", gap: 10, justifyContent: "flex-end" }}
-        >
-          <Button
-            label="Locate me"
-            onPress={() => {
-              void locate();
-            }}
-          />
-          <Button
-            label="Layers & sources"
-            onPress={() => router.push("/sources")}
-          />
-        </View>
-        <View style={styles.card}>
-          <Text style={styles.text}>
-            {visible.length} community observations · Alaska
-          </Text>
-          {feeds.selected.some((id) => feeds.queries[id].isError) && (
-            <Text style={{ color: "#edc88e" }}>
-              Official source refresh failed · open Layers & sources
-            </Text>
-          )}
-          {feeds.items.length > 0 && (
-            <ScrollView horizontal>
-              {feeds.items.map((item) => (
-                <Button
-                  key={item.id}
-                  label={`OFFICIAL · ${item.title}`}
-                  onPress={() => setOfficialDetail(item)}
-                />
-              ))}
-            </ScrollView>
-          )}
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <Button
-              label={nearby ? "Show map cards" : "Nearby activity"}
-              onPress={() => setNearby(!nearby)}
-            />
-            <Button label="Map legend" onPress={() => setLegend(true)} />
-          </View>
-          {nearby && spatial.isFetching && (
-            <Text style={styles.text}>
-              Loading observations in this map area…
-            </Text>
-          )}
-          {nearby && spatial.error && (
-            <Button
-              label="Nearby reports unavailable · Retry"
-              onPress={() => {
-                void spatial.refetch();
-              }}
-            />
-          )}
-          {nearby && (
-            <Text style={styles.text}>
-              {nearbyReports.length} in this map area · newest first · up to 300
-              loaded
-            </Text>
-          )}
-          <ScrollView
-            horizontal={!nearby}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Layers"
+            onPress={() => setLayersOpen(true)}
             style={{
-              height: nearby ? 210 : 120,
-              maxHeight: nearby ? 210 : 120,
+              paddingHorizontal: 17,
+              minHeight: 46,
+              borderRadius: 23,
+              backgroundColor: "#10282c",
+              borderWidth: 1,
+              borderColor: filters === "all" ? "#345056" : "#9ce5d9",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: "#c9e6df", fontWeight: "600" }}>
+              Layers{filters !== "all" ? " •" : ""}
+            </Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Report an observation"
+            onPress={() => router.push("/report")}
+            style={{
+              paddingHorizontal: 20,
+              minHeight: 48,
+              borderRadius: 24,
+              backgroundColor: "#b5e7d8",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: "#12302f", fontWeight: "700", fontSize: 15 }}>
+              ＋ Report
+            </Text>
+          </Pressable>
+        </View>
+      )}
+      {!selected && (
+        <ActivitySheet
+          expanded={activityOpen}
+          onChange={setActivityOpen}
+          bottom={Math.max(insets.bottom, 12)}
+          maxHeight={height * 0.48}
+          title={
+            q.isLoading
+              ? "Loading nearby observations…"
+              : q.error || spatial.error
+                ? "Nearby observations · update unavailable"
+                : `Nearby observations · ${nearbyReports.length}${filters !== "all" ? " · filtered" : ""}`
+          }
+        >
+          <ScrollView
+            style={{ flexShrink: 1 }}
+            contentContainerStyle={{
+              padding: 16,
+              paddingTop: 0,
+              paddingBottom: 24,
+              gap: 12,
             }}
             nestedScrollEnabled
           >
-            {(nearby ? nearbyReports : visible).map((report) => (
+            <Text style={[styles.text, { fontSize: 12 }]}>
+              In this map area · newest first
+              {!supabase ? " · fictional demo reports" : " · up to 300 loaded"}
+            </Text>
+            {q.isLoading && (
+              <Text style={styles.text}>Loading observations…</Text>
+            )}
+            {q.error && (
+              <Button
+                label="Unable to load · Retry"
+                onPress={() => void q.refetch()}
+              />
+            )}
+            {spatial.isFetching && (
+              <Text style={styles.text}>Updating this map area…</Text>
+            )}
+            {spatial.error && (
+              <Button
+                label="Nearby reports unavailable · Retry"
+                onPress={() => void spatial.refetch()}
+              />
+            )}
+            {feeds.selected.some((id) => feeds.queries[id].isError) && (
+              <Text style={{ color: "#edc88e" }}>
+                Official source refresh failed · check Layers.
+              </Text>
+            )}
+            {feeds.items.map((item) => (
+              <Button
+                key={item.id}
+                label={`OFFICIAL · ${item.title}`}
+                onPress={() => setOfficialDetail(item)}
+              />
+            ))}
+            {nearbyReports.map((report) => (
               <ObservationCard
                 key={report.id}
                 report={report}
                 onPress={() => selectReport(report)}
-                distance={
-                  nearby
-                    ? distanceKm(report, {
-                        longitude: viewport.center[0],
-                        latitude: viewport.center[1],
-                      })
-                    : undefined
-                }
+                distance={distanceKm(report, {
+                  longitude: viewport.center[0],
+                  latitude: viewport.center[1],
+                })}
               />
             ))}
+            {!q.isLoading &&
+              !spatial.isFetching &&
+              !q.error &&
+              !spatial.error &&
+              nearbyReports.length === 0 && (
+                <Text style={styles.text}>
+                  No observations in this map area. Zoom out, change the filter
+                  in Layers, or explore another place.
+                </Text>
+              )}
           </ScrollView>
-          {nearby &&
-            nearbyReports.length === 0 &&
-            !spatial.isFetching &&
-            !spatial.error && (
-              <Text style={styles.text}>
-                No observations in this map area. Zoom out or explore another
-                place.
-              </Text>
-            )}
-          {!q.isLoading && !visible.length && (
-            <Text style={styles.text}>
-              No observations in these layers. Share what you see.
-            </Text>
-          )}
-          <Button
-            label="＋ Share an observation"
-            onPress={() => router.push("/report")}
-          />
-        </View>
-      </View>
-      <Modal
-        visible={legend}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setLegend(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "flex-end",
-            backgroundColor: "#0006",
+        </ActivitySheet>
+      )}
+      {selected && (
+        <ObservationPreview
+          report={selected}
+          onClose={() => {
+            setSelected(null);
+            setDetailsOpen(false);
           }}
-        >
-          <View style={[styles.card, { paddingBottom: 40 }]}>
-            <Text style={styles.heading}>Map legend</Text>
-            {Object.values(reportKinds).map((kind) => (
+          onExpand={() => setDetailsOpen(true)}
+          bottom={Math.max(insets.bottom, 12)}
+          maxHeight={height * 0.38}
+        />
+      )}
+      <Modal
+        visible={layersOpen}
+        animationType="slide"
+        onRequestClose={() => setLayersOpen(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#071719" }}>
+          <ScrollView
+            contentContainerStyle={{ padding: 24, gap: 18, paddingBottom: 40 }}
+          >
+            <Button label="Back to map" onPress={() => setLayersOpen(false)} />
+            <Text style={styles.heading}>Layers</Text>
+            <ChoiceSheet
+              label="Observation category"
+              value={filters}
+              options={[
+                { value: "all", label: "All categories" },
+                ...catalog.domains.map((d) => ({
+                  value: d.id,
+                  label: d.label,
+                })),
+              ]}
+              onChange={setFilters}
+            />
+            <Text style={styles.text}>
+              Filter community observations without changing the report itself.
+            </Text>
+            <Button
+              label="Official sources & map information"
+              onPress={() => {
+                setLayersOpen(false);
+                router.push("/sources");
+              }}
+            />
+            <Text style={[styles.heading, { fontSize: 22 }]}>Map legend</Text>
+            {catalog.domains.map((kind) => (
               <View
-                key={kind.label}
+                key={kind.id}
                 style={{ flexDirection: "row", gap: 10, alignItems: "center" }}
               >
                 <View
                   style={{
-                    width: 14,
-                    height: 14,
-                    borderRadius: 7,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
                     backgroundColor: kind.color,
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
-                />
+                >
+                  <Image
+                    source={mapSymbols[kind.id].image}
+                    style={{ width: 21, height: 21 }}
+                    accessible={false}
+                  />
+                </View>
                 <Text style={styles.text}>{kind.label}</Text>
               </View>
             ))}
             <Text style={styles.text}>
-              White / purple: official source reports. Gray circles: clusters;
-              tap to expand. Color indicates report type, never verification or
-              severity.
+              Color indicates report type, never verification or severity.
+              Individual markers keep their colors at every zoom level.
+              White/purple marks official sources.
             </Text>
-            <Button label="Close legend" onPress={() => setLegend(false)} />
+            {Object.entries(riskPresentation)
+              .filter(([id]) => id !== "none")
+              .map(([id, r]) => (
+                <Text key={id} style={{ color: r.color }}>
+                  {r.label} · outer ring
+                </Text>
+              ))}
+            <Text style={styles.text}>
+              Expired assessments lose their ring. No ring does not mean safe.
+            </Text>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+      <Modal
+        visible={demoInfo}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDemoInfo(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#0009",
+            justifyContent: "center",
+            padding: 24,
+          }}
+        >
+          <View style={styles.card}>
+            <Text style={styles.heading}>Demo mode</Text>
+            <Text style={styles.text}>
+              Map observations are fictional examples. Your demo reports stay on
+              this device and are not sent to staff or emergency services.
+            </Text>
+            <Button label="Back to map" onPress={() => setDemoInfo(false)} />
           </View>
         </View>
       </Modal>
@@ -425,10 +623,10 @@ export default function Home() {
         </View>
       </Modal>
       <Modal
-        visible={!!selected}
+        visible={!!selected && detailsOpen}
         transparent
         animationType="slide"
-        onRequestClose={() => setSelected(null)}
+        onRequestClose={() => setDetailsOpen(false)}
       >
         <View
           style={{
@@ -448,39 +646,7 @@ export default function Home() {
           >
             {selected && (
               <>
-                <Text style={{ color: "#e9c78f" }}>
-                  {reportAppearance(selected).label} ·{" "}
-                  {selected.verification.toUpperCase()}
-                </Text>
-                <Text style={styles.heading}>{selected.title}</Text>
-                <Text style={styles.text}>
-                  {selected.place_name || "Approximate map location"} · Observed{" "}
-                  {age(observedTime(selected))}
-                </Text>
-                <Text style={styles.text}>{selected.description}</Text>
-                <ObservationPhoto report={selected} />
-                {(!!selected.details?.animal ||
-                  selected.details?.count !== undefined) && (
-                  <Text style={styles.text}>
-                    Animal: {selected.details?.animal || "Unspecified wildlife"}
-                    {selected.details?.count
-                      ? ` · about ${selected.details?.count}`
-                      : ""}
-                  </Text>
-                )}
-                {selected.details?.surface && (
-                  <Text style={styles.text}>
-                    Surface: {selected.details.surface} · Visibility:{" "}
-                    {selected.details.visibility || "Unknown"}
-                  </Text>
-                )}
-                <Text style={styles.text}>
-                  {selected.source} · Submitted {age(selected.created_at)}
-                </Text>
-                <Text style={styles.text}>
-                  Never rely on community reports for emergency decisions. In an
-                  emergency, call 911.
-                </Text>
+                <ObservationDetails report={selected} />
                 {(["misleading", "dangerous", "abusive"] as const).map(
                   (reason) => (
                     <Button
@@ -495,7 +661,10 @@ export default function Home() {
                     />
                   ),
                 )}
-                <Button label="Close" onPress={() => setSelected(null)} />
+                <Button
+                  label="Back to preview"
+                  onPress={() => setDetailsOpen(false)}
+                />
               </>
             )}
           </ScrollView>
