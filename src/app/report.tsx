@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Image, ScrollView, Text, TextInput, View, Pressable } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -37,6 +37,8 @@ export default function Report() {
     [savedId, setSavedId] = useState<string | null>(null);
   const client = useQueryClient();
   const saving = useRef(false);
+  const photoShortcutOpened = useRef(false);
+  useEffect(() => { if (photoShortcut === "1" && !photoShortcutOpened.current) { photoShortcutOpened.current = true; void selectPhoto(); } }, [photoShortcut]);
   async function save() {
     if (saving.current) return;
     saving.current = true;
