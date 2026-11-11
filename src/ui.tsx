@@ -15,33 +15,33 @@ export function Button({
       onPress={onPress}
       style={[styles.button, disabled && { opacity: 0.4 }]}
     >
-      <Text style={{ color: "#9ce5d9", fontWeight: "700" }}>{label}</Text>
+      <Text style={{ color: "#d9d4ff", fontWeight: "700" }}>{label}</Text>
     </Pressable>
   );
 }
 export const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: "#071719",
+    backgroundColor: "#080d1a",
     padding: 24,
     paddingTop: 64,
     gap: 16,
   },
-  heading: { color: "#edf6f3", fontSize: 30, fontWeight: "700" },
-  text: { color: "#b3c8c8", fontSize: 15, lineHeight: 23 },
+  heading: { color: "#f2f2fc", fontSize: 30, fontWeight: "700" },
+  text: { color: "#b9c6d8", fontSize: 15, lineHeight: 23 },
   input: {
     color: "#fff",
-    backgroundColor: "#132b30",
+    backgroundColor: "#141d31",
     borderRadius: 12,
     padding: 15,
     borderWidth: 1,
-    borderColor: "#345056",
+    borderColor: "#485074",
   },
   button: {
-    backgroundColor: "#19383b",
+    backgroundColor: "#222344",
     padding: 14,
     borderRadius: 24,
     alignItems: "center",
   },
-  card: { backgroundColor: "#10282c", padding: 22, borderRadius: 24, gap: 12 },
+  card: { backgroundColor: "#111b2d", padding: 22, borderRadius: 24, gap: 12 },
 });
