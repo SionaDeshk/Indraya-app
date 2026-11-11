@@ -124,10 +124,12 @@ export default function Report() {
       ]}
       keyboardShouldPersistTaps="handled"
     >
-      <Text style={{ color: "#a99bdf", letterSpacing: 4, fontWeight: "700", fontSize: 16 }}>N U N A</Text>
-      <Button label="← Back to map" onPress={() => router.back()} />
-      <Text style={styles.heading}>Share an observation</Text>
-      <Text style={{ color: "#a99bdf", letterSpacing: 2, fontSize: 11 }}>ALASKA · COMMUNITY INTELLIGENCE</Text>
+      <View style={{ backgroundColor: "#0d1427", borderRadius: 26, padding: 22, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
+        <Text style={{ color: "#9e96e5", letterSpacing: 5, fontSize: 12, fontWeight: "700" }}>N U N A  /  FIELD NOTES</Text>
+        <Text style={{ color: "#f3f1ff", fontSize: 34, lineHeight: 39, fontWeight: "600" }}>Share an{"\n"}observation.</Text>
+        <Text style={{ color: "#a7bcd0", fontSize: 14, lineHeight: 21 }}>Your perspective helps Alaska see what's happening on the ground.</Text>
+        <Button label="← Return to map" onPress={() => router.back()} />
+      </View>
       <Text style={styles.text}>
         {supabase
           ? "Community observation"
@@ -154,22 +156,26 @@ export default function Report() {
         </View>
       ) : (
         <>
+          <View style={{ backgroundColor: "#111b2d", borderRadius: 22, padding: 16, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
+          <Text style={{ color: "#a99bdf", fontSize: 11, letterSpacing: 2 }}>01  /  CATEGORY</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {categories.map((c) => (
+            {[...categories, "Wildlife"].map((c) => (
               <View key={c} style={{ minWidth: "30%", flexGrow: 1 }}>
                 <Button
-                  label={`${c === category ? "● " : ""}${c}`}
+                  label={`${(c === "Wildlife" ? kind === "wildlife" : c === category && kind !== "wildlife") ? "● " : ""}${c === "Safety" ? "Incidents" : c}`}
                   onPress={() => {
-                    setCategory(c);
-                    setKind(defaultKind[c]);
+                    if (c === "Wildlife") { setCategory("Outdoors"); setKind("wildlife"); }
+                    else { const selected = c as Category; setCategory(selected); setKind(selected === "Outdoors" ? "trail" : defaultKind[selected]); }
                   }}
                 />
               </View>
             ))}
           </View>
-          <Text style={styles.text}>
-            What did you notice? Pick a starting title or write your own.
-          </Text>
+          </View>
+          </View>
+          <View style={{ backgroundColor: "#111b2d", borderRadius: 22, padding: 16, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
+          <Text style={{ color: "#a99bdf", fontSize: 11, letterSpacing: 2 }}>02  /  WHAT HAPPENED</Text>
+          <Text style={styles.text}>Choose a quick starting point or describe what you noticed.</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {reportPresets[category].map((preset) => (
               <Button
@@ -228,6 +234,7 @@ export default function Report() {
             onChangeText={setDescription}
             maxLength={2000}
           />
+          </View>
           {kind === "wildlife" && (
             <View style={styles.card}>
               <Text style={styles.text}>Wildlife details · optional</Text>
@@ -276,11 +283,14 @@ export default function Report() {
               </View>
             </View>
           )}
-          <ObservationTime value={observedAt} onChange={setObservedAt} />
-          <LocationPicker value={location} onChange={setLocation} />
+          <View style={{ backgroundColor: "#111b2d", borderRadius: 22, padding: 16, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
+            <Text style={{ color: "#a99bdf", fontSize: 11, letterSpacing: 2 }}>03  /  WHEN & WHERE</Text>
+            <ObservationTime value={observedAt} onChange={setObservedAt} />
+            <LocationPicker value={location} onChange={setLocation} />
+          </View>
           <View style={styles.card}>
             <Text style={[styles.heading, { fontSize: 22 }]}>
-              Add a photo · optional
+              04  /  PHOTO · OPTIONAL
             </Text>
             <Text style={styles.text}>
               Avoid faces, license plates and private or sensitive locations.
@@ -332,7 +342,7 @@ export default function Report() {
             </Text>
           )}
           <Button
-            label={busy ? "Saving…" : "Submit unverified observation"}
+            label={busy ? "Submitting…" : "Publish observation →"}
             disabled={
               busy || preparing || location === null || (!!photo && !consent)
             }
