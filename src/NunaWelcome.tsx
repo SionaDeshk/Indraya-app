@@ -47,7 +47,7 @@ export default function NunaWelcome({ onOpenMap, onReport, onLayers }: Props) {
   );
 }
 const s = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "#050c15", overflow: "hidden" },
+  overlay: { ...StyleSheet.absoluteFill, backgroundColor: "#050c15", overflow: "hidden" },
   glowPurple: { position: "absolute", top: 95, right: -100, width: 340, height: 390, borderRadius: 200, backgroundColor: "#37205b", opacity: 0.58 },
   glowTeal: { position: "absolute", top: 260, left: -140, width: 350, height: 380, borderRadius: 200, backgroundColor: "#064d53", opacity: 0.45 },
   watermark: { position: "absolute", top: 120, left: -14, fontSize: 112, fontWeight: "900", letterSpacing: 9, color: "rgba(174,210,222,0.065)" },
