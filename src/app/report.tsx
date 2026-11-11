@@ -1,10 +1,9 @@
 import { useState, useRef } from "react";
-import { Image, ScrollView, Text, TextInput, View } from "react-native";
-import { router } from "expo-router";
+import { Image, ScrollView, Text, TextInput, View, Pressable } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Category,
-  categories,
   ReportLocation,
   reportPresets,
   ReportKind,
@@ -18,6 +17,8 @@ import LocationPicker from "../LocationPicker";
 import ObservationTime from "../ObservationTime";
 import { pickPhoto, PreparedPhoto } from "../photos";
 export default function Report() {
+  const { photo: photoShortcut } = useLocalSearchParams<{ photo?: string }>();
+  const [step, setStep] = useState<"category" | "details">(photoShortcut === "1" ? "details" : "category");
   const [category, setCategory] = useState<Category>("Safety"),
     [kind, setKind] = useState<ReportKind>("hazard");
   const [title, setTitle] = useState(""),
@@ -156,22 +157,30 @@ export default function Report() {
         </View>
       ) : (
         <>
-          <View style={{ backgroundColor: "#111b2d", borderRadius: 22, padding: 16, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
-          <Text style={{ color: "#a99bdf", fontSize: 11, letterSpacing: 2 }}>01  /  CATEGORY</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-            {[...categories, "Wildlife"].map((c) => (
-              <View key={c} style={{ minWidth: "30%", flexGrow: 1 }}>
-                <Button
-                  label={`${(c === "Wildlife" ? kind === "wildlife" : c === category && kind !== "wildlife") ? "● " : ""}${c === "Safety" ? "Incidents" : c}`}
-                  onPress={() => {
-                    if (c === "Wildlife") { setCategory("Outdoors"); setKind("wildlife"); }
-                    else { const selected = c as Category; setCategory(selected); setKind(selected === "Outdoors" ? "trail" : defaultKind[selected]); }
-                  }}
-                />
+          {step === "category" ? (
+            <View style={{ gap: 16 }}>
+              <Text style={{ color: "#a99bdf", fontSize: 12, letterSpacing: 2 }}>01  /  WHAT ARE YOU SEEING?</Text>
+              <Text style={{ color: "#f1f3ff", fontSize: 24, fontWeight: "600" }}>Choose an observation</Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+                {([
+                  { name: "Incidents", category: "Safety" as Category, kind: "hazard" as ReportKind, examples: "Hazards · Fire · Floods", symbol: "!" },
+                  { name: "Outdoors", category: "Outdoors" as Category, kind: "trail" as ReportKind, examples: "Trails · Aurora · Snow", symbol: "△" },
+                  { name: "Travel", category: "Travel" as Category, kind: "road" as ReportKind, examples: "Roads · Delays · Visibility", symbol: "↗" },
+                  { name: "Wildlife", category: "Outdoors" as Category, kind: "wildlife" as ReportKind, examples: "Sightings · Whales · Bears", symbol: "◉" },
+                ]).map((item) => (
+                  <Pressable key={item.name} accessibilityRole="button" accessibilityLabel={item.name + ": " + item.examples} onPress={() => { setCategory(item.category); setKind(item.kind); setTitle(""); setStep("details"); }} style={{ width: "48%", minHeight: 166, flexGrow: 1, borderRadius: 20, padding: 17, justifyContent: "space-between", backgroundColor: "#121e33", borderWidth: 1, borderColor: "#3c4b6a" }}>
+                    <Text style={{ color: "#9ddbd9", fontSize: 31 }}>{item.symbol}</Text>
+                    <View style={{ gap: 6 }}>
+                      <Text style={{ color: "#f1f3ff", fontSize: 19, fontWeight: "700" }}>{item.name}</Text>
+                      <Text style={{ color: "#aebed0", fontSize: 11, lineHeight: 17 }}>{item.examples}</Text>
+                    </View>
+                  </Pressable>
+                ))}
               </View>
-            ))}
-          </View>
-          </View>
+            </View>
+          ) : (
+          <>
+          <Button label="← Change category" onPress={() => setStep("category")} />
           <View style={{ backgroundColor: "#111b2d", borderRadius: 22, padding: 16, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
           <Text style={{ color: "#a99bdf", fontSize: 11, letterSpacing: 2 }}>02  /  WHAT HAPPENED</Text>
           <Text style={styles.text}>Choose a quick starting point or describe what you noticed.</Text>
@@ -349,6 +358,8 @@ export default function Report() {
               void save();
             }}
           />
+          </>
+          )}
         </>
       )}
     </ScrollView>
