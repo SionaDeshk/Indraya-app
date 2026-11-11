@@ -18,7 +18,7 @@ import {
 } from "../domain";
 import { observations, flag, supabase } from "../api";
 import { Button, styles } from "../ui";
-import PlaceSearch from "../PlaceSearch";
+import PlaceSearch from "../AlaskaPlaceSearch";
 import ObservationPhoto from "../ObservationPhoto";
 import ObservationCard from "../ObservationCard";
 import NativeMap from "../NativeMap";
