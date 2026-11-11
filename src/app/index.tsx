@@ -36,6 +36,7 @@ export default function Home() {
     bounds: MapBounds | null;
   }>({ center: [-149.9, 61.218], bounds: null });
   const [nearby, setNearby] = useState(false);
+  const [observationsExpanded, setObservationsExpanded] = useState(false);
   const [legend, setLegend] = useState(false);
   const [officialDetail, setOfficialDetail] = useState<OfficialItem | null>(
     null,
@@ -223,7 +224,15 @@ export default function Home() {
             onPress={() => router.push("/sources")}
           />
         </View>
-        <View style={styles.card}>
+        <View style={[styles.card, { padding: observationsExpanded ? 18 : 12, gap: observationsExpanded ? 12 : 0 }]}>
+          <Button
+            label={observationsExpanded
+              ? "⌄  " + visible.length + " observations · Minimize"
+              : "⌃  " + visible.length + " observations · Expand"}
+            onPress={() => setObservationsExpanded((expanded) => !expanded)}
+          />
+          {observationsExpanded && (
+            <>
           <Text style={styles.text}>
             {visible.length} community observations · Alaska
           </Text>
@@ -311,6 +320,8 @@ export default function Home() {
             label="＋ Share an observation"
             onPress={() => router.push("/report")}
           />
+            </>
+          )}
         </View>
       </View>
       {showWelcome && (
