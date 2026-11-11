@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ScrollView, Text, TextInput } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { supabase } from "../api";
@@ -11,6 +12,10 @@ export default function Account() {
   const [name, setName] = useState("");
   const [user, setUser] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [areaInput, setAreaInput] = useState("");
+  const [followedAreas, setFollowedAreas] = useState<string[]>([]);
+  useEffect(() => { let active = true; void AsyncStorage.getItem("nuna.followedAreas.v1").then((value) => { if (active && value) { try { const parsed: unknown = JSON.parse(value); if (Array.isArray(parsed)) setFollowedAreas(parsed.filter((x): x is string => typeof x === "string")); } catch { /* Ignore invalid cache. */ } } }); return () => { active = false; }; }, []);
+  function saveAreas(next: string[]) { setFollowedAreas(next); void AsyncStorage.setItem("nuna.followedAreas.v1", JSON.stringify(next)).catch(() => setMessage("Unable to save followed areas on this device.")); }
   useEffect(() => {
     if (!supabase) return;
     void supabase.auth
@@ -141,6 +146,17 @@ export default function Account() {
           />
         </>
       )}
+      <View style={[styles.card, { borderWidth: 1, borderColor: "#30365d" }]}>
+        <Text style={{ color: "#a99bdf", letterSpacing: 2, fontSize: 11 }}>YOUR ALASKA</Text>
+        <Text style={[styles.heading, { fontSize: 23 }]}>Following areas</Text>
+        <Text style={styles.text}>Keep a personal list of places to watch. Saved on this device; alerts and account sync are not enabled yet.</Text>
+        <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+          <TextInput accessibilityLabel="Area to follow" placeholder="Town, region or landmark" placeholderTextColor="#9ab3b7" value={areaInput} onChangeText={setAreaInput} maxLength={80} style={[styles.input, { flex: 1 }]} />
+          <Button label="Follow +" onPress={() => { const name = areaInput.trim(); if (!name || followedAreas.some((a) => a.toLowerCase() === name.toLowerCase()) || followedAreas.length >= 30) return; saveAreas([...followedAreas, name]); setAreaInput(""); }} />
+        </View>
+        {followedAreas.length === 0 && <Text style={styles.text}>No followed areas yet.</Text>}
+        {followedAreas.map((area) => <View key={area} style={{ flexDirection: "row", alignItems: "center", gap: 8, justifyContent: "space-between" }}><Text style={[styles.text, { flex: 1 }]}>{area}</Text><Button label="Remove" onPress={() => saveAreas(followedAreas.filter((a) => a !== area))} /></View>)}
+      </View>
       <Button
         label="Moderator review"
         onPress={() => router.push("/moderation")}
