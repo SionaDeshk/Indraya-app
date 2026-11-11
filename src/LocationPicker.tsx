@@ -3,7 +3,7 @@ import { Modal, Platform, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Location from "expo-location";
 import { ReportLocation } from "./domain";
-import PlaceSearch from "./PlaceSearch";
+import PlaceSearch from "./AlaskaPlaceSearch";
 import LocationMap from "./LocationMap";
 import { Button, styles } from "./ui";
 export default function LocationPicker({
