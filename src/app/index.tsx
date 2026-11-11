@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { View, Text, ScrollView, Modal } from "react-native";
+import NunaWelcome from "../NunaWelcome";
+import NunaMark from "../NunaMark";
+import { View, Text, ScrollView, Modal, Pressable } from "react-native";
 import { router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import * as Location from "expo-location";
@@ -17,7 +19,7 @@ import {
 } from "../domain";
 import { observations, flag, supabase } from "../api";
 import { Button, styles } from "../ui";
-import PlaceSearch from "../PlaceSearch";
+import PlaceSearch from "../AlaskaPlaceSearch";
 import ObservationPhoto from "../ObservationPhoto";
 import ObservationCard from "../ObservationCard";
 import NativeMap from "../NativeMap";
@@ -25,7 +27,8 @@ import * as Linking from "expo-linking";
 import { useOfficialFeeds } from "../official/useOfficialFeeds";
 import { OfficialItem } from "../official/adapters";
 export default function Home() {
-  const [filters, setFilters] = useState<string[]>(categories);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [filters, setFilters] = useState<string[]>([...categories, "Wildlife"]);
   const [selected, setSelected] = useState<Observation | null>(null);
   const [center, setCenter] = useState<[number, number]>([-149.9, 61.218]);
   const [message, setMessage] = useState("");
@@ -34,6 +37,7 @@ export default function Home() {
     bounds: MapBounds | null;
   }>({ center: [-149.9, 61.218], bounds: null });
   const [nearby, setNearby] = useState(false);
+  const [observationsExpanded, setObservationsExpanded] = useState(false);
   const [legend, setLegend] = useState(false);
   const [officialDetail, setOfficialDetail] = useState<OfficialItem | null>(
     null,
@@ -65,11 +69,11 @@ export default function Home() {
       ]),
     ).values(),
   ];
-  const visible = loadedReports.filter((o) => filters.includes(o.category));
+  const visible = loadedReports.filter((o) => (o.kind === "wildlife" ? filters.includes("Wildlife") : filters.includes(o.category)));
   const nearbyReports = (
     supabase && viewport.bounds
       ? (spatial.data ?? []).filter((report) =>
-          filters.includes(report.category),
+          (report.kind === "wildlife" ? filters.includes("Wildlife") : filters.includes(report.category)),
         )
       : visible
   )
@@ -136,16 +140,18 @@ export default function Home() {
                 fontWeight: "600",
               }}
             >
-              INDRAYA
+              NUNA
             </Text>
             <Text style={{ color: "#9bc9c6" }}>
-              Together, we see the world.
+              Alaska in real time.
             </Text>
           </View>
           <Button label="Account" onPress={() => router.push("/account")} />
         </View>
         <PlaceSearch
           focus={viewport.center}
+          onLocate={() => { void locate(); }}
+          onPhoto={() => router.push("/report?photo=1")}
           onChoose={(place) => {
             setCenter([place.longitude, place.latitude]);
             setViewport({
@@ -154,11 +160,11 @@ export default function Home() {
             });
           }}
         />
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          {categories.map((c) => (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: "row", gap: 8, paddingRight: 24 }}>
+          {["Safety", "Outdoors", "Travel", "Wildlife"].map((c) => (
             <Button
               key={c}
-              label={`${filters.includes(c) ? "●" : "○"} ${c}`}
+              label={`${filters.includes(c) ? "●" : "○"} ${c === "Safety" ? "Incidents" : c}`}
               onPress={() =>
                 setFilters(
                   filters.includes(c)
@@ -168,6 +174,9 @@ export default function Home() {
               }
             />
           ))}
+        </ScrollView>
+        <View style={{ alignItems: "flex-end" }}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Layers and sources" onPress={() => router.push("/sources")} style={{ width: 49, height: 46, borderRadius: 14, backgroundColor: "#18243a", borderWidth: 1, borderColor: "#465270", alignItems: "center", justifyContent: "center" }}><Text style={{ color: "#e5eafa", fontSize: 25 }}>▱</Text><Text style={{ color: "#e5eafa", fontSize: 10, marginTop: -8 }}>▱</Text></Pressable>
         </View>
         <Text
           style={{
@@ -206,22 +215,15 @@ export default function Home() {
           gap: 10,
         }}
       >
-        <View
-          pointerEvents="box-none"
-          style={{ flexDirection: "row", gap: 10, justifyContent: "flex-end" }}
-        >
+        <View style={[styles.card, { padding: observationsExpanded ? 18 : 12, gap: observationsExpanded ? 12 : 0 }]}>
           <Button
-            label="Locate me"
-            onPress={() => {
-              void locate();
-            }}
+            label={observationsExpanded
+              ? "⌄  " + visible.length + " observations · Minimize"
+              : "⌃  " + visible.length + " observations · Expand"}
+            onPress={() => setObservationsExpanded((expanded) => !expanded)}
           />
-          <Button
-            label="Layers & sources"
-            onPress={() => router.push("/sources")}
-          />
-        </View>
-        <View style={styles.card}>
+          {observationsExpanded && (
+            <>
           <Text style={styles.text}>
             {visible.length} community observations · Alaska
           </Text>
@@ -309,8 +311,21 @@ export default function Home() {
             label="＋ Share an observation"
             onPress={() => router.push("/report")}
           />
+            </>
+          )}
         </View>
+        {!observationsExpanded && (
+          <Button label="＋ Share observation" onPress={() => router.push("/report")} />
+        )}
       </View>
+      <Pressable accessibilityRole="button" accessibilityLabel="Locate me" onPress={() => { void locate(); }} style={{ position: "absolute", right: 20, bottom: 174, width: 58, height: 58, borderRadius: 29, backgroundColor: "#05090e", borderWidth: 1, borderColor: "#627080", alignItems: "center", justifyContent: "center" }}><NunaMark size={53} /></Pressable>
+      {showWelcome && (
+        <NunaWelcome
+          onOpenMap={() => setShowWelcome(false)}
+          onReport={() => { setShowWelcome(false); router.push("/report"); }}
+          onLayers={() => { setShowWelcome(false); router.push("/sources"); }}
+        />
+      )}
       <Modal
         visible={legend}
         transparent

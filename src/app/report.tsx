@@ -1,10 +1,9 @@
-import { useState, useRef } from "react";
-import { Image, ScrollView, Text, TextInput, View } from "react-native";
-import { router } from "expo-router";
+import { useState, useRef, useEffect } from "react";
+import { Image, ScrollView, Text, TextInput, View, Pressable } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Category,
-  categories,
   ReportLocation,
   reportPresets,
   ReportKind,
@@ -18,6 +17,8 @@ import LocationPicker from "../LocationPicker";
 import ObservationTime from "../ObservationTime";
 import { pickPhoto, PreparedPhoto } from "../photos";
 export default function Report() {
+  const { photo: photoShortcut } = useLocalSearchParams<{ photo?: string }>();
+  const [step, setStep] = useState<"category" | "details">(photoShortcut === "1" ? "details" : "category");
   const [category, setCategory] = useState<Category>("Safety"),
     [kind, setKind] = useState<ReportKind>("hazard");
   const [title, setTitle] = useState(""),
@@ -36,6 +37,8 @@ export default function Report() {
     [savedId, setSavedId] = useState<string | null>(null);
   const client = useQueryClient();
   const saving = useRef(false);
+  const photoShortcutOpened = useRef(false);
+  useEffect(() => { if (photoShortcut === "1" && !photoShortcutOpened.current) { photoShortcutOpened.current = true; void selectPhoto(); } }, [photoShortcut]);
   async function save() {
     if (saving.current) return;
     saving.current = true;
@@ -117,15 +120,19 @@ export default function Report() {
   }
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: "#071719" }}
+      style={{ flex: 1, backgroundColor: "#080d1a" }}
       contentContainerStyle={[
         styles.page,
         { flex: 0, flexGrow: 1, paddingBottom: 40 },
       ]}
       keyboardShouldPersistTaps="handled"
     >
-      <Button label="← Back to map" onPress={() => router.back()} />
-      <Text style={styles.heading}>Share what you see.</Text>
+      <View style={{ backgroundColor: "#0d1427", borderRadius: 26, padding: 22, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
+        <Text style={{ color: "#9e96e5", letterSpacing: 5, fontSize: 12, fontWeight: "700" }}>N U N A  /  FIELD NOTES</Text>
+        <Text style={{ color: "#f3f1ff", fontSize: 34, lineHeight: 39, fontWeight: "600" }}>Share an{"\n"}observation.</Text>
+        <Text style={{ color: "#a7bcd0", fontSize: 14, lineHeight: 21 }}>Your perspective helps Alaska see what's happening on the ground.</Text>
+        <Button label="← Return to map" onPress={() => router.back()} />
+      </View>
       <Text style={styles.text}>
         {supabase
           ? "Community observation"
@@ -152,22 +159,33 @@ export default function Report() {
         </View>
       ) : (
         <>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {categories.map((c) => (
-              <View key={c} style={{ flex: 1 }}>
-                <Button
-                  label={`${c === category ? "● " : ""}${c}`}
-                  onPress={() => {
-                    setCategory(c);
-                    setKind(defaultKind[c]);
-                  }}
-                />
+          {step === "category" ? (
+            <View style={{ gap: 16 }}>
+              <Text style={{ color: "#a99bdf", fontSize: 12, letterSpacing: 2 }}>01  /  WHAT ARE YOU SEEING?</Text>
+              <Text style={{ color: "#f1f3ff", fontSize: 24, fontWeight: "600" }}>Choose an observation</Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+                {([
+                  { name: "Incidents", category: "Safety" as Category, kind: "hazard" as ReportKind, examples: "Hazards · Fire · Floods", symbol: "!" },
+                  { name: "Outdoors", category: "Outdoors" as Category, kind: "trail" as ReportKind, examples: "Trails · Aurora · Snow", symbol: "△" },
+                  { name: "Travel", category: "Travel" as Category, kind: "road" as ReportKind, examples: "Roads · Delays · Visibility", symbol: "↗" },
+                  { name: "Wildlife", category: "Outdoors" as Category, kind: "wildlife" as ReportKind, examples: "Sightings · Whales · Bears", symbol: "◉" },
+                ]).map((item) => (
+                  <Pressable key={item.name} accessibilityRole="button" accessibilityLabel={item.name + ": " + item.examples} onPress={() => { setCategory(item.category); setKind(item.kind); setTitle(""); setStep("details"); }} style={{ width: "48%", minHeight: 166, flexGrow: 1, borderRadius: 20, padding: 17, justifyContent: "space-between", backgroundColor: "#121e33", borderWidth: 1, borderColor: "#3c4b6a" }}>
+                    <Text style={{ color: "#9ddbd9", fontSize: 31 }}>{item.symbol}</Text>
+                    <View style={{ gap: 6 }}>
+                      <Text style={{ color: "#f1f3ff", fontSize: 19, fontWeight: "700" }}>{item.name}</Text>
+                      <Text style={{ color: "#aebed0", fontSize: 11, lineHeight: 17 }}>{item.examples}</Text>
+                    </View>
+                  </Pressable>
+                ))}
               </View>
-            ))}
-          </View>
-          <Text style={styles.text}>
-            What did you notice? Pick a starting title or write your own.
-          </Text>
+            </View>
+          ) : (
+          <>
+          <Button label="← Change category" onPress={() => setStep("category")} />
+          <View style={{ backgroundColor: "#111b2d", borderRadius: 22, padding: 16, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
+          <Text style={{ color: "#a99bdf", fontSize: 11, letterSpacing: 2 }}>02  /  WHAT HAPPENED</Text>
+          <Text style={styles.text}>Choose a quick starting point or describe what you noticed.</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {reportPresets[category].map((preset) => (
               <Button
@@ -226,6 +244,7 @@ export default function Report() {
             onChangeText={setDescription}
             maxLength={2000}
           />
+          </View>
           {kind === "wildlife" && (
             <View style={styles.card}>
               <Text style={styles.text}>Wildlife details · optional</Text>
@@ -274,11 +293,14 @@ export default function Report() {
               </View>
             </View>
           )}
-          <ObservationTime value={observedAt} onChange={setObservedAt} />
-          <LocationPicker value={location} onChange={setLocation} />
+          <View style={{ backgroundColor: "#111b2d", borderRadius: 22, padding: 16, gap: 12, borderWidth: 1, borderColor: "#30365d" }}>
+            <Text style={{ color: "#a99bdf", fontSize: 11, letterSpacing: 2 }}>03  /  WHEN & WHERE</Text>
+            <ObservationTime value={observedAt} onChange={setObservedAt} />
+            <LocationPicker value={location} onChange={setLocation} />
+          </View>
           <View style={styles.card}>
             <Text style={[styles.heading, { fontSize: 22 }]}>
-              Add a photo · optional
+              04  /  PHOTO · OPTIONAL
             </Text>
             <Text style={styles.text}>
               Avoid faces, license plates and private or sensitive locations.
@@ -330,7 +352,7 @@ export default function Report() {
             </Text>
           )}
           <Button
-            label={busy ? "Saving…" : "Submit unverified observation"}
+            label={busy ? "Submitting…" : "Publish observation →"}
             disabled={
               busy || preparing || location === null || (!!photo && !consent)
             }
@@ -338,6 +360,8 @@ export default function Report() {
               void save();
             }}
           />
+          </>
+          )}
         </>
       )}
     </ScrollView>

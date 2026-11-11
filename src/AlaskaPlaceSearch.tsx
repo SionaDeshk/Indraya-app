@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Keyboard, Text, TextInput, View, ScrollView } from "react-native";
+import { Keyboard, Text, TextInput, View, ScrollView, Pressable } from "react-native";
 import { ReportLocation } from "./domain";
 import { PlaceResult, savedPlaces, searchPlaces } from "./placeSearch";
 import { Button, styles } from "./ui";
@@ -7,10 +7,14 @@ export default function PlaceSearch({
   onChoose,
   focus = [-149.9, 61.218],
   label = "Search Alaska places",
+  onLocate,
+  onPhoto,
 }: {
   onChoose: (place: ReportLocation) => void;
   focus?: [number, number];
   label?: string;
+  onLocate?: () => void;
+  onPhoto?: () => void;
 }) {
   const [query, setQuery] = useState("");
   const [remote, setRemote] = useState<PlaceResult[]>([]);
@@ -71,19 +75,25 @@ export default function PlaceSearch({
   ];
   return (
     <View style={{ gap: 8 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      {onLocate && <Pressable accessibilityRole="button" accessibilityLabel="Locate me" onPress={onLocate} style={{ width: 45, height: 45, borderRadius: 14, backgroundColor: "#18243a", alignItems: "center", justifyContent: "center" }}><Text style={{ color: "#d6e9ee", fontSize: 23 }}>⌖</Text></Pressable>}
+      <View style={{ flex: 1 }}>
       <TextInput
         accessibilityLabel={label}
         placeholder="Search towns, rivers, glaciers, restaurants…"
         placeholderTextColor="#9ab3b7"
         value={query}
         onChangeText={change}
-        style={styles.input}
+        style={[styles.input, { paddingVertical: 12 }]}
         returnKeyType="search"
         onSubmitEditing={() => {
           if (query.trim().length >= 3) void online();
         }}
         autoCorrect={false}
       />
+      </View>
+      {onPhoto && <Pressable accessibilityRole="button" accessibilityLabel="Share photo observation" onPress={onPhoto} style={{ width: 45, height: 45, borderRadius: 14, backgroundColor: "#18243a", alignItems: "center", justifyContent: "center" }}><Text style={{ color: "#d6e9ee", fontSize: 22 }}>▣</Text></Pressable>}
+      </View>
       {query.trim().length > 0 && (
         <View style={[styles.card, { padding: 12 }]}>
           <Button
